@@ -1,0 +1,134 @@
+JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) {
+			"hgap": 5
+			"vgap": 5
+		} ) {
+			name: "this"
+			"defaultCloseOperation": 3
+			"title": "CourseName - Something"
+			"minimumSize": new java.awt.Dimension( 400, 250 )
+			"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "lblSaveInfo"
+				"text": "SUCCESSFULLY SAVED"
+				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 3, false )
+				"foreground": new java.awt.Color( 26, 180, 3, 255 )
+				"background": new java.awt.Color( 180, 226, 189, 255 )
+				"horizontalAlignment": 0
+				"opaque": true
+				"visible": false
+				auxiliary() {
+					"JavaCodeGenerator.variableGetter": true
+				}
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "North"
+			} )
+			add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
+				name: "tabbedPane"
+				"tabLayoutPolicy": 1
+				"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 2, false )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			menuBar: new FormContainer( "javax.swing.JMenuBar", new FormLayoutManager( class javax.swing.JMenuBar ) ) {
+				name: "menuBar"
+				"componentOrientation": sfield java.awt.ComponentOrientation LEFT_TO_RIGHT
+				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+					name: "menuFile"
+					"text": "File"
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "miOpen"
+						"text": "Open"
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 79, 4226, false )
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/folder_icon_16x16.svg" )
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "miSave"
+						"text": "Save"
+						"toolTipText": "Saves all changes"
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/save_icon_16x16.svg" )
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 83, 4226, false )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miSave", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+						name: "separator1"
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "miExport"
+						"text": "Export"
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/export_icon_16x16.svg" )
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 69, 4226, false )
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+					name: "menuSettings"
+					"text": "Settings"
+					add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+						name: "menuSort"
+						"text": "Sort"
+						add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+							name: "separator2"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "lblCaption"
+							"text": "Sort Events"
+							"horizontalAlignment": 0
+							"alignmentX": 0.5f
+							"enabled": false
+						} )
+						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
+							name: "radBtnSbyCreatDate"
+							"text": "By creation date"
+							"$buttonGroup": new FormReference( "sortBtnsGroup" )
+						} )
+						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
+							name: "radBtnSbyAlphabet"
+							"text": "By alphabet"
+							"$buttonGroup": new FormReference( "sortBtnsGroup" )
+						} )
+						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
+							name: "radBtnSbyMarks"
+							"text": "By marks"
+							"$buttonGroup": new FormReference( "sortBtnsGroup" )
+						} )
+						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
+							name: "radBtnSbyType"
+							"text": "By Type"
+							"$buttonGroup": new FormReference( "sortBtnsGroup" )
+							"selected": true
+						} )
+					} )
+					add( new FormComponent( "javax.swing.JCheckBoxMenuItem" ) {
+						name: "chbMiSStdsByAlphabet"
+						"text": "Sort students alphabetically"
+						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "chbMiSStdsByAlphabetStateChanged", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JCheckBoxMenuItem" ) {
+						name: "chbMiAutoSave"
+						"text": "Auto save"
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+					name: "menuAbout"
+					"text": "About"
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "miInfo"
+						"text": "Info"
+					} )
+				} )
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 665, 460 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "sortBtnsGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 476 )
+		} )
+	}
+}

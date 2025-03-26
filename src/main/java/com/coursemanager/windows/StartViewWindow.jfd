@@ -1,0 +1,54 @@
+JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"title": "Course Manager - Start"
+			"defaultCloseOperation": 3
+			"preferredSize": new java.awt.Dimension( 500, 300 )
+			"minimumSize": new java.awt.Dimension( 500, 300 )
+			"$locationPolicy": 1
+			"resizable": false
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+				"$columnSpecs": "0"
+				"$rowSpecs": "0, 0"
+				"$hGap": 5
+				"$vGap": 15
+			} ) {
+				name: "panel1"
+				"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnNewCourse"
+					"text": "Create a new course"
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
+					"alignmentY": 1.5f
+					"preferredSize": new java.awt.Dimension( 250, 70 )
+					"maximumSize": new java.awt.Dimension( 250, 70 )
+					"minimumSize": new java.awt.Dimension( 250, 70 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnNewCourse", true ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"hAlign": 0
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnExistingCourse"
+					"text": "Open an existing course  "
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
+					"preferredSize": new java.awt.Dimension( 270, 70 )
+					"maximumSize": new java.awt.Dimension( 270, 70 )
+					"minimumSize": new java.awt.Dimension( 270, 70 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnExistingCourse", true ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"hAlign": 0
+					"gridy": 1
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 535, 400 )
+		} )
+	}
+}

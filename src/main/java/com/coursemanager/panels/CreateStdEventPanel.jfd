@@ -1,0 +1,189 @@
+JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+			"hgap": 5
+			"vgap": 5
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.CompoundBorder( new javax.swing.border.BevelBorder( 1, null, null, null, null ), new javax.swing.border.EmptyBorder( 10, 10, 0, 10 ) )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+				"$columnSpecs": "0:1.0"
+				"$rowSpecs": "0, 0:1.0, 0, 0, 0"
+				"$hGap": 5
+				"$vGap": 5
+				"$alignTop": true
+				"$alignLeft": true
+			} ) {
+				name: "panel1"
+				add( new FormComponent( "com.toedter.calendar.JCalendar" ) {
+					name: "jcalendar"
+					"preferredSize": new java.awt.Dimension( 200, 200 )
+					"minimumSize": new java.awt.Dimension( 200, 200 )
+					"maximumSize": new java.awt.Dimension( 200, 200 )
+					"toolTipText": "Select the date the event was created"
+					"decorationBackgroundVisible": false
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 1
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+					"$columnSpecs": "0:1.0"
+					"$rowSpecs": "0:1.0"
+					"$hGap": 5
+					"$vGap": 5
+					"$alignTop": true
+					"$alignLeft": true
+				} ) {
+					name: "panel2"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblInfo1"
+						"text": "DATE: "
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+					"$columnSpecs": "0:1.0, 0:1.0"
+					"$rowSpecs": "0:1.0, 0:1.0"
+					"$hGap": 5
+					"$alignTop": true
+					"$alignLeft": true
+				} ) {
+					name: "customEventPanel"
+					"visible": false
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblMark"
+						"text": "Mark:"
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblExpTime"
+						"text": "Expired time:"
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 1
+					} )
+					add( new FormComponent( "javax.swing.JSpinner" ) {
+						name: "spinMark"
+						"model": new javax.swing.SpinnerNumberModel( 1, 1, 5, 1 )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridy": 1
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+						"$columnSpecs": "0:1.0, 0:1.0"
+						"$rowSpecs": "0:1.0"
+						"$alignTop": true
+						"$alignLeft": true
+					} ) {
+						name: "panel6"
+						add( new FormComponent( "javax.swing.JSpinner" ) {
+							name: "spinExpTime"
+							"model": new javax.swing.SpinnerNumberModel( 1, 1, 1000, 1 )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "cmbboxTypeExpTime"
+							"model": new javax.swing.DefaultComboBoxModel {
+								selectedItem: "міс."
+								addElement( "міс." )
+								addElement( "нед." )
+								addElement( "день" )
+							}
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridx": 1
+						} )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 1
+						"gridy": 1
+					} )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 2
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnCreateEvent"
+					"text": "Create"
+					"preferredSize": new java.awt.Dimension( 72, 30 )
+					"minimumSize": new java.awt.Dimension( 72, 30 )
+					"maximumSize": new java.awt.Dimension( 72, 30 )
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 2, false )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnCreateEvent", true ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 3
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnCancelEvent"
+					"text": "Cancel"
+					"preferredSize": new java.awt.Dimension( 200, 30 )
+					"minimumSize": new java.awt.Dimension( 200, 30 )
+					"maximumSize": new java.awt.Dimension( 200, 30 )
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 2, false )
+					"background": new java.awt.Color( 211, 0, 0, 255 )
+					"foreground": sfield java.awt.Color white
+					"borderPainted": false
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnCancelEvent", true ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 4
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "East"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+				"hgap": 5
+				"vgap": 5
+			} ) {
+				name: "panel3"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+					"hgap": 5
+					"vgap": 5
+				} ) {
+					name: "panel4"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel5"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "lblInfo2"
+							"text": "THE NAME OF THE EVENT"
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "North"
+						} )
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "scrollPane"
+							add( new FormComponent( "javax.swing.JTextPane" ) {
+								name: "textPane"
+								"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 3, false )
+								"cursor": new java.awt.Cursor( 2 )
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "modePanel"
+						"preferredSize": new java.awt.Dimension( 114, 60 )
+						"minimumSize": new java.awt.Dimension( 114, 60 )
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "comboModeBox"
+							"preferredSize": new java.awt.Dimension( 72, 30 )
+							"minimumSize": new java.awt.Dimension( 72, 30 )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "lblInfo3"
+							"text": "CHOOSE THE MODE*"
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "North"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Last"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 760, 350 )
+		} )
+	}
+}

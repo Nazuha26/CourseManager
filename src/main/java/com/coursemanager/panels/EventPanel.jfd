@@ -1,0 +1,112 @@
+JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+			"vgap": 5
+		} ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panelTable"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane"
+					"minimumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					add( new FormComponent( "javax.swing.JTable" ) {
+						name: "tableListStds"
+						"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector {
+							add( "<html><b>№<html>" )
+							add( "<html><b>Date<html>" )
+							add( "<html><b>Event<html>" )
+							add( "<html><b>Marks<html>" )
+							add( "<html><b>Expired time<html>" )
+							add( "<html><b>Type<html>" )
+						}, new java.util.Vector {
+							add( class java.lang.Short )
+							add( class java.lang.String )
+							add( class java.lang.String )
+							add( class java.lang.Byte )
+							add( class java.lang.String )
+							add( class java.lang.String )
+						}, new java.util.Vector {
+							add( false )
+							add( false )
+							add( false )
+							add( false )
+							add( false )
+							add( false )
+						}, new java.util.Vector {
+							add( new com.jformdesigner.model.SwingTableColumn( null, 40, 40, 40, false ) )
+							add( new com.jformdesigner.model.SwingTableColumn( null, 100, 100, 100, false ) )
+							add( new com.jformdesigner.model.SwingTableColumn( null, 0, 0, 0, false ) )
+							add( new com.jformdesigner.model.SwingTableColumn( new java.lang.Object[ "1", "2", "3", "4", "5" ], 60, 60, 60, false ) )
+							add( new com.jformdesigner.model.SwingTableColumn( null, 140, 140, 140, false ) )
+							add( new com.jformdesigner.model.SwingTableColumn( null, 90, 90, 90, false ) )
+						} )
+						"showVerticalLines": true
+						"componentOrientation": sfield java.awt.ComponentOrientation LEFT_TO_RIGHT
+						"showHorizontalLines": true
+						"rowSelectionAllowed": false
+						auxiliary() {
+							"JavaCodeGenerator.postInitCode": "${field}.getTableHeader().setReorderingAllowed(false);"
+							"JavaCodeGenerator.variableGetter": true
+						}
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+				add( new FormComponent( "com.coursemanager.panels.CreateStdEventPanel" ) {
+					name: "createStdEventPanel"
+					"visible": false
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new ${field_type}(this);"
+					}
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "South"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+				"$columnSpecs": "0:1.0, 0"
+				"$rowSpecs": "0:1.0"
+				"$alignTop": true
+				"$hGap": 5
+			} ) {
+				name: "btnPanel"
+				"preferredSize": new java.awt.Dimension( 97, 30 )
+				"minimumSize": new java.awt.Dimension( 177, 30 )
+				"border": new javax.swing.border.EmptyBorder( 0, 10, 0, 10 )
+				auxiliary() {
+					"JavaCodeGenerator.variableGetter": true
+				}
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "lblInfo"
+					"text": "Group 1 - Course: NewFormatCourse, 10 people | Average score 4.2"
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 3, false )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnAddEvent"
+					"text": "Add event"
+					"preferredSize": new java.awt.Dimension( 200, 30 )
+					"minimumSize": new java.awt.Dimension( 200, 30 )
+					"maximumSize": new java.awt.Dimension( 200, 30 )
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 2, false )
+					"enabled": false
+					auxiliary() {
+						"JavaCodeGenerator.variableGetter": true
+					}
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnAddEvent", true ) )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridx": 1
+					"hAlign": 4
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 815, 465 )
+		} )
+	}
+}

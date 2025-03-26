@@ -1,0 +1,76 @@
+JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+			"hgap": 5
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 5, 0, 5, 5 )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "stdsListPanel"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel"
+					"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblGroup"
+						"text": "GROUP X"
+						"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
+						"horizontalAlignment": 0
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnAddStudent"
+						"text": "+"
+						"preferredSize": new java.awt.Dimension( 25, 25 )
+						"minimumSize": new java.awt.Dimension( 25, 25 )
+						"maximumSize": new java.awt.Dimension( 25, 25 )
+						"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnAddStudent", true ) )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "West"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "North"
+				} )
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrlPanelStdsList"
+					"border": new javax.swing.border.CompoundBorder( new javax.swing.border.EmptyBorder( 0, 5, 0, 5 ), new javax.swing.border.BevelBorder( 1, null, null, null, null ) )
+					auxiliary() {
+						"JavaCodeGenerator.postCreateCode": "${field}.getVerticalScrollBar().setUnitIncrement(15);"
+					}
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "panelBox"
+						"background": new java.awt.Color( 216, 216, 216, 255 )
+						add( new FormComponent( "com.coursemanager.panels.NamePartPanel" ) {
+							name: "namePart"
+							"alignmentX": 0.5f
+						} )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "West"
+			} )
+			add( new FormComponent( "com.coursemanager.panels.EventPanel" ) {
+				name: "eventPanel"
+				"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 13, false )
+				"enabled": false
+				auxiliary() {
+					"JavaCodeGenerator.variableGetter": true
+				}
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 805, 465 )
+		} )
+	}
+}
+
