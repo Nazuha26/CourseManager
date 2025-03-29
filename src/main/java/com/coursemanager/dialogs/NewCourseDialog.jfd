@@ -1,12 +1,15 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "NewCourseDialog"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
 			"modal": true
-			"title": "Create new course"
+			"title": new FormMessage( null, "NewCourseDialog.this.title" )
 			"resizable": false
 			"defaultCloseOperation": 2
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
@@ -19,7 +22,7 @@ new FormModel {
 				"border": new javax.swing.border.EmptyBorder( 10, 10, 5, 10 )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "lblCourseName"
-					"text": "Course name"
+					"text": new FormMessage( null, "NewCourseDialog.lblCourseName.text" )
 					"horizontalAlignment": 4
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 				add( new FormComponent( "javax.swing.JTextField" ) {
@@ -30,7 +33,7 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "lblCountGrps"
-					"text": "Count of groups"
+					"text": new FormMessage( null, "NewCourseDialog.lblCountGrps.text" )
 					"horizontalAlignment": 4
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 					"gridy": 1
@@ -55,7 +58,7 @@ new FormModel {
 				"border": new javax.swing.border.EmptyBorder( 10, 0, 10, 0 )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnCreate"
-					"text": "Create"
+					"text": new FormMessage( null, "NewCourseDialog.btnCreate.text" )
 					"minimumSize": new java.awt.Dimension( 30, 34 )
 					"preferredSize": new java.awt.Dimension( 30, 34 )
 					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 1, false )

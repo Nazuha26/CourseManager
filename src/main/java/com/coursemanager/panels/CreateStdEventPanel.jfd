@@ -1,6 +1,9 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "CreateStdEventPanel"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
@@ -23,7 +26,7 @@ new FormModel {
 					"preferredSize": new java.awt.Dimension( 200, 200 )
 					"minimumSize": new java.awt.Dimension( 200, 200 )
 					"maximumSize": new java.awt.Dimension( 200, 200 )
-					"toolTipText": "Select the date the event was created"
+					"toolTipText": new FormMessage( null, "CreateStdEventPanel.jcalendar.toolTipText" )
 					"decorationBackgroundVisible": false
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 					"gridy": 1
@@ -39,7 +42,7 @@ new FormModel {
 					name: "panel2"
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblInfo1"
-						"text": "DATE: "
+						"text": new FormMessage( null, "CreateStdEventPanel.lblInfo1.text" )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
@@ -53,11 +56,11 @@ new FormModel {
 					"visible": false
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblMark"
-						"text": "Mark:"
+						"text": new FormMessage( null, "CreateStdEventPanel.lblMark.text" )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblExpTime"
-						"text": "Expired time:"
+						"text": new FormMessage( null, "CreateStdEventPanel.lblExpTime.text" )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 1
 					} )
@@ -98,7 +101,7 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnCreateEvent"
-					"text": "Create"
+					"text": new FormMessage( null, "CreateStdEventPanel.btnCreateEvent.text" )
 					"preferredSize": new java.awt.Dimension( 72, 30 )
 					"minimumSize": new java.awt.Dimension( 72, 30 )
 					"maximumSize": new java.awt.Dimension( 72, 30 )
@@ -109,7 +112,7 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnCancelEvent"
-					"text": "Cancel"
+					"text": new FormMessage( null, "CreateStdEventPanel.btnCancelEvent.text" )
 					"preferredSize": new java.awt.Dimension( 200, 30 )
 					"minimumSize": new java.awt.Dimension( 200, 30 )
 					"maximumSize": new java.awt.Dimension( 200, 30 )
@@ -138,7 +141,7 @@ new FormModel {
 						name: "panel5"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "lblInfo2"
-							"text": "THE NAME OF THE EVENT"
+							"text": new FormMessage( null, "CreateStdEventPanel.lblInfo2.text" )
 						}, new FormLayoutConstraints( class java.lang.String ) {
 							"value": "North"
 						} )
@@ -168,7 +171,7 @@ new FormModel {
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "lblInfo3"
-							"text": "CHOOSE THE MODE*"
+							"text": new FormMessage( null, "CreateStdEventPanel.lblInfo3.text" )
 						}, new FormLayoutConstraints( class java.lang.String ) {
 							"value": "North"
 						} )

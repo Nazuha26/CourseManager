@@ -6,16 +6,23 @@ package com.coursemanager.windows;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.Timer;
 
 import com.coursemanager.CM_HELPER;
+import com.coursemanager.other.CmanParser;
 import com.coursemanager.other.CourseFileSaver;
 import com.coursemanager.other.Group;
 import com.coursemanager.panels.*;
 import com.formdev.flatlaf.extras.*;
+import jnafilechooser.api.JnaFileChooser;
 import raven.toast.Notifications;
 
 /**
@@ -24,7 +31,20 @@ import raven.toast.Notifications;
 public class MainCoursesWindow extends JFrame {
     public MainCoursesWindow() {
         initComponents();
+        initRadioButtons();
         Notifications.getInstance().setJFrame(this);
+    }
+
+    private void initRadioButtons() {
+        Locale currentLocale = Locale.getDefault();
+        String lang = currentLocale.getLanguage();
+        String country = currentLocale.getCountry();
+
+        if (lang.equals("uk") && country.equals("UA")) {
+            rdBtnMiUkrLang.setSelected(true);
+        } else {
+            rdBtnMiEngLang.setSelected(true); // по умолчанию English
+        }
     }
 
     public void populateTabs(List<Group> groups) {
@@ -32,7 +52,7 @@ public class MainCoursesWindow extends JFrame {
         for (int i = 0; i < groups.size(); i++) {
             MainGroupPanel groupPanel = new MainGroupPanel();
             groupPanel.setGroupData(i + 1, groups.get(i));
-            tabbedPane.addTab("Group " + (i + 1), groupPanel);
+            tabbedPane.addTab(MessageFormat.format(CM_HELPER.getBundle().getString("MainCoursesWindow.tabTitle.text"), (i + 1)), groupPanel);
         }
         tabbedPane.revalidate();
         tabbedPane.repaint();
@@ -45,7 +65,8 @@ public class MainCoursesWindow extends JFrame {
         try {
             CourseFileSaver.save(filePath, groups);     // СОХРАНЯЕМ
 
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Successfully saved");
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER,
+                    CM_HELPER.getBundle().getString("MainCoursesWindow.saveAction.text"));
 
             /*Notification saveNotification = new Notification(this, Notification.Type.SUCCESS,
                     Notification.Location.TOP_CENTER, "Successfully saved");
@@ -81,25 +102,96 @@ public class MainCoursesWindow extends JFrame {
         return lblSaveInfo;
     }
 
-    private void chbMiSStdsByAlphabetStateChanged(ChangeEvent e) {
-        // TODO add your code here
+    private void rdBtnMiUkrLang(ActionEvent e) {
+        changeLocale("uk", "UA");
+    }
+
+    private void rdBtnMiEngLang(ActionEvent e) {
+        changeLocale("en", "US");
+    }
+
+    private void changeLocale(String lang, String country) {
+        try {
+            // Запись в config.json
+            org.json.JSONObject config = new org.json.JSONObject();
+            config.put("language", lang);
+            config.put("country", country);
+
+            try (FileWriter writer = new FileWriter(CM_HELPER.CONFIG_FILE)) {
+                writer.write(config.toString(2)); // красиво с отступами
+            }
+            String languageName = switch (lang) {
+                case "uk" -> "Ukrainian";
+                case "en" -> "Англійську";
+                default -> "Unknown";
+            };
+
+            // Сообщение пользователю
+            JOptionPane.showMessageDialog(this,
+                    MessageFormat.format(CM_HELPER.getBundle().getString("MainCoursesWindow.changeLang.text"), languageName),
+                    CM_HELPER.getBundle().getString("MainCoursesWindow.changeLang.title"),
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Error changing language settings: " + ex.getMessage(),
+                    "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void miInfo(ActionEvent e) {
+        new InfoWindow().setVisible(true);
+    }
+
+    private void miOpen(ActionEvent e) {
+        JnaFileChooser chooser = new JnaFileChooser();
+
+        chooser.setMode(JnaFileChooser.Mode.Files);
+        chooser.setCurrentDirectory(CM_HELPER.COURSES_DIR.getAbsolutePath()); // Стартовая директория
+        chooser.addFilter("Course Manager files (*.cman)", "cman"); // Фильтр по расширению
+
+        boolean action = chooser.showOpenDialog(this);
+        if (action) {
+            File file = chooser.getSelectedFile();
+
+            try {
+                // Сохраняем путь и имя курса
+                CM_HELPER.setFileCoursePath(file.getAbsolutePath());
+                CM_HELPER.setCourseName(file.getName().replace(".cman", ""));
+
+                // Сохраняем в файл для автозагрузки при следующем запуске
+                try (FileWriter writer = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {
+                    writer.write(CM_HELPER.getCourseName().trim());
+                }
+
+                // Парсим файл и обновляем UI
+                List<Group> groups = CmanParser.parseFile(file.getAbsolutePath());
+                CM_HELPER.setCourseGroupsList(groups);
+                populateTabs(groups);
+
+                this.setTitle("CourseManager - " + CM_HELPER.getCourseName());
+
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Ошибка при открытии файла: " + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+        ResourceBundle bundle = ResourceBundle.getBundle("strings");
         menuBar = new JMenuBar();
         menuFile = new JMenu();
         miOpen = new JMenuItem();
         miSave = new JMenuItem();
         miExport = new JMenuItem();
         menuSettings = new JMenu();
-        menuSort = new JMenu();
-        lblCaption = new JLabel();
-        radBtnSbyCreatDate = new JRadioButtonMenuItem();
-        radBtnSbyAlphabet = new JRadioButtonMenuItem();
-        radBtnSbyMarks = new JRadioButtonMenuItem();
-        radBtnSbyType = new JRadioButtonMenuItem();
-        chbMiSStdsByAlphabet = new JCheckBoxMenuItem();
+        menuLangs = new JMenu();
+        rdBtnMiEngLang = new JRadioButtonMenuItem();
+        rdBtnMiUkrLang = new JRadioButtonMenuItem();
         chbMiAutoSave = new JCheckBoxMenuItem();
         menuAbout = new JMenu();
         miInfo = new JMenuItem();
@@ -108,9 +200,10 @@ public class MainCoursesWindow extends JFrame {
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("CourseName - Something");
+        setTitle(bundle.getString("MainCoursesWindow.this.title"));
         setMinimumSize(new Dimension(400, 250));
         setPreferredSize(null);
+        setIconImage(new ImageIcon(getClass().getResource("/Icons/AppIcon.png")).getImage());
         var contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout(5, 5));
 
@@ -120,17 +213,18 @@ public class MainCoursesWindow extends JFrame {
 
             //======== menuFile ========
             {
-                menuFile.setText("File");
+                menuFile.setText(bundle.getString("MainCoursesWindow.menuFile.text"));
 
                 //---- miOpen ----
-                miOpen.setText("Open");
+                miOpen.setText(bundle.getString("MainCoursesWindow.miOpen.text"));
                 miOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
                 miOpen.setIcon(new FlatSVGIcon("Icons/folder_icon_16x16.svg"));
+                miOpen.addActionListener(e -> miOpen(e));
                 menuFile.add(miOpen);
 
                 //---- miSave ----
-                miSave.setText("Save");
-                miSave.setToolTipText("Saves all changes");
+                miSave.setText(bundle.getString("MainCoursesWindow.miSave.text"));
+                miSave.setToolTipText(bundle.getString("MainCoursesWindow.miSave.toolTipText"));
                 miSave.setIcon(new FlatSVGIcon("Icons/save_icon_16x16.svg"));
                 miSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
                 miSave.addActionListener(e -> miSave(e));
@@ -138,7 +232,7 @@ public class MainCoursesWindow extends JFrame {
                 menuFile.addSeparator();
 
                 //---- miExport ----
-                miExport.setText("Export");
+                miExport.setText(bundle.getString("MainCoursesWindow.miExport.text"));
                 miExport.setIcon(new FlatSVGIcon("Icons/export_icon_16x16.svg"));
                 miExport.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
                 menuFile.add(miExport);
@@ -147,56 +241,38 @@ public class MainCoursesWindow extends JFrame {
 
             //======== menuSettings ========
             {
-                menuSettings.setText("Settings");
+                menuSettings.setText(bundle.getString("MainCoursesWindow.menuSettings.text"));
 
-                //======== menuSort ========
+                //======== menuLangs ========
                 {
-                    menuSort.setText("Sort");
-                    menuSort.addSeparator();
+                    menuLangs.setText(bundle.getString("MainCoursesWindow.menuLangs.text"));
 
-                    //---- lblCaption ----
-                    lblCaption.setText("Sort Events");
-                    lblCaption.setHorizontalAlignment(SwingConstants.CENTER);
-                    lblCaption.setAlignmentX(0.5F);
-                    lblCaption.setEnabled(false);
-                    menuSort.add(lblCaption);
+                    //---- rdBtnMiEngLang ----
+                    rdBtnMiEngLang.setText(bundle.getString("MainCoursesWindow.rdBtnMiEngLang.text"));
+                    rdBtnMiEngLang.setSelected(true);
+                    rdBtnMiEngLang.addActionListener(e -> rdBtnMiEngLang(e));
+                    menuLangs.add(rdBtnMiEngLang);
 
-                    //---- radBtnSbyCreatDate ----
-                    radBtnSbyCreatDate.setText("By creation date");
-                    menuSort.add(radBtnSbyCreatDate);
-
-                    //---- radBtnSbyAlphabet ----
-                    radBtnSbyAlphabet.setText("By alphabet");
-                    menuSort.add(radBtnSbyAlphabet);
-
-                    //---- radBtnSbyMarks ----
-                    radBtnSbyMarks.setText("By marks");
-                    menuSort.add(radBtnSbyMarks);
-
-                    //---- radBtnSbyType ----
-                    radBtnSbyType.setText("By Type");
-                    radBtnSbyType.setSelected(true);
-                    menuSort.add(radBtnSbyType);
+                    //---- rdBtnMiUkrLang ----
+                    rdBtnMiUkrLang.setText(bundle.getString("MainCoursesWindow.rdBtnMiUkrLang.text"));
+                    rdBtnMiUkrLang.addActionListener(e -> rdBtnMiUkrLang(e));
+                    menuLangs.add(rdBtnMiUkrLang);
                 }
-                menuSettings.add(menuSort);
-
-                //---- chbMiSStdsByAlphabet ----
-                chbMiSStdsByAlphabet.setText("Sort students alphabetically");
-                chbMiSStdsByAlphabet.addChangeListener(e -> chbMiSStdsByAlphabetStateChanged(e));
-                menuSettings.add(chbMiSStdsByAlphabet);
+                menuSettings.add(menuLangs);
 
                 //---- chbMiAutoSave ----
-                chbMiAutoSave.setText("Auto save");
+                chbMiAutoSave.setText(bundle.getString("MainCoursesWindow.chbMiAutoSave.text"));
                 menuSettings.add(chbMiAutoSave);
             }
             menuBar.add(menuSettings);
 
             //======== menuAbout ========
             {
-                menuAbout.setText("About");
+                menuAbout.setText(bundle.getString("MainCoursesWindow.menuAbout.text"));
 
                 //---- miInfo ----
-                miInfo.setText("Info");
+                miInfo.setText(bundle.getString("MainCoursesWindow.miInfo.text"));
+                miInfo.addActionListener(e -> miInfo(e));
                 menuAbout.add(miInfo);
             }
             menuBar.add(menuAbout);
@@ -222,12 +298,10 @@ public class MainCoursesWindow extends JFrame {
         pack();
         setLocationRelativeTo(getOwner());
 
-        //---- sortBtnsGroup ----
-        var sortBtnsGroup = new ButtonGroup();
-        sortBtnsGroup.add(radBtnSbyCreatDate);
-        sortBtnsGroup.add(radBtnSbyAlphabet);
-        sortBtnsGroup.add(radBtnSbyMarks);
-        sortBtnsGroup.add(radBtnSbyType);
+        //---- LangsBtnGroup ----
+        var LangsBtnGroup = new ButtonGroup();
+        LangsBtnGroup.add(rdBtnMiEngLang);
+        LangsBtnGroup.add(rdBtnMiUkrLang);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
     }
 
@@ -238,13 +312,9 @@ public class MainCoursesWindow extends JFrame {
     private JMenuItem miSave;
     private JMenuItem miExport;
     private JMenu menuSettings;
-    private JMenu menuSort;
-    private JLabel lblCaption;
-    private JRadioButtonMenuItem radBtnSbyCreatDate;
-    private JRadioButtonMenuItem radBtnSbyAlphabet;
-    private JRadioButtonMenuItem radBtnSbyMarks;
-    private JRadioButtonMenuItem radBtnSbyType;
-    private JCheckBoxMenuItem chbMiSStdsByAlphabet;
+    private JMenu menuLangs;
+    private JRadioButtonMenuItem rdBtnMiEngLang;
+    private JRadioButtonMenuItem rdBtnMiUkrLang;
     private JCheckBoxMenuItem chbMiAutoSave;
     private JMenu menuAbout;
     private JMenuItem miInfo;

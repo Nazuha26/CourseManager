@@ -1,16 +1,20 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "StartViewWindow"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			"title": "Course Manager - Start"
+			"title": new FormMessage( null, "StartViewWindow.this.title" )
 			"defaultCloseOperation": 3
 			"preferredSize": new java.awt.Dimension( 500, 300 )
 			"minimumSize": new java.awt.Dimension( 500, 300 )
 			"$locationPolicy": 1
 			"resizable": false
+			"iconImage": new com.jformdesigner.model.SwingIcon( 0, "/Icons/AppIcon.png" )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
 				"$columnSpecs": "0"
 				"$rowSpecs": "0, 0"
@@ -21,7 +25,7 @@ new FormModel {
 				"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnNewCourse"
-					"text": "Create a new course"
+					"text": new FormMessage( null, "StartViewWindow.btnNewCourse.text" )
 					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
 					"alignmentY": 1.5f
 					"preferredSize": new java.awt.Dimension( 250, 70 )
@@ -33,7 +37,7 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnExistingCourse"
-					"text": "Open an existing course  "
+					"text": new FormMessage( null, "StartViewWindow.btnExistingCourse.text" )
 					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
 					"preferredSize": new java.awt.Dimension( 270, 70 )
 					"maximumSize": new java.awt.Dimension( 270, 70 )

@@ -1,6 +1,9 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "MainGroupPanel"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
@@ -15,7 +18,7 @@ new FormModel {
 					"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblGroup"
-						"text": "GROUP X"
+						"text": new FormMessage( null, "MainGroupPanel.lblGroup.text" )
 						"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 5, false )
 						"horizontalAlignment": 0
 					}, new FormLayoutConstraints( class java.lang.String ) {
@@ -23,7 +26,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "btnAddStudent"
-						"text": "+"
+						"text": new FormMessage( null, "MainGroupPanel.btnAddStudent.text" )
 						"preferredSize": new java.awt.Dimension( 25, 25 )
 						"minimumSize": new java.awt.Dimension( 25, 25 )
 						"maximumSize": new java.awt.Dimension( 25, 25 )
@@ -46,9 +49,21 @@ new FormModel {
 					} ) {
 						name: "panelBox"
 						"background": new java.awt.Color( 216, 216, 216, 255 )
-						add( new FormComponent( "com.coursemanager.panels.NamePartPanel" ) {
-							name: "namePart"
+						add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+							name: "vSpacer3"
+							"opaque": false
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "lblStdsInfo"
+							"text": new FormMessage( null, "MainGroupPanel.lblStdsInfo.text" )
 							"alignmentX": 0.5f
+							"border": new javax.swing.border.EmptyBorder( 0, 20, 0, 20 )
+							"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 4, false )
+							"enabled": false
+						} )
+						add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+							name: "vSpacer2"
+							"opaque": false
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
@@ -73,4 +88,3 @@ new FormModel {
 		} )
 	}
 }
-

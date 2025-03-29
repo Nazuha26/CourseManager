@@ -1,10 +1,11 @@
 package com.coursemanager;
 
 import com.coursemanager.other.CmanParser;
-import com.coursemanager.other.CryptoUtils;
 import com.coursemanager.other.SecurityUtils;
 import com.coursemanager.windows.MainCoursesWindow;
 import com.coursemanager.windows.StartViewWindow;
+import org.json.JSONException;
+import org.json.JSONObject;
 //import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 import javax.swing.*;
@@ -13,15 +14,19 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Locale;
 
 public class Launcher {
     public static StartViewWindow startView;
 
     public static void main(String[] args) {
-        if (!CM_HELPER.secretKeyDir.exists()) {
-            CM_HELPER.secretKeyDir.mkdirs();
+        //Locale.setDefault(Locale.of("en", "US"));   // English
+        //Locale.setDefault(Locale.of("uk", "UA"));   // Ukrainian
+
+        if (!CM_HELPER.SECRET_KEY_DIR.exists()) {
+            CM_HELPER.SECRET_KEY_DIR.mkdirs();
         }
-        File envFile = new File(CM_HELPER.secretKeyDir, ".env");
+        File envFile = new File(CM_HELPER.SECRET_KEY_DIR, ".env");
         if (!envFile.exists()) {
             String randomKey = SecurityUtils.generateRandomKey(16);
             try (FileWriter writer = new FileWriter(envFile)) {
@@ -34,59 +39,55 @@ public class Launcher {
             System.out.println("Secret key already exists");
         }
 
-        if (!CM_HELPER.courseDir.exists()) {
-            CM_HELPER.courseDir.mkdirs();
+        if (!CM_HELPER.COURSES_DIR.exists()) {
+            CM_HELPER.COURSES_DIR.mkdirs();
         }
-        if (!CM_HELPER.configDir.exists()) {
-            CM_HELPER.configDir.mkdirs();
+        if (!CM_HELPER.CONFIG_DIR.exists()) {
+            CM_HELPER.CONFIG_DIR.mkdirs();
         }
 
         CM_HELPER.initTheme();  // Подключаем тему FlatLaf
 
         SwingUtilities.invokeLater(() -> {
-            if (CM_HELPER.firstRunFile.exists()) {
-                // Если файл FirstRun есть, читаем данные и открываем CourseView
+
+
+            // --- Создание файла с дефолтными настройками, если не существует ---
+            if (!CM_HELPER.CONFIG_FILE.exists()) {
                 try {
-                    CM_HELPER.setCourseName(Files.readString(CM_HELPER.firstRunFile.toPath()));
+                    JSONObject defaultConfig = new JSONObject();
+                    defaultConfig.put("language", "en");
+                    defaultConfig.put("country", "US");
 
-                    /*CourseManagerFileParser parser = new CourseManagerFileParser();
-                    parser.parse(courseDir + "/" + courseName + ".cman");
-
-                    //                      *** DEBUG ***
-                    System.out.println("Количество групп: " + parser.groupCount);
-                    int index = 1;
-                    for (CourseManagerFileParser.Group group : parser.groups) {
-                        System.out.println("Группа " + index + " (ожидается студентов: " + group.expectedStudentCount + "):");
-                        for (CourseManagerFileParser.Student student : group.students) {
-                            System.out.println(" - " + student.name);
-                            // Если нужно вывести ивенты:
-                            for (CourseManagerFileParser.StudentEvent event : student.events) {
-                                System.out.printf("   * %d | %s | %s | %s\n",
-                                        event.ordinal,
-                                        event.creationDate,
-                                        event.eventDescription,
-                                        event.expiredDate
-                                );
-                            }
-                        }
-                        index++;
-                    }*/
-                    //                      *** DEBUG ***
-
-                    //courseGroups = parser.groups;
-
-                    CM_HELPER.setFileCoursePath(CM_HELPER.courseDir + "/" + CM_HELPER.getCourseName() + ".cman");
-
-                    try {
-                        CM_HELPER.setCourseGroupsList(CmanParser.parseFile(CM_HELPER.getFileCoursePath()));
-                        //                      *** DEBUG ***
-                        for (int i = 0; i < CM_HELPER.getCourseGroupsList().size(); i++) {
-                            System.out.println("Группа " + (i + 1) + ": " + CM_HELPER.getCourseGroupsList().get(i));
-                        }
-                        //                      *** DEBUG ***
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    try (FileWriter writer = new FileWriter(CM_HELPER.CONFIG_FILE)) {
+                        writer.write(defaultConfig.toString(2)); // Красиво с отступами
+                        System.out.println("The settings file is created");
                     }
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // --- Чтение и установка локали ---
+            try {
+                String configContent = Files.readString(CM_HELPER.CONFIG_FILE.toPath());
+                JSONObject config = new JSONObject(configContent);
+
+                String lang = config.getString("language");
+                String country = config.getString("country");
+                Locale.setDefault(Locale.of(lang, country));
+
+                System.out.println("Locale set: " + lang + "_" + country);
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+
+            // --- Запуск основного окна или стартового ---
+            if (CM_HELPER.FIRST_RUN_FILE.exists()) {
+                try {
+                    CM_HELPER.setCourseName(Files.readString(CM_HELPER.FIRST_RUN_FILE.toPath()));
+
+                    CM_HELPER.setFileCoursePath(CM_HELPER.COURSES_DIR + "/" + CM_HELPER.getCourseName() + ".cman");
+                    CM_HELPER.setCourseGroupsList(CmanParser.parseFile(CM_HELPER.getFileCoursePath()));
 
                     if (!CM_HELPER.getCourseGroupsList().isEmpty()) {
                         MainCoursesWindow mainCoursesWindow = new MainCoursesWindow();
@@ -95,15 +96,14 @@ public class Launcher {
                         mainCoursesWindow.setTitle("CourseManager - " + CM_HELPER.getCourseName());
                         mainCoursesWindow.setVisible(true);
                     } else {
-                        showStartView(); // если файл повреждён или пуст
+                        showStartView();
                     }
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    showStartView(); // если файл повреждён, откроем StartView
+                    showStartView();
                 }
             } else {
-                // Если FirstRun нет, показываем StartView
                 showStartView();
             }
         });

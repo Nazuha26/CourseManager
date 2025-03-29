@@ -6,6 +6,7 @@ package com.coursemanager.panels;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import java.util.Comparator;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -150,7 +151,7 @@ public class NamePartPanel extends JPanel {
 
     private void roundedPanelMouseClicked(MouseEvent e) {
         if (isStudentSelected){
-            Notifications.getInstance().show(Notifications.Type.WARNING, "The student has already been allocated");
+            Notifications.getInstance().show(Notifications.Type.WARNING, "The student has already been selected");
             return; // если уже выделена, ничего не делаем
         }
         Container parent = this.getParent();
@@ -186,6 +187,7 @@ public class NamePartPanel extends JPanel {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+        ResourceBundle bundle = ResourceBundle.getBundle("strings");
         lblNumOfDude = new JLabel();
         roundedPanel = new RoundedPanel();
         lblNameofDude = new JLabel();
@@ -243,21 +245,21 @@ public class NamePartPanel extends JPanel {
         {
 
             //---- miRename ----
-            miRename.setText("Rename");
+            miRename.setText(bundle.getString("NamePartPanel.miRename.text"));
             miRename.setIcon(new FlatSVGIcon("Icons/edit_icon.svg"));
             miRename.addActionListener(e -> miRename(e));
             popMoreActionsMenu.add(miRename);
             popMoreActionsMenu.addSeparator();
 
             //---- miChangeGroup ----
-            miChangeGroup.setText("Change group");
+            miChangeGroup.setText(bundle.getString("NamePartPanel.miChangeGroup.text"));
             miChangeGroup.setIcon(new FlatSVGIcon("Icons/arrow_icon_24x24.svg"));
             miChangeGroup.addActionListener(e -> miChangeGroup(e));
             popMoreActionsMenu.add(miChangeGroup);
             popMoreActionsMenu.addSeparator();
 
             //---- miDelete ----
-            miDelete.setText("Delete");
+            miDelete.setText(bundle.getString("NamePartPanel.miDelete.text"));
             miDelete.setIcon(new FlatSVGIcon("Icons/bin_icon_24x24.svg"));
             miDelete.addActionListener(e -> miDelete(e));
             popMoreActionsMenu.add(miDelete);

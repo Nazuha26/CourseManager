@@ -4,10 +4,13 @@
 
 package com.coursemanager.dialogs;
 
+import java.util.*;
 import com.coursemanager.CM_HELPER;
 import com.coursemanager.Launcher;
+import com.coursemanager.other.CourseFileSaver;
 import com.coursemanager.other.Group;
 import com.coursemanager.windows.MainCoursesWindow;
+import raven.toast.Notifications;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -39,7 +42,7 @@ public class NewCourseDialog extends JDialog {
             return;
         }
 
-        File newCourseFile = new File(CM_HELPER.courseDir, courseName + ".cman");
+        File newCourseFile = new File(CM_HELPER.COURSES_DIR, courseName + ".cman");
         if (newCourseFile.exists()) {
             JOptionPane.showMessageDialog(this,
                     "A course with this name already exists!",
@@ -57,14 +60,14 @@ public class NewCourseDialog extends JDialog {
             }
 
             // Пишем в файл нужное количество групп
-            try (FileWriter writer = new FileWriter(newCourseFile)) {
+            /*try (FileWriter writer = new FileWriter(newCourseFile)) {
                 for (int i = 0; i < groupCount; i++) {
                     writer.write("*****\n");
                 }
-            }
+            }*/
 
             // Записываем имя курса в файл "firstRun"
-            try (FileWriter fr = new FileWriter(CM_HELPER.firstRunFile)) {
+            try (FileWriter fr = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {
                 fr.write(courseName);
             }
 
@@ -85,6 +88,10 @@ public class NewCourseDialog extends JDialog {
             Launcher.startView.dispose();
             this.dispose();
 
+            CourseFileSaver.save(newCourseFile.getAbsolutePath(), groups);     // СОХРАНЯЕМ
+            Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                    CM_HELPER.getBundle().getString("NewCourseDialog.successCreatedFile.text"));
+
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this,
                     "Error creating course: " + ex.getMessage(),
@@ -94,6 +101,7 @@ public class NewCourseDialog extends JDialog {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+        ResourceBundle bundle = ResourceBundle.getBundle("strings");
         panel1 = new JPanel();
         lblCourseName = new JLabel();
         txtfieldCourseName = new JTextField();
@@ -104,7 +112,7 @@ public class NewCourseDialog extends JDialog {
 
         //======== this ========
         setModal(true);
-        setTitle("Create new course");
+        setTitle(bundle.getString("NewCourseDialog.this.title"));
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         var contentPane = getContentPane();
@@ -116,7 +124,7 @@ public class NewCourseDialog extends JDialog {
             panel1.setLayout(new GridBagLayout());
 
             //---- lblCourseName ----
-            lblCourseName.setText("Course name");
+            lblCourseName.setText(bundle.getString("NewCourseDialog.lblCourseName.text"));
             lblCourseName.setHorizontalAlignment(SwingConstants.RIGHT);
             panel1.add(lblCourseName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -129,7 +137,7 @@ public class NewCourseDialog extends JDialog {
                 new Insets(0, 0, 10, 0), 0, 0));
 
             //---- lblCountGrps ----
-            lblCountGrps.setText("Count of groups");
+            lblCountGrps.setText(bundle.getString("NewCourseDialog.lblCountGrps.text"));
             lblCountGrps.setHorizontalAlignment(SwingConstants.RIGHT);
             panel1.add(lblCountGrps, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -153,7 +161,7 @@ public class NewCourseDialog extends JDialog {
             ((GridBagLayout)btnPanel.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
 
             //---- btnCreate ----
-            btnCreate.setText("Create");
+            btnCreate.setText(bundle.getString("NewCourseDialog.btnCreate.text"));
             btnCreate.setMinimumSize(new Dimension(30, 34));
             btnCreate.setPreferredSize(new Dimension(30, 34));
             btnCreate.setFont(btnCreate.getFont().deriveFont(btnCreate.getFont().getSize() + 1f));

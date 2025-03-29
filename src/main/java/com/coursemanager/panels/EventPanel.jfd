@@ -1,13 +1,18 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "EventPanel"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
 			"vgap": 5
 		} ) {
 			name: "this"
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+				"vgap": 10
+			} ) {
 				name: "panelTable"
 				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 					name: "scrollPane"
@@ -82,12 +87,12 @@ new FormModel {
 				}
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "lblInfo"
-					"text": "Group 1 - Course: NewFormatCourse, 10 people | Average score 4.2"
+					"text": new FormMessage( null, "EventPanel.lblInfo.text" )
 					"font": new com.jformdesigner.model.SwingDerivedFont( null, 0, 3, false )
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnAddEvent"
-					"text": "Add event"
+					"text": new FormMessage( null, "EventPanel.btnAddEvent.text" )
 					"preferredSize": new java.awt.Dimension( 200, 30 )
 					"minimumSize": new java.awt.Dimension( 200, 30 )
 					"maximumSize": new java.awt.Dimension( 200, 30 )

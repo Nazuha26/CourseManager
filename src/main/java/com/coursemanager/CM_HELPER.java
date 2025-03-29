@@ -11,9 +11,10 @@ import raven.toast.ToastClientProperties;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class CM_HELPER {
     public static final String THEME_ACCENT_COLOR_BLUE = "#007aff"; // Blue
@@ -26,14 +27,19 @@ public class CM_HELPER {
     public static final int BG_ERROR_COLOR = 0xe2b4b4;
     public static final int FG_ERROR_COLOR = 0xb40202;
 
-    public static final File courseDir = new File(System.getProperty("user.home"), "AppData/Local/CourseManager/Courses/");
-    public static final File configDir = new File(System.getProperty("user.home"), "AppData/Local/CourseManager");
-    public static final File secretKeyDir = new File(System.getProperty("user.home"), ".coursemanager");
-    public static final File firstRunFile = new File(configDir, "FirstRun");
+    public static final File CONFIG_DIR = new File(System.getProperty("user.home"), "AppData/Local/CourseManager");
+    public static final File COURSES_DIR = new File(CONFIG_DIR.toString(), "Courses/");
+    public static final File SECRET_KEY_DIR = new File(System.getProperty("user.home"), ".coursemanager");
+    public static final File FIRST_RUN_FILE = new File(CONFIG_DIR, "FirstRun");
+    public static final File CONFIG_FILE = new File(CM_HELPER.CONFIG_DIR, "config.json");
 
     private static String courseName;
     private static List<Group> courseGroupsList;
     private static String FileCoursePath;
+
+    public static ResourceBundle getBundle() {
+        return ResourceBundle.getBundle("strings", Locale.getDefault());
+    }
 
     public static String getCourseName() {
         return courseName;

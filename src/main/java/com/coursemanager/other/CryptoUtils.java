@@ -5,7 +5,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.SecureRandom;
 
 public class CryptoUtils {
     private static final String ALGORITHM = "AES";
@@ -13,7 +12,7 @@ public class CryptoUtils {
 
     static {
         Dotenv dotenv = Dotenv.configure()
-                .directory(CM_HELPER.secretKeyDir.toString())
+                .directory(CM_HELPER.SECRET_KEY_DIR.toString())
                 .filename(".env")
                 .load();
         String keyString = dotenv.get("CMAN_SECRET_KEY");

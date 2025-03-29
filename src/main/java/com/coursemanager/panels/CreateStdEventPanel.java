@@ -4,6 +4,7 @@
 
 package com.coursemanager.panels;
 
+import java.util.*;
 import com.coursemanager.Launcher;
 import com.coursemanager.other.EVENT_MODE_LIST_Class;
 import com.coursemanager.other.Student;
@@ -156,6 +157,7 @@ public class CreateStdEventPanel extends JPanel {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+        ResourceBundle bundle = ResourceBundle.getBundle("strings");
         panel1 = new JPanel();
         jcalendar = new JCalendar();
         panel2 = new JPanel();
@@ -197,7 +199,7 @@ public class CreateStdEventPanel extends JPanel {
             jcalendar.setPreferredSize(new Dimension(200, 200));
             jcalendar.setMinimumSize(new Dimension(200, 200));
             jcalendar.setMaximumSize(new Dimension(200, 200));
-            jcalendar.setToolTipText("Select the date the event was created");
+            jcalendar.setToolTipText(bundle.getString("CreateStdEventPanel.jcalendar.toolTipText"));
             jcalendar.setDecorationBackgroundVisible(false);
             panel1.add(jcalendar, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -212,7 +214,7 @@ public class CreateStdEventPanel extends JPanel {
                 ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
 
                 //---- lblInfo1 ----
-                lblInfo1.setText("DATE: ");
+                lblInfo1.setText(bundle.getString("CreateStdEventPanel.lblInfo1.text"));
                 panel2.add(lblInfo1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
@@ -231,13 +233,13 @@ public class CreateStdEventPanel extends JPanel {
                 ((GridBagLayout)customEventPanel.getLayout()).rowWeights = new double[] {1.0, 1.0, 1.0E-4};
 
                 //---- lblMark ----
-                lblMark.setText("Mark:");
+                lblMark.setText(bundle.getString("CreateStdEventPanel.lblMark.text"));
                 customEventPanel.add(lblMark, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- lblExpTime ----
-                lblExpTime.setText("Expired time:");
+                lblExpTime.setText(bundle.getString("CreateStdEventPanel.lblExpTime.text"));
                 customEventPanel.add(lblExpTime, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
@@ -281,7 +283,7 @@ public class CreateStdEventPanel extends JPanel {
                 new Insets(0, 0, 5, 0), 0, 0));
 
             //---- btnCreateEvent ----
-            btnCreateEvent.setText("Create");
+            btnCreateEvent.setText(bundle.getString("CreateStdEventPanel.btnCreateEvent.text"));
             btnCreateEvent.setPreferredSize(new Dimension(72, 30));
             btnCreateEvent.setMinimumSize(new Dimension(72, 30));
             btnCreateEvent.setMaximumSize(new Dimension(72, 30));
@@ -292,7 +294,7 @@ public class CreateStdEventPanel extends JPanel {
                 new Insets(0, 0, 5, 0), 0, 0));
 
             //---- btnCancelEvent ----
-            btnCancelEvent.setText("Cancel");
+            btnCancelEvent.setText(bundle.getString("CreateStdEventPanel.btnCancelEvent.text"));
             btnCancelEvent.setPreferredSize(new Dimension(200, 30));
             btnCancelEvent.setMinimumSize(new Dimension(200, 30));
             btnCancelEvent.setMaximumSize(new Dimension(200, 30));
@@ -320,7 +322,7 @@ public class CreateStdEventPanel extends JPanel {
                     panel5.setLayout(new BorderLayout());
 
                     //---- lblInfo2 ----
-                    lblInfo2.setText("THE NAME OF THE EVENT");
+                    lblInfo2.setText(bundle.getString("CreateStdEventPanel.lblInfo2.text"));
                     panel5.add(lblInfo2, BorderLayout.NORTH);
 
                     //======== scrollPane ========
@@ -347,7 +349,7 @@ public class CreateStdEventPanel extends JPanel {
                     modePanel.add(comboModeBox, BorderLayout.CENTER);
 
                     //---- lblInfo3 ----
-                    lblInfo3.setText("CHOOSE THE MODE*");
+                    lblInfo3.setText(bundle.getString("CreateStdEventPanel.lblInfo3.text"));
                     modePanel.add(lblInfo3, BorderLayout.NORTH);
                 }
                 panel4.add(modePanel, BorderLayout.PAGE_END);

@@ -1,6 +1,9 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "NamePartPanel"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
@@ -58,7 +61,7 @@ new FormModel {
 			name: "popMoreActionsMenu"
 			add( new FormComponent( "javax.swing.JMenuItem" ) {
 				name: "miRename"
-				"text": "Rename"
+				"text": new FormMessage( null, "NamePartPanel.miRename.text" )
 				"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/edit_icon.svg" )
 				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miRename", true ) )
 			} )
@@ -67,7 +70,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javax.swing.JMenuItem" ) {
 				name: "miChangeGroup"
-				"text": "Change group"
+				"text": new FormMessage( null, "NamePartPanel.miChangeGroup.text" )
 				"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/arrow_icon_24x24.svg" )
 				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miChangeGroup", true ) )
 			} )
@@ -76,7 +79,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javax.swing.JMenuItem" ) {
 				name: "miDelete"
-				"text": "Delete"
+				"text": new FormMessage( null, "NamePartPanel.miDelete.text" )
 				"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/bin_icon_24x24.svg" )
 				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miDelete", true ) )
 			} )

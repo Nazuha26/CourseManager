@@ -1,6 +1,9 @@
 JFDML JFormDesigner: "8.2.4.0.393" Java: "17.0.11" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundleName": "strings"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "MainCoursesWindow"
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) {
@@ -9,9 +12,10 @@ new FormModel {
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 3
-			"title": "CourseName - Something"
+			"title": new FormMessage( null, "MainCoursesWindow.this.title" )
 			"minimumSize": new java.awt.Dimension( 400, 250 )
 			"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+			"iconImage": new com.jformdesigner.model.SwingIcon( 0, "/Icons/AppIcon.png" )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "lblSaveInfo"
 				"text": "SUCCESSFULLY SAVED"
@@ -39,17 +43,18 @@ new FormModel {
 				"componentOrientation": sfield java.awt.ComponentOrientation LEFT_TO_RIGHT
 				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
 					name: "menuFile"
-					"text": "File"
+					"text": new FormMessage( null, "MainCoursesWindow.menuFile.text" )
 					add( new FormComponent( "javax.swing.JMenuItem" ) {
 						name: "miOpen"
-						"text": "Open"
+						"text": new FormMessage( null, "MainCoursesWindow.miOpen.text" )
 						"accelerator": static javax.swing.KeyStroke getKeyStroke( 79, 4226, false )
 						"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/folder_icon_16x16.svg" )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miOpen", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JMenuItem" ) {
 						name: "miSave"
-						"text": "Save"
-						"toolTipText": "Saves all changes"
+						"text": new FormMessage( null, "MainCoursesWindow.miSave.text" )
+						"toolTipText": new FormMessage( null, "MainCoursesWindow.miSave.toolTipText" )
 						"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/save_icon_16x16.svg" )
 						"accelerator": static javax.swing.KeyStroke getKeyStroke( 83, 4226, false )
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miSave", true ) )
@@ -59,65 +64,43 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JMenuItem" ) {
 						name: "miExport"
-						"text": "Export"
+						"text": new FormMessage( null, "MainCoursesWindow.miExport.text" )
 						"icon": new com.jformdesigner.model.SwingIcon( 0, "/Icons/export_icon_16x16.svg" )
 						"accelerator": static javax.swing.KeyStroke getKeyStroke( 69, 4226, false )
 					} )
 				} )
 				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
 					name: "menuSettings"
-					"text": "Settings"
+					"text": new FormMessage( null, "MainCoursesWindow.menuSettings.text" )
 					add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
-						name: "menuSort"
-						"text": "Sort"
-						add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
-							name: "separator2"
-						} )
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "lblCaption"
-							"text": "Sort Events"
-							"horizontalAlignment": 0
-							"alignmentX": 0.5f
-							"enabled": false
-						} )
+						name: "menuLangs"
+						"text": new FormMessage( null, "MainCoursesWindow.menuLangs.text" )
 						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
-							name: "radBtnSbyCreatDate"
-							"text": "By creation date"
-							"$buttonGroup": new FormReference( "sortBtnsGroup" )
-						} )
-						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
-							name: "radBtnSbyAlphabet"
-							"text": "By alphabet"
-							"$buttonGroup": new FormReference( "sortBtnsGroup" )
-						} )
-						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
-							name: "radBtnSbyMarks"
-							"text": "By marks"
-							"$buttonGroup": new FormReference( "sortBtnsGroup" )
-						} )
-						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
-							name: "radBtnSbyType"
-							"text": "By Type"
-							"$buttonGroup": new FormReference( "sortBtnsGroup" )
+							name: "rdBtnMiEngLang"
+							"text": new FormMessage( null, "MainCoursesWindow.rdBtnMiEngLang.text" )
+							"$buttonGroup": new FormReference( "LangsBtnGroup" )
 							"selected": true
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "rdBtnMiEngLang", true ) )
 						} )
-					} )
-					add( new FormComponent( "javax.swing.JCheckBoxMenuItem" ) {
-						name: "chbMiSStdsByAlphabet"
-						"text": "Sort students alphabetically"
-						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "chbMiSStdsByAlphabetStateChanged", true ) )
+						add( new FormComponent( "javax.swing.JRadioButtonMenuItem" ) {
+							name: "rdBtnMiUkrLang"
+							"text": new FormMessage( null, "MainCoursesWindow.rdBtnMiUkrLang.text" )
+							"$buttonGroup": new FormReference( "LangsBtnGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "rdBtnMiUkrLang", true ) )
+						} )
 					} )
 					add( new FormComponent( "javax.swing.JCheckBoxMenuItem" ) {
 						name: "chbMiAutoSave"
-						"text": "Auto save"
+						"text": new FormMessage( null, "MainCoursesWindow.chbMiAutoSave.text" )
 					} )
 				} )
 				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
 					name: "menuAbout"
-					"text": "About"
+					"text": new FormMessage( null, "MainCoursesWindow.menuAbout.text" )
 					add( new FormComponent( "javax.swing.JMenuItem" ) {
 						name: "miInfo"
-						"text": "Info"
+						"text": new FormMessage( null, "MainCoursesWindow.miInfo.text" )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "miInfo", true ) )
 					} )
 				} )
 			}
@@ -126,7 +109,7 @@ new FormModel {
 			"size": new java.awt.Dimension( 665, 460 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
-			name: "sortBtnsGroup"
+			name: "LangsBtnGroup"
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 476 )
 		} )

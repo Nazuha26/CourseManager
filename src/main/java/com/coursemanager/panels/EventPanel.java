@@ -4,6 +4,9 @@
 
 package com.coursemanager.panels;
 
+import java.util.*;
+
+import com.coursemanager.CM_HELPER;
 import com.coursemanager.other.Student;
 import com.coursemanager.other.StudentEvent;
 
@@ -23,7 +26,61 @@ import com.coursemanager.ui.*;
 public class EventPanel extends JPanel {
     public EventPanel() {
         initComponents();
+        initTableModel();
         initTableSorter();
+    }
+
+    private void initTableModel() {
+        tableListStds.setModel(new DefaultTableModel(
+                new Object[][] {},
+                new String[] {
+                        "<html><b>№<html>",
+                        "<html><b>" + CM_HELPER.getBundle().getString("table.header.date") + "<html>",
+                        "<html><b>" + CM_HELPER.getBundle().getString("table.header.event") + "<html>",
+                        "<html><b>" + CM_HELPER.getBundle().getString("table.header.marks") + "<html>",
+                        "<html><b>" + CM_HELPER.getBundle().getString("table.header.expired") + "<html>",
+                        "<html><b>" + CM_HELPER.getBundle().getString("table.header.type") + "<html>"
+                }
+        ){
+            Class<?>[] columnTypes = new Class<?>[] {
+                    Short.class, String.class, String.class, Byte.class, String.class, String.class
+            };
+            boolean[] columnEditable = new boolean[] {
+                    false, false, false, false, false, false
+            };
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return columnTypes[columnIndex];
+            }
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return columnEditable[columnIndex];
+            }
+        });
+        {
+            TableColumnModel cm = tableListStds.getColumnModel();
+            cm.getColumn(0).setResizable(false);
+            cm.getColumn(0).setMinWidth(40);
+            cm.getColumn(0).setMaxWidth(40);
+            cm.getColumn(0).setPreferredWidth(40);
+            cm.getColumn(1).setResizable(false);
+            cm.getColumn(1).setMinWidth(100);
+            cm.getColumn(1).setMaxWidth(100);
+            cm.getColumn(1).setPreferredWidth(100);
+            cm.getColumn(2).setResizable(false);
+            cm.getColumn(3).setResizable(false);
+            cm.getColumn(3).setMinWidth(60);
+            cm.getColumn(3).setMaxWidth(60);
+            cm.getColumn(3).setPreferredWidth(60);
+            cm.getColumn(4).setResizable(false);
+            cm.getColumn(4).setMinWidth(140);
+            cm.getColumn(4).setMaxWidth(140);
+            cm.getColumn(4).setPreferredWidth(140);
+            cm.getColumn(5).setResizable(false);
+            cm.getColumn(5).setMinWidth(90);
+            cm.getColumn(5).setMaxWidth(90);
+            cm.getColumn(5).setPreferredWidth(90);
+        }
     }
 
     private void initTableSorter() {
@@ -109,9 +166,9 @@ public class EventPanel extends JPanel {
 
                 String text = value.toString().toLowerCase();
                 if (!isSelected) {
-                    if (text.contains("act")) {
+                    if (text.contains(CM_HELPER.getBundle().getString("table.type.active").toLowerCase())) {
                         setBackground(new Color(0xb4e2bd));
-                    } else if (text.contains("compl")) {
+                    } else if (text.contains(CM_HELPER.getBundle().getString("table.type.completed").toLowerCase())) {
                         setBackground(new Color(0xe2b4b4));
                     } else {
                         setBackground(Color.WHITE);
@@ -174,8 +231,8 @@ public class EventPanel extends JPanel {
                     event.eventDescription,
                     event.grade,
                     event.expiredDate,
-                    event.isExpired() ?  "<html><b><font color='#b40202'>Completed</font></b></html>"
-                            : "<html><b><font color='#1ab403'>Active</font></b></html>"
+                    event.isExpired() ?  "<html><b><font color='#b40202'>" + CM_HELPER.getBundle().getString("table.type.completed") + "</font></b></html>"
+                            : "<html><b><font color='#1ab403'>" + CM_HELPER.getBundle().getString("table.type.active") + "</font></b></html>"
             });
         }
     }
@@ -210,6 +267,7 @@ public class EventPanel extends JPanel {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+        ResourceBundle bundle = ResourceBundle.getBundle("strings");
         panelTable = new JPanel();
         scrollPane = new JScrollPane();
         tableListStds = new JTable();
@@ -223,7 +281,7 @@ public class EventPanel extends JPanel {
 
         //======== panelTable ========
         {
-            panelTable.setLayout(new BorderLayout());
+            panelTable.setLayout(new BorderLayout(0, 10));
 
             //======== scrollPane ========
             {
@@ -302,14 +360,14 @@ public class EventPanel extends JPanel {
             ((GridBagLayout)btnPanel.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
 
             //---- lblInfo ----
-            lblInfo.setText("Group 1 - Course: NewFormatCourse, 10 people | Average score 4.2");
+            lblInfo.setText(bundle.getString("EventPanel.lblInfo.text"));
             lblInfo.setFont(lblInfo.getFont().deriveFont(lblInfo.getFont().getSize() + 3f));
             btnPanel.add(lblInfo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                 new Insets(0, 0, 0, 5), 0, 0));
 
             //---- btnAddEvent ----
-            btnAddEvent.setText("Add event");
+            btnAddEvent.setText(bundle.getString("EventPanel.btnAddEvent.text"));
             btnAddEvent.setPreferredSize(new Dimension(200, 30));
             btnAddEvent.setMinimumSize(new Dimension(200, 30));
             btnAddEvent.setMaximumSize(new Dimension(200, 30));
