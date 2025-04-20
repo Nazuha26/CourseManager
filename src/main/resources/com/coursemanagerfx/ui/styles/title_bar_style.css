@@ -1,0 +1,63 @@
+.title-bar {
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ===== BUTTONS ===== */
+.window-button-close,
+.window-button-minimize,
+.window-button-maximize,
+.window-button-restore {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 16px 16px;
+
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+}
+
+/* === CUSTOM === */
+.window-button-close {
+    -fx-background-image: url("../icons/w_close_256x256.png");
+}
+
+.window-button-maximize {
+    -fx-background-image: url("../icons/w_maximize_256x256.png");
+}
+
+.window-button-restore {
+    -fx-background-image: url("../icons/w_restore_256x256.png");
+    -fx-scale-x: -1;
+}
+
+.window-button-minimize {
+    -fx-background-image: url("../icons/w_minimize_256x256.png");
+    -fx-background-size: 12px 12px;
+}
+/* ============== */
+
+/* === HOVER === */
+.window-button-close:hover {
+    -fx-background-color: rgba(227, 0, 0, 0.8);
+}
+
+.window-button-minimize:hover,
+.window-button-maximize:hover,
+.window-button-restore:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+}
+/* ============= */
+
+/* =================== */
+
+.window-app-name {
+    -fx-text-fill: #dddddd;
+}

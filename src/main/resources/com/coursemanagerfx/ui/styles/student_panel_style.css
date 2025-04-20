@@ -1,0 +1,65 @@
+.button:focused,
+.button:selected,
+.button:hover,
+.button {
+    -fx-background-insets: 0;
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-background-radius: 50;
+    -fx-border-radius: 50;
+    -fx-text-fill: #dddddd;
+    -fx-font-size: 17px;
+    -fx-border-color: transparent;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-in-out;
+}
+
+.button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+}
+
+.label {
+    -fx-font-size: 15px;
+    -fx-text-fill: #dddddd;
+}
+
+/* ===== MENU BUTTON ===== */
+.menu-button {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-background-radius: 10;
+    -fx-background-color: transparent;
+    -fx-background-image: url("../icons/w_more_v1_256x256.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 24px 24px;
+    -fx-border-color: transparent;
+}
+
+.menu-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-button .arrow,
+.menu-button .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-image: none;
+}
+
+.context-menu {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-background-color: rgba(0, 0, 0, 0.8);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-width: 1;
+}
+
+.context-menu .menu-item {
+    -fx-background-color: transparent;
+}
+
+.context-menu .menu-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
+/* ======================= */

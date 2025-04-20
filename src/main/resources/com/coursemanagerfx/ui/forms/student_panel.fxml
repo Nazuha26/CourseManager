@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../styles/student_panel_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.StudentPanel_controller">
+   <left>
+      <Label text="X" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets right="10.0" />
+         </padding></Label>
+   </left>
+   <center>
+      <StackPane style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnStudent" maxWidth="Infinity" mnemonicParsing="false" onKeyPressed="#handleKeyPressed" text="Иванов Иван Иванович">
+               <font>
+                  <Font size="17.0" />
+               </font>
+<!--               <contextMenu>
+                  <ContextMenu>
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#miRename" text="Rename">
+                     &lt;!&ndash;<accelerator>
+                        <KeyCodeCombination alt="DOWN" code="R" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>&ndash;&gt;
+                  </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#miDelete" text="Delete">
+                     &lt;!&ndash;<accelerator>
+                        <KeyCodeCombination alt="DOWN" code="D" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>&ndash;&gt;
+                  </MenuItem>
+                     </items>
+                  </ContextMenu>
+               </contextMenu>-->
+            </Button>
+            <MenuButton alignment="CENTER" mnemonicParsing="false" popupSide="TOP" StackPane.alignment="CENTER_RIGHT">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#miRename" text="Rename">
+                     <!--<accelerator>
+                        <KeyCodeCombination alt="DOWN" code="R" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>-->
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#miDelete" text="Delete">
+                     <!--<accelerator>
+                        <KeyCodeCombination alt="DOWN" code="D" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>-->
+                  </MenuItem>
+               </items>
+               <StackPane.margin>
+                  <Insets right="5.0" />
+               </StackPane.margin>
+            </MenuButton>
+         </children>
+      </StackPane>
+   </center>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="15.0" top="5.0" />
+   </padding>
+</BorderPane>

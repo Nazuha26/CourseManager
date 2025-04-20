@@ -1,0 +1,600 @@
+* {
+    -fx-highlight-fill: rgba(0, 110, 220, 0.8);         /* Цвет фона выделенного текста */
+    -fx-highlight-text-fill: rgba(255, 255, 255, 0.8);     /* Цвет текста при выделении */
+}
+
+/* ===== SEARCH FIELD ===== */
+.search-field {
+    -fx-background-image:url('/com/coursemanagerfx/ui/icons/w_search_256x256.png');
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: right center;
+    -fx-background-size: 24px 24px;
+
+    -fx-end-margin: 24;
+
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.7) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.5);
+    -fx-font-size: 14px;
+
+    transition-property: -fx-border-color, -fx-border-width;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.search-field:focused {
+    -fx-border-color: transparent transparent rgba(43, 192, 255, 0.7) transparent;
+    -fx-border-width: 0 0 2 0;
+}
+/* ======================== */
+
+
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+    -fx-accent: linear-gradient(to right, #46d65e, #3ccf54);
+    -fx-control-inner-background: #2b2b2b;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+    -fx-padding: 0.25em;
+    /*-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.3, 0, 2);*/
+}
+
+.progress-bar > .track {
+    -fx-background-color: linear-gradient(to right, #e0f2e9, #d4ead4);
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: linear-gradient(to right, #66bb6a, #4caf50);
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+}
+/* ======================== */
+
+
+
+.vbox {
+    -fx-background-color: rgba(0, 0, 0, 0.4);   /*вертикальный бокс*/
+}
+
+.hbox {
+    -fx-background-color: rgba(0, 0, 0, 0.4);   /*горизонтальный бокс*/
+}
+
+
+
+/* ===== TAB BUTTON ===== */
+.tab-button {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+    -fx-border-color: transparent;
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 5 5 0 0;
+    -fx-text-fill: #dddddd;
+    -fx-font-size: 14px;
+    -fx-border-width: 0 0 3 0;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-in-out;
+}
+
+.tab-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-button.selected-tab {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: #00aaff;
+    -fx-border-width: 0 0 3 0;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+/* ====================== */
+
+
+
+/* ===== EMPTY LABEL ===== */
+.empty-label {
+    -fx-font-size: 16px;
+    -fx-padding: 35;
+    -fx-text-fill: #dddddd;
+    -fx-alignment: center;
+}
+/* ======================= */
+
+
+
+/* ===== SCROLL PANE ===== */
+.scroll-pane:focused,
+.scroll-pane {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: transparent; /* полупрозрачный черный фон */
+    -fx-border-color: transparent;           /* убираем голубую рамку */
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* УБИРАЕМ стрелочки вверх/вниз */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-shape: "";
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* УБИРАЕМ область под стрелками */
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-shape: "";
+    -fx-opacity: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+/* ======================= */
+
+/* ===== SCROLL BAR ===== */
+.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 13px;
+}
+
+.virtualized-scroll-pane .scroll-bar .track,
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.virtualized-scroll-pane .scroll-bar .thumb,
+.scroll-bar .thumb {
+    -fx-background-color: rgba(180, 180, 180, 0.6);
+    -fx-background-insets: 2;
+    -fx-background-radius: 5;
+}
+/* ====================== */
+
+
+
+/* ===== VIRTUALIZE SCROLL PANE ===== */
+.virtualized-scroll-pane .scroll-bar {
+    -fx-pref-width: 13px;
+}
+/* ================================== */
+
+
+
+/* ===== FANCY STACK PANE ===== */
+.fancy-internal-left-pane,
+.fancy-left-pane,
+.fancy-pane {
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-background-radius: 15;
+    -fx-padding: 5;
+}
+.fancy-left-pane {
+    -fx-background-radius: 0 15 0 0;
+}
+
+.fancy-internal-left-pane {
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-width: 4;
+    -fx-border-radius: 15;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+/* ============================ */
+
+
+
+/* =============== BUTTONS =============== */
+.animated-clear-history-button,
+.animated-add-event-button,
+.animated-create-button,
+.animated-add-student-button,
+.animated-cancel-button,
+.animated-button {
+    -fx-background-color: rgba(0, 0, 0, 0.8);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-width: 2;
+    -fx-background-radius: 11;
+    -fx-border-radius: 10;
+    -fx-text-fill: white;
+    /*-fx-font-weight: bold;*/
+    -fx-font-size: 18px;
+    -fx-padding: 8 16 8 16;
+    -fx-background-insets: 0;
+
+    transition-property: -fx-border-radius, -fx-background-radius, -fx-background-color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.animated-button:hover {
+    -fx-background-color: rgba(53, 53, 53, 0.5);
+    -fx-background-radius: 16;
+    -fx-border-radius: 15;
+}
+
+.animated-clear-history-button {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-background-color: rgba(0, 0, 0, 0.8);
+    -fx-background-image: url("../icons/w_clear_256x256.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 24px 24px;
+    -fx-padding: 5px;
+}
+
+.animated-clear-history-button:hover {
+    -fx-background-color: rgba(99, 99, 99, 0.3);
+}
+
+.animated-create-button {
+    -fx-border-color: rgba(76, 186, 88, 0.8);
+    -fx-background-color: rgba(92, 239, 107, 0.1);
+}
+
+.animated-create-button:hover {
+    -fx-border-color: rgb(76, 186, 88);
+    -fx-background-color: rgba(92, 239, 107, 0.3);
+}
+
+.animated-cancel-button {
+    -fx-background-color: rgba(188, 19, 19, 0.2);
+    -fx-border-color: rgba(230, 25, 25, 0.6);
+}
+
+.animated-cancel-button:hover {
+    -fx-background-color: rgba(188, 19, 19, 0.4);
+    -fx-border-color: rgba(230, 25, 25, 0.8);
+}
+
+.animated-add-student-button {
+    -fx-background-image: url("../icons/w_add_256x256.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 16px 16px;
+    -fx-padding: 0;
+}
+
+.animated-add-student-button:hover {
+    -fx-background-color: rgba(53, 53, 53, 0.5);
+}
+/* ======================================= */
+
+
+
+/* ========== COMMON ========== */
+.text-area, .inline-css-text-area,
+.combo-box, .expired-combo-box, .combo-box-popup,
+.date-picker, .expired-spinner, .spinner {
+    -fx-text-fill: white;
+    -fx-border-width: 2px;
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+}
+/* ============================ */
+
+
+
+/* ===== TEXT AREA ===== */
+.text-area {
+    -fx-font-size: 16px;
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-background-radius: 11px;
+    -fx-border-radius: 10px;
+    -fx-padding: 0;
+}
+
+.text-area .scroll-pane {
+    -fx-border-color: transparent;
+    -fx-background-radius: 10px;
+    -fx-padding: 5px;
+}
+
+.text-area .scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-bar .thumb {
+    -fx-background-color: rgba(180, 180, 180, 0.6);
+    -fx-background-insets: 2;
+    -fx-background-radius: 5;
+}
+
+.text-area .content {
+    -fx-background-color: transparent;
+}
+
+.text-area:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+}
+/* ===================== */
+
+
+
+/* ===== INLINE CSS TEXT AREA ===== */
+.inline-css-text-area {
+    -fx-font-size: 16px;
+    -fx-border-width: 4px;
+    -fx-background-radius: 11px;
+    -fx-border-radius: 10px;
+    -fx-padding: 10px;
+}
+/* ================================ */
+
+
+
+/* ===== CHOICE BOX ===== */                /* ===== NOT EDITED ===== */
+.choice-box {
+    -fx-background-radius: 12;
+    -fx-border-width: 4;
+    -fx-border-radius: 10;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-font-size: 14;
+}
+
+/* Текст */
+.choice-box .label {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-padding: 4 8 4 8;
+}
+
+/* Стрелка и кнопка */
+.choice-box .arrow-button {
+    -fx-background-color: black;
+    -fx-background-radius: 10;
+    -fx-padding: 0;
+}
+
+/* Стрелка (иконка) */
+.choice-box .arrow {
+    -fx-background-color: white;
+}
+
+/* Выпадающее меню */
+.choice-box .context-menu {
+    -fx-background-color: black;
+    -fx-background-radius: 12;
+    -fx-border-color: white;
+    -fx-border-width: 4;
+    -fx-border-radius: 10;
+}
+
+/* Пункты меню */
+.choice-box .menu-item {
+    -fx-text-fill: white;
+    -fx-background-color: black;
+}
+
+.choice-box .menu-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+/* ====================== */                            /* ===== NOT EDITED ===== */
+
+
+
+/* ========== COMBO BOX ========== */
+.expired-combo-box,
+.combo-box {
+    -fx-background-radius: 11;
+    -fx-border-radius: 10;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-font-size: 14;
+}
+
+.expired-combo-box {
+    -fx-background-radius: 0 12 12 0;
+    -fx-border-radius: 0 10 10 0;
+}
+
+/* Ячейка с выбранным элементом */
+.expired-combo-box .cell,
+.combo-box .cell {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+}
+
+/* Убираем фокусную рамку */
+.expired-combo-box:focused,
+.combo-box:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Внутренний блок ComboBox (где вводится текст/отображается выбранный пункт) */
+.expired-combo-box .combo-box-base,
+.combo-box .combo-box-base {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-border-radius: 10;
+    -fx-background-insets: 0;
+}
+
+/* Стрелочная кнопка */
+.expired-combo-box .arrow-button,
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-padding: 8;
+    -fx-background-insets: 0;
+}
+
+/* Стрелка (иконка) */
+.expired-combo-box .arrow,
+.combo-box .arrow {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-padding: 4;
+}
+
+/* Выпадающее меню ComboBox */
+.combo-box-popup {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-border-width: 4;
+    -fx-border-radius: 10;
+}
+
+/* Элементы выпадающего списка */
+.combo-box-popup .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: black;
+}
+
+/* Эффект при наведении на элементы выпадающего списка */
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-text-fill: black;
+}
+/* =============================== */
+
+
+
+/* ========== DATE PICKER ========== */
+.date-picker {
+    -fx-background-radius: 11;
+    -fx-border-radius: 10;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-font-size: 14;
+}
+
+.date-picker .text-field {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 4 8 4 8;
+    -fx-alignment: CENTER;
+}
+
+/* Кнопка-стрелка справа */
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-padding: 8; /* отступ вокруг иконки */
+}
+
+.date-picker .arrow {
+    -fx-background-color: white;
+    -fx-padding: 8;
+}
+
+/* --- СТИЛЬ ВСПЛЫВАЮЩЕГО КАЛЕНДАРЯ --- */
+.date-picker-popup {
+    -fx-background-color: black;
+    -fx-background-radius: 11;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-padding: 8;
+}
+
+.date-picker-popup .spinner {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.date-picker-popup .spinner .increment-arrow-button,
+.date-picker-popup .spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.date-picker-popup .spinner .increment-arrow,
+.date-picker-popup .spinner .decrement-arrow {
+    -fx-background-color: white;
+}
+
+/* Каждая ячейка дней */
+.date-picker-popup .day-cell {
+    -fx-text-fill: white;
+    -fx-background-color: black;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-text-fill: black;
+}
+
+.date-picker-popup .day-cell:focused {
+    -fx-background-color: rgba(0, 111, 255, 0.7);
+    -fx-background-radius: 5;
+}
+/* ================================= */
+
+
+
+/* ========== SPINNER ========== */
+.expired-spinner,
+.spinner {
+    -fx-background-radius: 11;
+    -fx-border-radius: 10;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-font-size: 14;
+}
+
+.expired-spinner {
+    /*-fx-border-color: rgba(255, 255, 255, 0.8) transparent rgba(255, 255, 255, 0.8) rgba(255, 255, 255, 0.8);*/
+    -fx-background-radius: 12 0 0 12;
+    -fx-border-radius: 10 0 0 10;
+}
+
+.expired-spinner .text-field,
+.spinner .text-field {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 4 8 4 8;
+    -fx-alignment: CENTER;
+}
+
+/* Кнопки вверх/вниз */
+.expired-spinner .increment-arrow-button,
+.expired-spinner .decrement-arrow-button,
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-padding: 8;
+}
+
+.expired-spinner .increment-arrow,
+.expired-spinner .decrement-arrow,
+.spinner .increment-arrow,
+.spinner .decrement-arrow {
+    -fx-background-color: white;
+    -fx-padding: 4;
+}
+
+.expired-spinner .increment-arrow-button:hover,
+.expired-spinner .decrement-arrow-button:hover,
+.spinner .increment-arrow-button:hover,
+.spinner .decrement-arrow-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 0;
+}
+/* ============================= */

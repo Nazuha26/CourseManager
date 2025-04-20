@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="window" stylesheets="@notification_ui.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.notification.Notification_controller">
+   <center>
+      <BorderPane BorderPane.alignment="CENTER">
+         <left>
+            <ImageView fx:id="iconView" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
+               <image>
+                  <Image url="@icons/error_256x256.png" />
+               </image>
+            </ImageView>
+         </left>
+         <right>
+            <BorderPane BorderPane.alignment="CENTER">
+               <left>
+                  <BorderPane BorderPane.alignment="CENTER">
+                     <top>
+                        <Label fx:id="labelMainText" styleClass="label-main" text="Primary text" BorderPane.alignment="CENTER">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                        </Label>
+                     </top>
+                     <center>
+                        <Label fx:id="labelAdditionalText" styleClass="label-additional" text="Additional text" BorderPane.alignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                     </center>
+                     <padding>
+                        <Insets left="10.0" right="10.0" />
+                     </padding>
+                  </BorderPane>
+               </left>
+            </BorderPane>
+         </right>
+      </BorderPane>
+   </center>
+</BorderPane>

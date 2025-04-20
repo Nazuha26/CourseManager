@@ -1,0 +1,44 @@
+.window {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-background-color: rgba(0, 0, 0, 0.9);
+    -fx-background-radius: 11;
+    -fx-border-radius: 10;
+}
+
+.button-close {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 24px 24px;
+
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-in-out;
+
+    -fx-background-image: url("w_close_256x256.png");
+}
+
+.button-close:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+}
+
+.label-main {
+    -fx-text-fill: #dddddd;
+}
+.label-additional {
+    -fx-text-fill: #f3f3f3;
+}
