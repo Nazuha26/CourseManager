@@ -6,11 +6,13 @@ import com.coursemanagerfx.dialogs.ConfirmDialog_controller;
 import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.InputDialog_controller;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
-import com.coursemanagerfx.logic.CmanParser;
+import com.coursemanagerfx.logic.BinaryCmanParser;
 import com.coursemanagerfx.logic.Group;
+import com.coursemanagerfx.logic.utilitys.OnboardingOverlayUtility;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -33,6 +35,7 @@ import java.io.IOException;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
+    public static final String VERSION = "1.0.1";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
@@ -299,7 +302,7 @@ public class CM_HELPER {
         showMainStage(stage, courseName, courseFile, loader, root);
     }
     // === МЕТОД ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ (ПОСЛЕ СТАРТОВОГО ОКНА) ===
-    public static void openMainWindow(String courseName, File courseFile) throws IOException {
+    public static void openMainWindow(String courseName, File courseFile, boolean showOnboardingOverlay) throws IOException {
         FXMLLoader loader = new FXMLLoader(CM_HELPER.class.getResource("/com/coursemanagerfx/ui/forms/main.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
@@ -309,7 +312,39 @@ public class CM_HELPER {
         mainStage.initStyle(StageStyle.TRANSPARENT);
         mainStage.setScene(scene);
 
+        // === QUICK TOUR ===
+        /*if (showOnboardingOverlay) {
+            mainStage.setOnShown(e -> {
+                OnboardingOverlayUtility overlay = new OnboardingOverlayUtility(mainStage, () -> restartFX(mainStage));
+
+                overlay.addInstruction(2 , 41, 1528 , 82,
+                        "Groups tab",
+                        OnboardingOverlayUtility.Position.BOTTOM);
+                overlay.addInstruction(2 , 88, 51 , 145,
+                        "Add student button",
+                        OnboardingOverlayUtility.Position.BOTTOM);
+                overlay.addInstruction(206 , 94, 406 , 131,
+                        "Search students in a group",
+                        OnboardingOverlayUtility.Position.BOTTOM);
+                overlay.addInstruction(404 , 742, 522 , 808,
+                        "Add event",
+                        OnboardingOverlayUtility.Position.TOP);
+
+
+                    });
+        }*/
         showMainStage(mainStage, courseName, courseFile, loader, root);
+    }
+    // Утилитный метод для перезапуска приложения
+    public static void restartFX(Stage currentStage) {
+        Platform.runLater(() -> {
+            actionClose(currentStage, null); // Закрыть текущее окно
+            try {
+                new Launcher().start(new Stage()); // Запускаем снова
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
     // Утилитный метод
     private static void showMainStage(Stage stage, String courseName, File courseFile, FXMLLoader loader, Parent root) throws IOException {
@@ -378,7 +413,7 @@ public class CM_HELPER {
             System.out.println("Data loading started...");
 
             CM_HELPER helper = new CM_HELPER();
-            helper.setCourse(CmanParser.parseFile(courseFile.getAbsolutePath()));
+            helper.setCourse(BinaryCmanParser.parse(courseFile));
             helper.setCourseName(courseName);
 
             javafx.application.Platform.runLater(() -> {

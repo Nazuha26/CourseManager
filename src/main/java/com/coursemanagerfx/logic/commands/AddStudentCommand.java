@@ -19,7 +19,7 @@ public class AddStudentCommand implements Command {
     @Override
     public void execute(boolean isRedo) {
         if (student == null) { // Создаем студента только при первом вызове команды
-            int uniqueId = mainController.generateUniqueStudentId();
+            int uniqueId = mainController.genUniqueStudentId();
             student = new Student(studentName, uniqueId);
         }
         group.getStudents().add(student);

@@ -107,7 +107,7 @@ public class Start_controller {
     // === *ОБЕРТКА* ДЛЯ МЕТОДА ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ ===
     private void openMainWindow() {
         try {
-            CM_HELPER.openMainWindow(courseName, selectedCourseFile);
+            CM_HELPER.openMainWindow(courseName, selectedCourseFile, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

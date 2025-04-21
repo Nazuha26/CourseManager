@@ -10,13 +10,13 @@
         <HBox fx:id="titleBar" alignment="CENTER_RIGHT" onMouseDragged="#onTitleBarDragged" onMousePressed="#onTitleBarPressed" styleClass="title-bar" BorderPane.alignment="CENTER">
             <children>
             <BorderPane HBox.hgrow="ALWAYS">
-               <center>
+               <left>
                       <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name" text="Welcome to CourseManagerFX" textAlignment="CENTER" BorderPane.alignment="CENTER">
                           <font>
                               <Font size="16.0" />
                           </font>
                       </Label>
-               </center>
+               </left>
             </BorderPane>
             <Button fx:id="btnMinimize" layoutX="570.0" layoutY="10.0" onAction="#btnMinimize" prefHeight="40.0" prefWidth="40.0" styleClass="button-minimize" />
                 <Button fx:id="btnClose" onAction="#btnClose" prefHeight="40.0" prefWidth="40.0" styleClass="button-close" />

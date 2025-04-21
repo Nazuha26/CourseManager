@@ -1,6 +1,7 @@
 package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.logic.BinaryCmanSaver;
 import com.coursemanagerfx.logic.Group;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -15,7 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static com.coursemanagerfx.CM_HELPER.*;
-import static com.coursemanagerfx.logic.CmanSaver.createEmptyCourseFile;
+/*import static com.coursemanagerfx.logic.CmanSaver.createEmptyCourseFile;*/
 
 public class NewCourseDialog_controller {
     @FXML private BorderPane rootPane;
@@ -83,10 +84,15 @@ public class NewCourseDialog_controller {
 
         courseName   = text.trim().replaceAll("\\s+", " "); // подчистили лишние пробелы
         groupsCount  = spinGroupsCount.getValue();
+        newCourseFile = new File(COURSES_DIR, courseName + ".cman");
 
         try {
-            // создаём пустой .cman‑файл с нужным числом разделителей групп
-            newCourseFile = createEmptyCourseFile(courseName, groupsCount);
+            // создаём пустой .cman‑файл
+            Group[] groups = new Group[groupsCount];
+            for (int i = 0; i < groupsCount; i++) {
+                groups[i] = new Group(); // ← создаём пустую группу
+            }
+            BinaryCmanSaver.save(groups, newCourseFile);
 
             // фиксируем имя курса в FIRST_RUN
             try (FileWriter w = new FileWriter(FIRST_RUN_FILE)) {

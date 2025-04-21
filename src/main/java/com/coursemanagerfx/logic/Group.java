@@ -19,6 +19,6 @@ public class Group {
 
     @Override
     public String toString() {
-        return "Group{students=" + students + "}";
+        return "Group{\nstudents=" + students + "}";
     }
 }

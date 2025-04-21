@@ -1,5 +1,6 @@
 package com.coursemanagerfx;
 
+import com.coursemanagerfx.logic.utilitys.GetPoint;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -26,6 +27,7 @@ public class Launcher extends Application {
                 File courseFile = new File(CM_HELPER.COURSES_DIR, courseName + ".cman");
                 if (courseFile.exists()) {
                     openMainWindow(primaryStage, courseName, courseFile);   // ← открываем главное окно программы
+                    if (printMouseOnP) GetPoint.setupMousePositionLogger(primaryStage.getScene());
                     return;
                 }
             }
@@ -34,5 +36,18 @@ public class Launcher extends Application {
         openStartWindow();
     }
 
-    public static void main(String[] args) { launch(args); }
+    private static boolean printMouseOnP = false;
+
+    public static void main(String[] args) {
+        for (String arg : args) {
+            if ("-p".equalsIgnoreCase(arg)) {
+                System.out.println("=== TURN ON GET MOUSE POSITION MODE ===\n" +
+                                   "===      RELATIVE TO THE SCENE      ===\n" +
+                                   "X | Y");
+                printMouseOnP = true;
+                break;
+            }
+        }
+        launch(args);
+    }
 }

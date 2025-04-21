@@ -75,7 +75,7 @@
                                  </accelerator>
                               </MenuItem>
                               <SeparatorMenuItem mnemonicParsing="false" />
-                              <MenuItem mnemonicParsing="false" text="Options" onAction="#miOptions">
+                              <MenuItem mnemonicParsing="false" onAction="#miOptions" text="Options">
                                  <accelerator>
                                     <KeyCodeCombination alt="DOWN" code="O" control="UP" meta="UP" shift="UP" shortcut="UP" />
                                  </accelerator>
@@ -84,7 +84,7 @@
                         </Menu>
                         <Menu mnemonicParsing="false" text="Help">
                            <items>
-                              <MenuItem mnemonicParsing="false" text="About" onAction="#miAbout">
+                              <MenuItem mnemonicParsing="false" onAction="#miAbout" text="About">
                                  <accelerator>
                                     <KeyCodeCombination alt="DOWN" code="A" control="UP" meta="UP" shift="UP" shortcut="UP" />
                                  </accelerator></MenuItem>
@@ -105,6 +105,9 @@
    <center>
       <StackPane BorderPane.alignment="CENTER">
          <children>
+            <BorderPane fx:id="notificationPane" mouseTransparent="true">
+
+            </BorderPane>
             <BorderPane>
                <left>
                   <BorderPane styleClass="fancy-left-pane" BorderPane.alignment="CENTER">
@@ -151,82 +154,152 @@
                   </BorderPane>
                </left>
                <center>
-                  <BorderPane prefHeight="300.0" BorderPane.alignment="CENTER">
+                  <BorderPane prefHeight="300.0" prefWidth="500.0" BorderPane.alignment="CENTER">
                      <bottom>
                         <BorderPane BorderPane.alignment="CENTER">
                            <center>
                               <StackPane fx:id="mainTopPane" styleClass="fancy-pane" BorderPane.alignment="CENTER">
                                  <children>
-                                    <BorderPane fx:id="eventInfoTopPane" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-                                       <bottom>
-                                          <HBox spacing="5.0" BorderPane.alignment="CENTER">
-                                             <children>
-                                                <Button fx:id="btnCancelEvent" maxHeight="Infinity" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" onAction="#btnCancelEvent" prefWidth="100.0" styleClass="animated-cancel-button" text="Cancel" />
-                                                <!-- Растягивается на всю оставшуюся ширину -->
-                                                <ComboBox fx:id="comBoxEventPreset" maxHeight="Infinity" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
-
-                                                <!-- Фиксированные размеры -->
-                                                <DatePicker fx:id="dtpkCreationDate" maxHeight="Infinity" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" promptText="Creation date" />
-                                                <Separator fx:id="btnsSepr" opacity="0.2" orientation="VERTICAL" />
-                                                <Label fx:id="labelMark" maxHeight="Infinity" minWidth="-Infinity" text="Mark:" textFill="#dddddd" underline="true">
-                                                   <font>
-                                                      <Font size="13.0" />
-                                                   </font>
-                                                </Label>
-                                                <Spinner fx:id="spinnerMark" maxHeight="Infinity" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" />
-                                                <Separator fx:id="btnsSepr2" layoutX="221.0" layoutY="10.0" opacity="0.2" orientation="VERTICAL" />
-                                                <Label fx:id="labelExpDate" layoutX="232.0" layoutY="10.0" maxHeight="Infinity" minWidth="-Infinity" text="Exp. Date:" textFill="#dddddd" underline="true">
-                                                   <font>
-                                                      <Font size="13.0" />
-                                                   </font>
-                                                </Label>
-
-                                                <!-- Вложенный HBox для элементов с фиксированными размерами -->
-                                                <HBox fx:id="hboxExpiredDate">
-                                                   <children>
-                                                      <Spinner fx:id="spinnerExpTimeCount" maxHeight="Infinity" minWidth="80.0" prefWidth="80.0" styleClass="expired-spinner" />
-                                                      <ComboBox fx:id="comBoxExpiredTime" maxHeight="Infinity" minWidth="120.0" prefWidth="120.0" styleClass="expired-combo-box">
-                                                         <items>
-                                                            <FXCollections fx:factory="observableArrayList">
-                                                               <String fx:value="Day (s)" />
-                                                               <String fx:value="Week (s)" />
-                                                               <String fx:value="Month (s)" />
-                                                            </FXCollections>
-                                                         </items>
-                                                      </ComboBox>
-                                                   </children>
-                                                </HBox>
-                                                <Button fx:id="btnCreateEvent" maxHeight="Infinity" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" onAction="#btnCreateEvent" prefWidth="100.0" styleClass="animated-create-button" text="Create" />
-                                             </children>
-                                          </HBox>
-                                       </bottom>
+                                    <BorderPane fx:id="eventInfoTopPane" prefHeight="225.0" BorderPane.alignment="CENTER">
                                        <center>
                                           <StackPane BorderPane.alignment="CENTER">
                                              <children>
                                                 <!-- Текстовое поле -->
-                                                <TextArea fx:id="txtAreaEventDescrp" prefHeight="200.0" prefWidth="200.0" promptText="Event description here..." />
+                                                <TextArea fx:id="txtAreaEventDescrp" promptText="Event description here..." wrapText="true" />
+                                                <Button fx:id="btnCancelEvent" maxHeight="48.0" maxWidth="48.0" mnemonicParsing="false" onAction="#btnCancelEvent" styleClass="animated-back-button" StackPane.alignment="BOTTOM_LEFT">
+                                                   <StackPane.margin>
+                                                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                   </StackPane.margin></Button>
                                                 <HBox alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32" prefWidth="96" StackPane.alignment="TOP_RIGHT">
                                                    <children>
-                                                      <Button mnemonicParsing="false" prefHeight="32.0" prefWidth="32.0" text="B" onAction="#setBoldText">
+                                                      <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0" prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
                                                          <font>
                                                             <Font name="System Bold" size="12.0" />
                                                          </font></Button>
-                                                      <Button mnemonicParsing="false" prefHeight="32.0" prefWidth="32.0" text="I" onAction="#setItalicText">
+                                                      <Button mnemonicParsing="false" onAction="#setItalicText" prefHeight="32.0" prefWidth="32.0" styleClass="middle-styled-button-italic" text="I">
                                                          <font>
                                                             <Font name="System Italic" size="12.0" />
                                                          </font></Button>
-                                                      <Button mnemonicParsing="false" prefHeight="32.0" prefWidth="32.0" text="U" underline="true" onAction="#setUnderlineText" />
+                                                      <Button mnemonicParsing="false" onAction="#setUnderlineText" prefHeight="32.0" prefWidth="32.0" styleClass="last-styled-button-underline" text="U" underline="true" />
                                                    </children>
                                                    <StackPane.margin>
                                                       <Insets right="10.0" top="10.0" />
                                                    </StackPane.margin>
                                                 </HBox>
                                              </children>
-                                             <padding>
-                                                <Insets bottom="5.0" />
-                                             </padding>
+                                             <BorderPane.margin>
+                                                <Insets right="5.0" />
+                                             </BorderPane.margin>
                                           </StackPane>
                                        </center>
+                                       <right>
+                                          <VBox spacing="5.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <BorderPane VBox.vgrow="ALWAYS">
+                                                   <center>
+                                                      <!-- Растягивается на всю оставшуюся ширину -->
+                                                      <ComboBox fx:id="comBoxEventPreset" maxHeight="Infinity" maxWidth="Infinity" />
+                                                   </center>
+                                                   <top>
+                                                      <HBox BorderPane.alignment="CENTER">
+                                                         <children>
+                                                            <Label text="Mode:" textFill="#dddddd">
+                                                               <font>
+                                                                  <Font size="13.0" />
+                                                               </font>
+                                                               <HBox.margin>
+                                                                  <Insets left="10.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                   </top>
+                                                </BorderPane>
+                                                <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+                                                   <children>
+                                                      <VBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                                         <children>
+                                                            <BorderPane maxHeight="-Infinity" prefHeight="70.0">
+                                                               <center>
+
+                                                                  <DatePicker fx:id="dtpkCreationDate" maxHeight="Infinity" maxWidth="1.7976931348623157E308" promptText="Creation date" BorderPane.alignment="CENTER" />
+                                                               </center>
+                                                               <top>
+                                                                  <Label minWidth="-Infinity" text="Creation date" textFill="#dddddd" BorderPane.alignment="CENTER">
+                                                                     <font>
+                                                                        <Font size="13.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </top>
+                                                            </BorderPane>
+                                                            <BorderPane maxHeight="-Infinity" prefHeight="70.0">
+                                                               <center>
+                  
+
+                                                                  <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                                                                     <DatePicker fx:id="dtpkExpirationDate" managed="false" maxHeight="Infinity" maxWidth="1.7976931348623157E308" promptText="Expiration date" visible="false" HBox.hgrow="ALWAYS" />
+
+                                                                     <HBox fx:id="hboxExpiredDate" alignment="CENTER_LEFT" maxHeight="Infinity" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                                        <children>
+                                                                           <Spinner fx:id="spinnerExpTimeCount" maxHeight="Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="70.0" styleClass="expired-spinner" HBox.hgrow="ALWAYS" />
+                                                                           <ComboBox fx:id="comBoxExpiredTime" maxHeight="Infinity" maxWidth="1.7976931348623157E308" styleClass="expired-combo-box" HBox.hgrow="ALWAYS">
+                                                                              <items>
+                                                                                 <FXCollections fx:factory="observableArrayList">
+                                                                                    <String fx:value="Day (s)" />
+                                                                                    <String fx:value="Week (s)" />
+                                                                                    <String fx:value="Month (s)" />
+                                                                                 </FXCollections>
+                                                                              </items>
+                                                                           </ComboBox>
+                                                                        </children>
+                                                                     </HBox>
+                                                                  </HBox>
+
+                                                               </center>
+                                                               <top>
+                                                                  <Label text="Expiration date" textFill="#dddddd" BorderPane.alignment="CENTER">
+                                                                     <font>
+                                                                        <Font size="13.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </top>
+                                                            </BorderPane>
+                                                         </children>
+                                                      </VBox>
+                                                      <VBox alignment="CENTER" prefWidth="70.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                                         <children>
+                                                            <BorderPane maxHeight="-Infinity" prefHeight="70.0">
+                                                               <center>
+                                                                  <Spinner fx:id="spinnerMark" maxHeight="Infinity" BorderPane.alignment="CENTER" />
+                                                               </center>
+                                                               <top>
+                                                                  <Label maxHeight="Infinity" minWidth="-Infinity" text="Mark" textFill="#dddddd" BorderPane.alignment="CENTER">
+                                                                     <font>
+                                                                        <Font size="13.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </top>
+                                                            </BorderPane>
+                                                            <BorderPane maxHeight="-Infinity" prefHeight="70.0" VBox.vgrow="NEVER">
+                                                               <top>
+                                                                  <Label textFill="#dddddd" BorderPane.alignment="CENTER">
+                                                                     <font>
+                                                                        <Font size="13.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </top>
+                                                               <center>
+                                                                  <Button fx:id="btnToSchedule" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#toggleExpirationInput" styleClass="animated-to-schedule-button" BorderPane.alignment="CENTER" />
+                                                               </center>
+                                                            </BorderPane>
+                                                         </children>
+                                                      </VBox>
+                                                   </children>
+                                                </HBox>
+                                                <Button fx:id="btnCreateEvent" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnCreateEvent" styleClass="animated-create-button" text="Create" />
+                                             </children>
+                                          </VBox>
+                                       </right>
                                     </BorderPane>
 
                                     <!-- Панель истории (сначала скрыта) -->
@@ -327,9 +400,6 @@
                      </padding>
                   </BorderPane>
                </center>
-            </BorderPane>
-            <BorderPane fx:id="notificationPane" mouseTransparent="true">
-
             </BorderPane>
          </children>
       </StackPane>

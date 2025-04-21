@@ -6,7 +6,7 @@ public enum EventMods {
     THIRD(new EventPreset("Some third mode", 4, "3 %d")),
 
     ///... some others mods
-    OTHER(new EventPreset("Other mode", 5, "1 %m"));   /// the last one
+    OTHER(new EventPreset("Other mode", 5, "1 %w"));   /// the last one
 
 
     private final EventPreset preset;

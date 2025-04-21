@@ -51,6 +51,9 @@ public class Student {
 
     @Override
     public String toString() {
-        return "Student { name='" + name + "', events=" + events + " }";
+        return "Student { " +
+                "ID='" + ID + "'" +
+                ", name='" + name + "'\n" +
+                "\tevents=\n" + events + " }\n";
     }
 }

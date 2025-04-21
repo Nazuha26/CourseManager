@@ -196,6 +196,8 @@
 
 
 /* =============== BUTTONS =============== */
+.animated-to-schedule-button,
+.animated-back-button,
 .animated-clear-history-button,
 .animated-add-event-button,
 .animated-create-button,
@@ -224,10 +226,9 @@
     -fx-border-radius: 15;
 }
 
+.animated-to-schedule-button,
+.animated-back-button,
 .animated-clear-history-button {
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-background-color: rgba(0, 0, 0, 0.8);
     -fx-background-image: url("../icons/w_clear_256x256.png");
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
@@ -239,7 +240,28 @@
     -fx-background-color: rgba(99, 99, 99, 0.3);
 }
 
+.animated-back-button {
+    -fx-background-image: url("../icons/w_back_256x256.png");
+    -fx-background-size: 32px 32px;
+    -fx-background-radius: 99;
+    -fx-border-radius: 99;
+    -fx-padding: 0px;
+}
+
+.animated-to-schedule-button {
+    -fx-background-image: url("../icons/w_to_schedule_256x256.png");
+    -fx-background-size: 48px 32px;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-padding: 0px;
+}
+
+.animated-to-schedule-button:hover {
+    -fx-background-color: rgba(53, 53, 53, 0.5);
+}
+
 .animated-create-button {
+    -fx-padding: 4 8 4 8;
     -fx-border-color: rgba(76, 186, 88, 0.8);
     -fx-background-color: rgba(92, 239, 107, 0.1);
 }
@@ -254,6 +276,7 @@
     -fx-border-color: rgba(230, 25, 25, 0.6);
 }
 
+.animated-back-button:hover,
 .animated-cancel-button:hover {
     -fx-background-color: rgba(188, 19, 19, 0.4);
     -fx-border-color: rgba(230, 25, 25, 0.8);
@@ -271,6 +294,47 @@
     -fx-background-color: rgba(53, 53, 53, 0.5);
 }
 /* ======================================= */
+
+/* ===== TEXT STYLED BUTTONS ===== */
+.last-styled-button-underline,
+.middle-styled-button-italic,
+.first-styled-button-bold {
+    -fx-background-color: rgba(0, 0, 0, 0.8);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.middle-styled-button-italic {
+    -fx-font-style: italic;
+}
+
+.first-styled-button-bold {
+    -fx-font-weight: bold;
+    -fx-background-radius: 10 0 0 10;
+    -fx-border-radius: 10 0 0 10;
+}
+
+.last-styled-button-underline {
+    -fx-background-radius: 0 10 10 0;
+    -fx-border-radius: 0 10 10 0;
+}
+
+.last-styled-button-underline:hover,
+.middle-styled-button-italic:hover,
+.first-styled-button-bold:hover {
+    -fx-background-color: rgba(53, 53, 53, 0.5);
+}
+/* =============================== */
 
 
 

@@ -3,16 +3,18 @@ package com.coursemanagerfx.dialogs;
 import com.coursemanagerfx.CM_HELPER;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import static com.coursemanagerfx.CM_HELPER.VERSION;
 import static com.coursemanagerfx.CM_HELPER.actionClose;
 
 public class About_controller {
 
     @FXML private BorderPane rootPane;
-    @FXML private Button btnOK;
+    @FXML private Label lblVersion;
 
     private Stage stage;
 
@@ -26,6 +28,7 @@ public class About_controller {
 
     @FXML
     private void initialize() {
+        lblVersion.setText("Version " + VERSION);
         // === СКРУГЛЕННЫЕ КРАЯ ===
         Rectangle clip = new Rectangle();
         clip.widthProperty().bind(rootPane.widthProperty());

@@ -8,17 +8,23 @@ import java.time.format.DateTimeFormatter;
 public class StudentEvent {
     private boolean isExpired;
 
+    private final int eventID;
     private final String creationDate;      // Дата создания ивента (строкой)
     private String description;             // Название и текст ивента
     private int mark;                       // Оценка за ивент
     private final String expiredDate;       // Дата истечения ивента (строкой)
 
-    public StudentEvent(String creationDate, String description, int mark, String expiredDate) {
+    public StudentEvent(int eventID, String creationDate, String description, int mark, String expiredDate) {
+        this.eventID = eventID;
         this.creationDate = creationDate;
         this.description = description;
         this.mark = mark;
         this.expiredDate = expiredDate;
         this.isExpired = false;
+    }
+
+    public int getID() {
+        return eventID;
     }
 
     public EventStatus getStatus() {
@@ -75,11 +81,12 @@ public class StudentEvent {
 
     @Override
     public String toString() {
-        return "StudentEvent {" +
-                "creationDate='" + creationDate + '\'' +
-                ", description='" + description + '\'' +
-                ", mark=" + mark +
-                ", expiredDate='" + expiredDate + '\'' +
-                '}';
+        return "\t\tEvent {\n" +
+                "\t\t\teventID='" + eventID + '\n' +
+                "\t\t\tcreationDate='" + creationDate + '\n' +
+                "\t\t\tdescription='" + description + '\n' +
+                "\t\t\tmark=" + mark + '\n' +
+                "\t\t\texpiredDate='" + expiredDate + '\n' +
+                "}\n";
     }
 }

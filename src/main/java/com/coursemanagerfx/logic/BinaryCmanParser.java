@@ -108,7 +108,7 @@ public class BinaryCmanParser {
             byte[] magic = new byte[4];
             raf.readFully(magic);
             if (!"HEAD".equals(new String(magic, StandardCharsets.US_ASCII))) {
-                throw new IOException("Некорректный файл: нет магии HEAD");
+                throw new IOException("Некорректный файл: not HEAD magic");
             }
             int groupsCount = raf.readInt();
             int offSTDS = raf.readInt();
@@ -244,5 +244,16 @@ public class BinaryCmanParser {
             this.expiredOffset = eo;
         }
     }
-}
 
+    public static void main(String[] args) {
+        File file = new File("C:\\Users\\Nazar\\.cmanfx\\Courses\\BinaryTest.cman");
+        try {
+            Group[] groups = parse(file);
+            for (int i = 0; i < groups.length; i++) {
+                System.out.println("Группа " + (i + 1) + ": " + groups[i]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
