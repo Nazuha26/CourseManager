@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic;
+package com.coursemanagerfx.logic.basic.event;
 
 public enum EventStatus {
     ACTIVE,

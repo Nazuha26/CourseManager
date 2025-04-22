@@ -1,8 +1,8 @@
 package com.coursemanagerfx.logic.commands;
 
 import com.coursemanagerfx.controllers.Main_controller;
-import com.coursemanagerfx.logic.Group;
-import com.coursemanagerfx.logic.Student;
+import com.coursemanagerfx.logic.basic.Group;
+import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
 public class RenameStudentCommand implements Command {

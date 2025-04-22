@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic;
+package com.coursemanagerfx.logic.basic;
 
 import java.util.ArrayList;
 import java.util.List;

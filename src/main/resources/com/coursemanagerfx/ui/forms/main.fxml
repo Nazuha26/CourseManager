@@ -170,6 +170,14 @@
                                                    <StackPane.margin>
                                                       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                                    </StackPane.margin></Button>
+                                                <Label fx:id="lblEditing" opacity="0.4" text="Editing..." textFill="#dddddd" StackPane.alignment="BOTTOM_CENTER">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                   <StackPane.margin>
+                                                      <Insets bottom="10.0" />
+                                                   </StackPane.margin>
+                                                </Label>
                                                 <HBox alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32" prefWidth="96" StackPane.alignment="TOP_RIGHT">
                                                    <children>
                                                       <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0" prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
@@ -296,7 +304,12 @@
                                                       </VBox>
                                                    </children>
                                                 </HBox>
-                                                <Button fx:id="btnCreateEvent" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnCreateEvent" styleClass="animated-create-button" text="Create" />
+                                                <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+                                                   <children>
+                                                      <Button fx:id="btnDeleteEvent" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="animated-cancel-button" text="Delete" HBox.hgrow="ALWAYS" visible="false" managed="false"/>
+                                                      <Button fx:id="btnCreateEvent" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnCreateEvent" styleClass="animated-create-button" text="Create" HBox.hgrow="ALWAYS" />
+                                                   </children>
+                                                </HBox>
                                              </children>
                                           </VBox>
                                        </right>
@@ -346,7 +359,7 @@
                                        <center>
                                           <BorderPane BorderPane.alignment="CENTER">
                                              <left>
-                                                <Label text="Group 1 - Course: NewFormatCourse, 10 people | Average score 4.2" textFill="WHITE" BorderPane.alignment="CENTER">
+                                                <Label text="SOME INFO TEXT" textFill="WHITE" BorderPane.alignment="CENTER">
                                                    <font>
                                                       <Font size="16.0" />
                                                    </font>

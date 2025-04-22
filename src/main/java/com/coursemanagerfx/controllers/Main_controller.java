@@ -2,14 +2,20 @@ package com.coursemanagerfx.controllers;
 
 
 import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.logic.basic.*;
 import com.coursemanagerfx.custom_ui.GradientBackground;
 import com.coursemanagerfx.dialogs.About_controller;
 import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.*;
-import com.coursemanagerfx.logic.commands.AddEventCommand;
-import com.coursemanagerfx.logic.commands.AddStudentCommand;
-import com.coursemanagerfx.logic.commands.Command;
+import com.coursemanagerfx.logic.basic.event.EventMods;
+import com.coursemanagerfx.logic.basic.event.EventPreset;
+import com.coursemanagerfx.logic.basic.event.EventStatus;
+import com.coursemanagerfx.logic.basic.event.StudentEvent;
+import com.coursemanagerfx.logic.basic.event.date.DateType;
+import com.coursemanagerfx.logic.basic.event.date.EventDate;
+import com.coursemanagerfx.logic.basic.event.date.ExpirationRule;
+import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.notification.AlertFX;
 import com.coursemanagerfx.notification.NotificationPosition;
@@ -17,10 +23,12 @@ import com.coursemanagerfx.notification.NotificationType;
 import eu.iamgio.animated.transition.AnimationPair;
 import eu.iamgio.animated.transition.container.AnimatedVBox;
 import javafx.animation.*;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
@@ -34,7 +42,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
@@ -45,7 +52,6 @@ import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -139,6 +145,7 @@ public class Main_controller {
     @FXML private Button btnMaximize;
     @FXML private Button btnMinimize;
     @FXML private Button btnToSchedule;
+    @FXML private Button btnDeleteEvent;
     // --- BUTTONS ---
     @FXML
     private TableView<StudentEvent> eventsTable;
@@ -159,7 +166,7 @@ public class Main_controller {
     private Group currentGroup;
     public Group getCurrentGroup() { return currentGroup; }
 
-    private Student getSelectedStudent() {
+    public Student getSelectedStudent() {
         for (Student student : currentGroup.getStudents()) {
             if (student.isSelected()) {
                 return student;
@@ -222,6 +229,11 @@ public class Main_controller {
         });
     }
 
+    private StudentEvent copyEvent;
+
+    private Button activeEditButton = null;
+    @FXML private Label lblEditing;
+
     @FXML
     public void initialize() {
         new GradientBackground(mainPanel, 0.005, 2); // ← ГРАДИЕНТОВЫЙ ФОН
@@ -247,6 +259,16 @@ public class Main_controller {
         notificationPane.setLeft(vboxLeftAnimated);
         notificationPane.setRight(vboxRightAnimated);
         // =======================
+
+        // === ИНИЦИАЛИЗАЦИЯ ОСНОВНОЙ ПАНЕЛИ ДОБАВЛЕНИЯ ИВЕНТА ===
+        mainTopPane.setTranslateX(100);
+        mainTopPane.setVisible(false);
+        mainTopPane.setManaged(false);
+        mainTopPane.setOpacity(0);
+        // =======================================================
+
+        lblEditing.setVisible(false);
+        lblEditing.setManaged(false);
 
         // === НАСТРОЙКА ИКОНОК НА *КНОПКАХ ИСТОРИИ* ===
         Image arrowImg = new Image(Objects.requireNonNull(getClass().getResource("/com/coursemanagerfx/ui/icons/w_arrow_256x256.png")).toExternalForm());
@@ -277,55 +299,56 @@ public class Main_controller {
         });
         // ======================================
 
-        // выбираем первую опцию в days/weeks/month
+        // выбираем при инициализации первую опцию days/weeks/month
         if (!comBoxExpiredTime.getItems().isEmpty())
             comBoxExpiredTime.getSelectionModel().selectFirst();
 
+        // === SPINNERS INIT ===
+        // Exp. Date spinner
         SpinnerValueFactory<Integer> valueFactoryExpTime =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerExpTimeCount.setValueFactory(valueFactoryExpTime);
 
+        // Mark spinner
         SpinnerValueFactory<Integer> valueFactoryMark =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 1, 1);
         spinnerMark.setValueFactory(valueFactoryMark);
+        // =====================
 
 
-        // 1) Наполняем комбобокс пресетами
+        // === INIT PRESETS COMBOBOX ===
         for (EventMods mod : EventMods.values()) {
-            comBoxEventPreset.getItems().add(mod.getPreset().getPresetName());
+            comBoxEventPreset.getItems().add(mod.getPreset().getName());
         }
-        comBoxEventPreset.getSelectionModel().selectFirst();
+        comBoxEventPreset.getSelectionModel().selectFirst();    // ← выбираем первый пресет
+        applyPresetToFields(
+                findModByName(
+                        comBoxEventPreset.getSelectionModel().getSelectedItem()     // ← загружаем данные пресета в поля
+                )
+        );
+        comBoxEventPreset.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            EventMods selectedMod = findModByName(newVal);
+            applyPresetToFields(selectedMod);
+        });
+        // =============================
 
-        // 2) Привязываем кнопку к дате создания
+        // === BTN TO SCHEDULE INIT ===
         btnToSchedule.disableProperty().bind(
                 dtpkCreationDate.valueProperty().isNull()
                         .or(
                                 comBoxEventPreset.getSelectionModel().selectedItemProperty()
-                                        .isNotEqualTo(EventMods.OTHER.getPreset().getPresetName())
+                                        .isNotEqualTo(EventMods.OTHER.getPreset().getName())
                         )
         );
-
-        // 3) Слушатель на смену пресета
-        comBoxEventPreset.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            EventMods selectedMod = findModByDescription(newVal);
-            applyPresetToFields(selectedMod);
-        });
-
-        // 4) Применим сразу к тому, что выбран первым
-        applyPresetToFields(
-                findModByDescription(
-                        comBoxEventPreset.getSelectionModel().getSelectedItem()
-                )
-        );
+        // ============================
 
 
-        mainTopPane.setTranslateX(100);
-        mainTopPane.setVisible(false);
-        mainTopPane.setManaged(false);
-        mainTopPane.setOpacity(0);
 
-        eventsTable.getColumns().forEach(col -> col.setReorderable(false));
+        // ============================== ***INIT EVENT TABLE***    ============================== \\
+        // *************************************************************************************** \\
+        eventsTable.getColumns().forEach(col -> col.setReorderable(false));     // ← убираем драг колонок
 
+        // ========== *КОЛОНКА* NUMBER ==========
         numberColumn.setCellValueFactory(cellData ->
                 new ReadOnlyObjectWrapper<>(eventsTable.getItems().indexOf(cellData.getValue()) + 1)
         );
@@ -343,12 +366,24 @@ public class Main_controller {
                 }
             }
         });
+        // ======================================
 
-        crtDateColumn.setCellValueFactory(new PropertyValueFactory<>("creationDate"));
+
+
+        // ========== *КОЛОНКА* CREATION DATE ==========
+        //crtDateColumn.setCellValueFactory(new PropertyValueFactory<>("crtDate"));
+
+        // === СОРТИРОВКА ПО ДАТЕ ===
+        crtDateColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getCrtDate().toString())
+        );
+        // =============================================
+
+
+
+        // ========== *КОЛОНКА* DESCRIPTION ==========
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         descriptionColumn.setCellFactory(column -> new TableCell<StudentEvent, String>() {
-
-            private static final int MAX_TEXT_LENGTH = 80;
 
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -369,14 +404,43 @@ public class Main_controller {
                     btnEdit.getStyleClass().add("edit-button");
                     StackPane.setAlignment(btnEdit, Pos.TOP_RIGHT);
 
-                    btnEdit.setOnAction((e) -> {
-                        System.out.println("Нажата");
+
+                    btnEdit.setOnAction(e -> {
+                        eventsTable.getColumns().forEach(col -> col.setSortable(false));
+                        if (isAnimPlaysFlag) return;
+
+                        StudentEvent event = getTableRow().getItem();
+                        if (event == null) return; // на всякий случай
+
+                        // Если редактируем другой ивент — сбрасываем прошлое
+                        if (editingEvent != null && editingEvent != event) {
+                            if (activeEditButton != null) {
+                                activeEditButton.setStyle(""); // снимаем выделение с предыдущей кнопки
+                            }
+                            editingEvent = null;
+                        }
+
+                        if (editingEvent == event) {
+                            // Повторное нажатие на ту же кнопку — отмена редактирования
+                            editingEvent = null;
+                            btnEdit.setStyle("");
+                            hideMainTopPane(false);
+                            activeEditButton = null;
+                            stopEditing();
+                        } else {
+                            // Начинаем редактирование
+                            editingEvent = event;
+                            openEditPane(event);
+                            btnEdit.setStyle("-fx-background-color: rgba(221,0,0,0.5);" +
+                                    "-fx-background-image: url(/com/coursemanagerfx/ui/icons/w_minimize_256x256.png)");
+                            activeEditButton = btnEdit;
+                        }
                     });
+
                     StackPane stackPane = new StackPane(vbox, btnEdit);
                     setGraphic(stackPane);
                 }
             }
-
 
             private TextFlow createTrimmedTextFlow(String textStr) {
                 TextFlow flow = new TextFlow();
@@ -410,15 +474,55 @@ public class Main_controller {
                 return flow;
             }
         });
+        // ===========================================
 
+
+
+        // ========== *КОЛОНКА* MARK ==========
         marksColumn.setCellValueFactory(new PropertyValueFactory<>("mark"));
-        expDateColumn.setCellValueFactory(new PropertyValueFactory<>("expiredDate"));
-        expDateColumn.setComparator((s1, s2) -> {
-            int val1 = extractDays(s1);
-            int val2 = extractDays(s2);
-            return Integer.compare(val1, val2);
+
+
+
+        // ========== *КОЛОНКА* EXPIRATION DATE ==========
+        //expDateColumn.setCellValueFactory(new PropertyValueFactory<>("expDate"));
+
+        // Устанавливаем количество дней в скобках между датой создания и датой окончания
+        expDateColumn.setCellValueFactory(cellData -> {
+            StudentEvent event = cellData.getValue();
+            String formatted = event.getExpDate().toFormattedWithDaysFrom(event.getCrtDate());
+            return new SimpleStringProperty(formatted);
         });
 
+        // === СОРТИРОВКА ПО ДАТЕ ===
+        expDateColumn.setComparator(Comparator.comparing(s -> {
+            String[] parts = s.split(" ")[0].split("\\.");
+            return LocalDate.of(
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[0])
+            );
+        }));
+        // === СОРТИРОВКА ПО ЗНАЧЕНИЮ В СКОБКАХ EXP. DATE ===
+        /*expDateColumn.setComparator(Comparator.comparingInt(s -> {
+            try {
+                // Извлекаем число из строки: "dd.MM.yyyy (XX days)"
+                int start = s.indexOf('(');
+                int end = s.indexOf(" days");
+                if (start != -1 && end != -1 && start < end) {
+                    String num = s.substring(start + 1, end).trim();
+                    return Integer.parseInt(num);
+                }
+            } catch (Exception e) {
+                // В случае ошибки (например, "error") — возвращаем максимум
+                return Integer.MAX_VALUE;
+            }
+            return Integer.MAX_VALUE;
+        }));*/
+        // ==================================================
+
+
+
+        // ========== *КОЛОНКА* STATUS ==========
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusColumn.setCellFactory(column -> new TableCell<StudentEvent, EventStatus>() {
             @Override
@@ -445,62 +549,196 @@ public class Main_controller {
                 }
             }
         });
+        // ======================================
+        // ======================================================================================= \\
 
-         //stage = (Stage) mainPanel.getScene().getWindow();
     }   // ГЛАВНАЯ ИНИЦИАЛИЗАЦИЯ
+
+    private StudentEvent editingEvent = null;
+
+    private void stopEditing() {
+        btnCancelEvent.setVisible(true);
+        btnCancelEvent.setManaged(true);
+        comBoxEventPreset.getSelectionModel().select(EventMods.FIRST.getPreset().getName());
+        txtAreaEventDescrp.setText("");
+        lblEditing.setVisible(false);
+        lblEditing.setManaged(false);
+        btnDeleteEvent.setVisible(false);
+        btnDeleteEvent.setManaged(false);
+        btnCreateEvent.setText("Create");
+        eventsTable.getColumns().forEach(col -> col.setSortable(true));
+        btnCreateEvent.setOnAction(evt -> btnCreateEvent()); // ← оригинальный handler
+    }
+
+    public void openEditPane(StudentEvent event) {
+        // 1) Показать панель, если она скрыта
+        if (!mainTopPane.isVisible()) {
+            showMainTopPane(TopPaneMode.EVENT_INFO);
+        }
+
+        // 2) Сохраняем, что редактируем это событие
+        editingEvent = event;
+
+        btnCancelEvent.setVisible(false);
+        btnCancelEvent.setManaged(false);
+
+        lblEditing.setVisible(true);
+        lblEditing.setManaged(true);
+
+        // 3) Заполняем форму
+        comBoxEventPreset.getSelectionModel().select(EventMods.OTHER.getPreset().getName());    // ← выбираем "OTHER"
+
+        txtAreaEventDescrp.setText(event.getDescription());
+
+        // — дата создания
+        EventDate cd = event.getCrtDate();
+        LocalDate creation = LocalDate.of(cd.getYear(), cd.getMonth(), cd.getDay());
+        dtpkCreationDate.setValue(creation);
+
+        // — оценка
+        spinnerMark.getValueFactory().setValue(event.getMark());
+
+        // — рассчитываем RAW-срок и выставляем спиннер/комбобокс/датапикер
+        EventDate ed = event.getExpDate();
+        LocalDate expiration = LocalDate.of(ed.getYear(), ed.getMonth(), ed.getDay());
+        dtpkExpirationDate.setValue(expiration);
+
+        long days = ChronoUnit.DAYS.between(creation, expiration);
+        spinnerExpTimeCount.getValueFactory().setValue((int) days);
+        comBoxExpiredTime.getSelectionModel().select("Day (s)");
+
+        // 4) Меняем кнопку «Create» → «Save» и навешиваем сохранение
+        btnCreateEvent.setText("Save");
+        btnCreateEvent.setOnAction(ae -> saveEditedEvent());
+
+        btnDeleteEvent.setVisible(true);
+        btnDeleteEvent.setManaged(true);
+        btnDeleteEvent.setOnAction(ae -> {
+            if (isAnimPlaysFlag) return;
+            boolean isDelete = showConfirmDialog(mainPanel.getScene().getWindow(), ConfirmDialogType.INFO,
+                    "Event deleting...",
+                    "Do you want to delete this event?");
+
+            if (isDelete) {
+                StudentEvent currentEvent = editingEvent;
+                DeleteEventCommand cmd = new DeleteEventCommand(
+                        getCurrentGroup(),
+                        getSelectedStudent(),
+                        currentEvent,
+                        this
+                );
+                cmd.execute(false);
+                addCommand(cmd);
+                stopEditing();
+                hideMainTopPane(false);
+                editingEvent = null;
+            }
+        });
+    }
+
+    private void saveEditedEvent() {
+        if (editingEvent == null) return;
+
+        // 1) Собираем новые значения из формы
+        String newDesc = txtAreaEventDescrp.getText().trim();
+
+        LocalDate createLd = dtpkCreationDate.getValue();
+        EventDate newCrt = new EventDate(
+                createLd.getDayOfMonth(),
+                createLd.getMonthValue(),
+                createLd.getYear()
+        );
+
+        int newMark = spinnerMark.getValue();
+
+        // expiration date: по DatePicker'у, если он виден, иначе по спиннеру+комбо
+        LocalDate newExpLd;
+        if (dtpkExpirationDate.getValue() != null) {
+            newExpLd = dtpkExpirationDate.getValue();
+        } else {
+            int count = spinnerExpTimeCount.getValue();
+            String unit = comBoxExpiredTime.getSelectionModel().getSelectedItem();
+            switch (unit) {
+                case "Month (s)" -> newExpLd = createLd.plusMonths(count);
+                case "Week (s)"  -> newExpLd = createLd.plusWeeks(count);
+                default          -> newExpLd = createLd.plusDays(count);
+            }
+        }
+        EventDate newExp = new EventDate(
+                newExpLd.getDayOfMonth(),
+                newExpLd.getMonthValue(),
+                newExpLd.getYear()
+        );
+
+        // 2) Создаём копию события с новыми данными
+        StudentEvent editedCopy = new StudentEvent(
+                editingEvent.getID(),
+                newCrt,
+                newDesc,
+                newMark,
+                newExp
+        );
+
+        // 3) Выполняем команду редактирования
+        EditEventCommand cmd = new EditEventCommand(
+                getCurrentGroup(),
+                getSelectedStudent(),
+                editingEvent,
+                editedCopy,
+                this
+        );
+        cmd.execute(false);
+        addCommand(cmd);
+
+        // 4) Сбрасываем форму и скрываем панель
+        stopEditing();
+        editingEvent = null;
+        hideMainTopPane(false);
+    }
+
 
     /**
      * Заполняет spinner + combo и блокирует/разблокирует их
      */
     private void applyPresetToFields(EventMods mod) {
-        boolean custom = (mod == EventMods.OTHER);
-        spinnerMark.getValueFactory().setValue(mod.getPreset().getMark());    // ← устанавливаем оценку
+        boolean isCustom = (mod == EventMods.OTHER);
+        EventPreset preset = mod.getPreset();
 
-        String raw = mod.getPreset().getExpiredTime();
-        String[] parts = raw.split(" ");
-        int count = Integer.parseInt(parts[0]);
-        String code = parts[1];
+        // Устанавливаем оценку
+        spinnerMark.getValueFactory().setValue(preset.getMark());
+
+        // Получаем правило
+        ExpirationRule rule = preset.getRule();
+        int count = rule.getCount();
+        DateType unit = rule.getUnit();
+
+        // Устанавливаем значения в spinner + combo
         spinnerExpTimeCount.getValueFactory().setValue(count);
-        switch (code) {
-            case "%d" -> comBoxExpiredTime.getSelectionModel().select("Day (s)");
-            case "%w" -> comBoxExpiredTime.getSelectionModel().select("Week (s)");
-            case "%m" -> comBoxExpiredTime.getSelectionModel().select("Month (s)");
+        switch (unit) {
+            case DAY -> comBoxExpiredTime.getSelectionModel().select("Day (s)");
+            case WEEK -> comBoxExpiredTime.getSelectionModel().select("Week (s)");
+            case MONTH -> comBoxExpiredTime.getSelectionModel().select("Month (s)");
         }
-        if (custom) {
+
+        // Устанавливаем или сбрасываем дату истечения
+        if (isCustom) {
             dtpkExpirationDate.setValue(null);
         } else {
-            // разбираем срок (например: "5 %w")
-            if (dtpkCreationDate.getValue() != null) {
-                LocalDate creation = dtpkCreationDate.getValue();
-                LocalDate expiration = switch (code) {
-                    case "%d" -> creation.plusDays(count);
-                    case "%w" -> creation.plusWeeks(count);
-                    case "%m" -> creation.plusMonths(count);
-                    default -> creation;
-                };
+            LocalDate creation = dtpkCreationDate.getValue();
+            if (creation != null) {
+                LocalDate expiration = rule.apply(creation);
                 dtpkExpirationDate.setValue(expiration);
             }
             if (showingDatePicker) {
-                toggleExpirationInput(); // ← вызвать анимацию возврата
+                toggleExpirationInput(); // Анимация возврата
             }
         }
 
-        // Блокируем/разблокируем поля (все, кроме даты создания)
-        spinnerMark.setDisable(!custom);
-        spinnerExpTimeCount.setDisable(!custom);
-        comBoxExpiredTime.setDisable(!custom);
-        dtpkExpirationDate.setDisable(!custom);
-    }
-
-    // Утилитный метод для получения значения Exp. Date из ивента
-    private int extractDays(String text) {
-        if (text == null || !text.contains("(")) return Integer.MAX_VALUE;
-        try {
-            String inside = text.substring(text.indexOf('(') + 1, text.indexOf(" days)")).trim();
-            return Integer.parseInt(inside);
-        } catch (Exception e) {
-            return Integer.MAX_VALUE;
-        }
+        // Включаем/отключаем поля (все, кроме даты создания)
+        spinnerMark.setDisable(!isCustom);
+        spinnerExpTimeCount.setDisable(!isCustom);
+        comBoxExpiredTime.setDisable(!isCustom);
+        dtpkExpirationDate.setDisable(!isCustom);
     }
 
     public void initializeTabs(Group[] course) {
@@ -597,6 +835,8 @@ public class Main_controller {
     }           // ПОКАЗ СТУДЕНТОВ
     public void loadStudentEvents(int studentID) {
         Student student = findStudentById(studentID);
+        if (student == null) return;
+
         // Сначала сбрасываем стили у всех кнопок
         for (Node node : studentVBox.getChildren()) {
             if (node instanceof BorderPane borderPane) {
@@ -621,16 +861,16 @@ public class Main_controller {
         }
 
         // Загружаем события
-        eventsTable.getItems().clear();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        // 2. Обновляем статус событий
+        LocalDate now = LocalDate.now();
         for (StudentEvent event : student.getEvents()) {
-            String rawDate = event.getExpiredDate().split(" ")[0];
-            LocalDate expiredDate = LocalDate.parse(rawDate, formatter);
-            if (expiredDate.isBefore(LocalDate.now())) {
-                event.setExpired(true);
-            }
+            EventDate exp = event.getExpDate();
+            LocalDate expDate = LocalDate.of(exp.getYear(), exp.getMonth(), exp.getDay());
+            event.setExpired(expDate.isBefore(now));
         }
-        eventsTable.getItems().addAll(student.getEvents());
+
+        // 3. Загружаем события в таблицу
+        eventsTable.getItems().setAll(student.getEvents());
     }       // ЗАГРУЗКА ИВЕНТОВ ДЛЯ СТУДЕНТА
 
     // Утилитный метод для установки стиля выбранного студента
@@ -693,105 +933,76 @@ public class Main_controller {
     private void btnCreateEvent() {
         Student selectedStudent = getSelectedStudent();
         if (selectedStudent == null) {
-            AlertFX alertFX = new AlertFX(NotificationType.WARNING,
-                    "Choose the student",
-                    "",
-                    NotificationPosition.TOP,
-                    getVBoxRight());
-            alertFX.show();
+            showWarning("Choose the student");
+            return;
+        }
+
+        LocalDate creationDateRaw = dtpkCreationDate.getValue();
+        if (creationDateRaw == null) {
+            showWarning("Select creation date");
+            return;
+        }
+
+        String description = txtAreaEventDescrp.getText().trim();
+        if (description.isEmpty()) {
+            showWarning("Enter a description of the event");
             return;
         }
 
         String selectedDesc = comBoxEventPreset.getSelectionModel().getSelectedItem();
-        EventMods selectedMod = findModByDescription(selectedDesc);
+        EventMods selectedMod = findModByName(selectedDesc);
 
         int mark;
-        String expiredRaw;
+        LocalDate expirationDate;
 
         if (selectedMod == EventMods.OTHER) {
+            // Проверки заполненности полей
+            if (spinnerMark.getValue() == null || spinnerExpTimeCount.getValue() == null ||
+                    comBoxExpiredTime.getSelectionModel().getSelectedItem() == null ||
+                    (!showingDatePicker && dtpkExpirationDate.getValue() == null)) {
+                showWarning("Fill in all fields for the custom event");
+                return;
+            }
+
             mark = spinnerMark.getValue();
 
             if (showingDatePicker) {
-                // → вручную выбрана дата окончания
-                LocalDate creationDateRaw = dtpkCreationDate.getValue();
-                LocalDate expirationDate = dtpkExpirationDate.getValue();
-                long days = ChronoUnit.DAYS.between(creationDateRaw, expirationDate);
-                expiredRaw = days + " %d"; // always in days
+                expirationDate = dtpkExpirationDate.getValue();
             } else {
-                // → считаем по спинеру и комбобоксу
-                expiredRaw = getExpiredDate();
+                ExpirationRule rule = getCustomExpirationRule();
+                expirationDate = rule.apply(creationDateRaw);
             }
 
         } else {
             mark = selectedMod.getPreset().getMark();
-            expiredRaw = selectedMod.getPreset().getExpiredTime();
+            expirationDate = selectedMod.getPreset().getRule().apply(creationDateRaw);
         }
 
-        LocalDate creationDateRaw = dtpkCreationDate.getValue();
-        //String description = txtAreaEventDescrp.getText().replaceAll("\\s*[\r\n]+\\s*", " ").trim();
-        String description = txtAreaEventDescrp.getText().trim();
-
-        // Проверки на пустые поля
-        if (creationDateRaw == null) {
-            AlertFX alertFX = new AlertFX(NotificationType.WARNING,
-                    "Select creation date",
-                    "",
-                    NotificationPosition.TOP,
-                    getVBoxRight());
-            alertFX.show();
-            return;
-        }
-
-        if (description.isEmpty()) {
-            AlertFX alertFX = new AlertFX(NotificationType.WARNING,
-                    "Enter a description of the event",
-                    "",
-                    NotificationPosition.TOP,
-                    getVBoxRight());
-            alertFX.show();
-            return;
-        }
-
-        // Дополнительная проверка для режима OTHER
-        if (selectedMod == EventMods.OTHER) {
-            if (spinnerMark.getValue() == null || spinnerExpTimeCount.getValue() == null ||
-                    comBoxExpiredTime.getSelectionModel().getSelectedItem() == null) {
-                AlertFX alertFX = new AlertFX(NotificationType.WARNING,
-                        "Fill in all fields for the custom event",
-                        "",
-                        NotificationPosition.TOP,
-                        getVBoxRight());
-                alertFX.show();
-                return;
-            }
-        }
-
-
-        String creationDate = creationDateRaw.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-
-        // --- Парсим срок
-        String[] parts = expiredRaw.split(" ");
-        int value = Integer.parseInt(parts[0]);
-        String type = parts[1];
-
-        LocalDate expDate;
-        switch (type) {
-            case "%d" -> expDate = creationDateRaw.plusDays(value);
-            case "%w" -> expDate = creationDateRaw.plusWeeks(value);
-            case "%m" -> expDate = creationDateRaw.plusMonths(value);
-            default -> expDate = creationDateRaw;
-        }
-
-        long daysBetween = ChronoUnit.DAYS.between(creationDateRaw, expDate);
-        String formattedExpDate = expDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + " (" + daysBetween + " days)";
+        EventDate creationDate = new EventDate(creationDateRaw.getDayOfMonth(), creationDateRaw.getMonthValue(), creationDateRaw.getYear());
+        EventDate expDate = new EventDate(expirationDate.getDayOfMonth(), expirationDate.getMonthValue(), expirationDate.getYear());
 
         int eventID = genUniqueEventId();
-        StudentEvent newEvent = new StudentEvent(eventID, creationDate, description, mark, formattedExpDate);
+        StudentEvent newEvent = new StudentEvent(eventID, creationDate, description, mark, expDate);
 
-        // Создаем и выполняем команду добавления события
         Command cmd = new AddEventCommand(currentGroup, selectedStudent, newEvent, this);
         cmd.execute(false);
         addCommand(cmd);
+    }
+
+    private ExpirationRule getCustomExpirationRule() {
+        int count = spinnerExpTimeCount.getValue();
+        String unitText = comBoxExpiredTime.getSelectionModel().getSelectedItem();
+
+        return switch (unitText) {
+            case "Day (s)" -> new ExpirationRule(count, DateType.DAY);
+            case "Week (s)" -> new ExpirationRule(count, DateType.WEEK);
+            case "Month (s)" -> new ExpirationRule(count, DateType.MONTH);
+            default -> new ExpirationRule(0, DateType.DAY); // fallback
+        };
+    }
+
+    private void showWarning(String message) {
+        new AlertFX(NotificationType.WARNING, message, "", NotificationPosition.TOP, getVBoxRight()).show();
     }
 
     @FXML
@@ -1014,7 +1225,7 @@ public class Main_controller {
         hideTopPane.play();
     }
     // Генерация уникального 7-значного ID студента
-    public int genUniqueStudentId() {
+    /*public int genUniqueStudentId() {
         Set<Integer> existingIds = new HashSet<>();
 
         for (Group group : helper.getCourse()) {
@@ -1029,9 +1240,26 @@ public class Main_controller {
         } while (existingIds.contains(newId));
 
         return newId;
+    }*/
+    public int genUniqueStudentId() {
+        Set<Integer> existingIds = new HashSet<>();
+
+        for (Group group : helper.getCourse()) {
+            for (Student student : group.getStudents()) {
+                existingIds.add(student.getID());
+            }
+        }
+
+        int newId = 1_000_000;
+        while (existingIds.contains(newId)) {
+            newId++;
+        }
+
+        return newId;
     }
+
     // Генерация уникального 5-значного ID ивента
-    public int genUniqueEventId() {
+    /*public int genUniqueEventId() {
         Set<Integer> existingIds = new HashSet<>();
 
         for (Group group : helper.getCourse()) {
@@ -1048,28 +1276,34 @@ public class Main_controller {
         } while (existingIds.contains(newId));
 
         return newId;
+    }*/
+    public int genUniqueEventId() {
+        Set<Integer> existingIds = new HashSet<>();
+
+        for (Group group : helper.getCourse()) {
+            for (Student student : group.getStudents()) {
+                for (StudentEvent event : student.getEvents()) {
+                    existingIds.add(event.getID());
+                }
+            }
+        }
+
+        int newId = 10_000;
+        while (existingIds.contains(newId)) {
+            newId++;
+        }
+
+        return newId;
     }
 
     // Поиск ивента по его названию и списка пресетов
-    public static EventMods findModByDescription(String desc) {
+    public static EventMods findModByName(String name) {
         for (EventMods mod : EventMods.values()) {
-            if (mod.getPreset().getPresetName().equals(desc)) {
+            if (mod.getPreset().getName().equals(name)) {
                 return mod;
             }
         }
         return EventMods.OTHER;
-    }
-    // Получить Exp. Date из спинера и комбобокса
-    private String getExpiredDate() {
-        int count_time = spinnerExpTimeCount.getValue();
-        String type_time = comBoxExpiredTime.getSelectionModel().getSelectedItem();
-
-        return switch (type_time) {
-            case "Day (s)" -> count_time + " %d";
-            case "Week (s)" -> count_time + " %w";
-            case "Month (s)" -> count_time + " %m";
-            default -> count_time + " %d"; // по умолчанию — дни
-        };
     }
     // Анимация мигания
     private Timeline blinkingAnim(Node node) {

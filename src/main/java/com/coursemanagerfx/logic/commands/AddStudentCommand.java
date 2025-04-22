@@ -1,7 +1,8 @@
 package com.coursemanagerfx.logic.commands;
 
+import com.coursemanagerfx.logic.basic.Group;
+import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.controllers.Main_controller;
-import com.coursemanagerfx.logic.*;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
 public class AddStudentCommand implements Command {

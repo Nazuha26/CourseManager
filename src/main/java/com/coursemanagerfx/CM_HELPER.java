@@ -7,8 +7,7 @@ import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.InputDialog_controller;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.BinaryCmanParser;
-import com.coursemanagerfx.logic.Group;
-import com.coursemanagerfx.logic.utilitys.OnboardingOverlayUtility;
+import com.coursemanagerfx.logic.basic.Group;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -35,7 +34,7 @@ import java.io.IOException;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "1.0.2";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;

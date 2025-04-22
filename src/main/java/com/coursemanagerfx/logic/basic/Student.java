@@ -1,4 +1,6 @@
-package com.coursemanagerfx.logic;
+package com.coursemanagerfx.logic.basic;
+
+import com.coursemanagerfx.logic.basic.event.StudentEvent;
 
 import java.util.ArrayList;
 import java.util.List;

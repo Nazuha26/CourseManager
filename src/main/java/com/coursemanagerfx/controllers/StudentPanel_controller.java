@@ -1,7 +1,7 @@
 package com.coursemanagerfx.controllers;
 
 import com.coursemanagerfx.dialogs.ConfirmDialogType;
-import com.coursemanagerfx.logic.Student;
+import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.commands.DeleteStudentCommand;
 import com.coursemanagerfx.logic.commands.RenameStudentCommand;
 import javafx.fxml.FXML;

@@ -2,11 +2,10 @@ package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
 import com.coursemanagerfx.logic.BinaryCmanSaver;
-import com.coursemanagerfx.logic.Group;
+import com.coursemanagerfx.logic.basic.Group;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
