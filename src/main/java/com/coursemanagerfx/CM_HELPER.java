@@ -8,6 +8,7 @@ import com.coursemanagerfx.dialogs.InputDialog_controller;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.BinaryCmanParser;
 import com.coursemanagerfx.logic.basic.Group;
+import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -34,7 +35,7 @@ import java.io.IOException;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String CUR_VERSION = "1.0.3";
+    public static final String CUR_VERSION = "1.0.4";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
@@ -354,7 +355,14 @@ public class CM_HELPER {
         Main_controller mainController = loader.getController();
         mainController.setStage(stage);
 
-        mainController.getLblCurHistory().setText("");  // ← очищаем лабель с историей
+        HistoryUtility.setHistory(
+                mainController.getRichTxtPaneHistory(),
+                mainController.getLblCurHistory(),
+                HistoryUtility.Types.INFO,
+                "No updates found"
+        );
+
+        //mainController.getLblCurHistory().setText("");  // ← очищаем лабель с историей
 
         stage.show();
 
