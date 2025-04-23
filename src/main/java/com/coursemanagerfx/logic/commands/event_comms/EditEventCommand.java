@@ -1,9 +1,10 @@
-package com.coursemanagerfx.logic.commands;
+package com.coursemanagerfx.logic.commands.event_comms;
 
 import com.coursemanagerfx.controllers.Main_controller;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
+import com.coursemanagerfx.logic.commands.Command;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
 public class EditEventCommand implements Command {

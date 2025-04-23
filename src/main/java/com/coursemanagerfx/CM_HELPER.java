@@ -34,7 +34,7 @@ import java.io.IOException;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String VERSION = "1.0.2";
+    public static final String CUR_VERSION = "1.0.3";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
@@ -46,18 +46,14 @@ public class CM_HELPER {
     public static final File FIRST_RUN_FILE = new File(CONFIG_DIR, "FirstRun");
     public static final File CONFIG_FILE = new File(CONFIG_DIR, "config.json");
 
-    //public File TEMP_FILE = new File(CONFIG_DIR,  "_temp.json");
-
     private String courseName;
     private Group[] Course;
-    //private String FileCoursePath;
 
     public String getCourseName() {
         return courseName;
     }
     public void setCourseName(String courseName) {
         this.courseName = courseName;
-        //this.TEMP_FILE = new File(CONFIG_DIR, courseName + "_temp.json");
     }
 
     // ------------------------------------------------------------------

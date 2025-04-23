@@ -51,9 +51,8 @@ jpackage ^
   --runtime-image runtime ^
   --win-menu ^
   --win-shortcut ^
-  --win-dir-chooser ^
   --java-options "-Xmx512m"
-
+  REM --win-dir-chooser ^
 
 REM === CLEANUP TEMP FILES ===
 rmdir /S /Q %INPUT_DIR%

@@ -105,9 +105,6 @@
    <center>
       <StackPane BorderPane.alignment="CENTER">
          <children>
-            <BorderPane fx:id="notificationPane" mouseTransparent="true">
-
-            </BorderPane>
             <BorderPane>
                <left>
                   <BorderPane styleClass="fancy-left-pane" BorderPane.alignment="CENTER">
@@ -306,7 +303,7 @@
                                                 </HBox>
                                                 <HBox spacing="5.0" VBox.vgrow="ALWAYS">
                                                    <children>
-                                                      <Button fx:id="btnDeleteEvent" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="animated-cancel-button" text="Delete" HBox.hgrow="ALWAYS" visible="false" managed="false"/>
+                                                      <Button fx:id="btnDeleteEvent" managed="false" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="animated-cancel-button" text="Delete" visible="false" HBox.hgrow="ALWAYS" />
                                                       <Button fx:id="btnCreateEvent" maxHeight="Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnCreateEvent" styleClass="animated-create-button" text="Create" HBox.hgrow="ALWAYS" />
                                                    </children>
                                                 </HBox>
@@ -413,6 +410,9 @@
                      </padding>
                   </BorderPane>
                </center>
+            </BorderPane>
+            <BorderPane fx:id="notificationPane" mouseTransparent="true">
+
             </BorderPane>
          </children>
       </StackPane>

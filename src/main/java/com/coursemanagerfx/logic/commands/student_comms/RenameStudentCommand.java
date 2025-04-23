@@ -1,51 +1,47 @@
-package com.coursemanagerfx.logic.commands;
+package com.coursemanagerfx.logic.commands.student_comms;
 
 import com.coursemanagerfx.controllers.Main_controller;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.StudentEvent;
+import com.coursemanagerfx.logic.commands.Command;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
-public class AddEventCommand implements Command {
+public class RenameStudentCommand implements Command {
     private Group group;
     private Student student;
-    private StudentEvent event;
+    private String oldName;
+    private String newName;
     private Main_controller mainController;
 
-    public AddEventCommand(Group group, Student student, StudentEvent event, Main_controller mainController) {
+    public RenameStudentCommand(Group group, Student student, String newName, Main_controller mainController) {
         this.group = group;
         this.student = student;
-        this.event = event;
+        this.oldName = student.getName();
+        this.newName = newName;
         this.mainController = mainController;
     }
 
     @Override
     public void execute(boolean isRedo) {
-        student.getEvents().add(event);
+        student.setName(newName);
         mainController.displayStudents(group);
         mainController.selectGroupAndStudent(group, student.getID());
 
         if (!isRedo) {
-            String shortDesc = event.getDescription().length() > 10
-                    ? event.getDescription().substring(0, 10) + "..."
-                    : event.getDescription();
             HistoryUtility.setHistory(mainController.getRichTxtPaneHistory(), mainController.getLblCurHistory(),
-                    HistoryUtility.Types.SUCCESS, "Added event \"" + shortDesc + "\"");
+                    HistoryUtility.Types.SUCCESS, "Renamed student to \"" + student.getName() + "\"");
         }
     }
 
     @Override
     public void undo() {
-        student.getEvents().remove(event);
+        student.setName(oldName);
         mainController.displayStudents(group);
         mainController.selectGroupAndStudent(group, student.getID());
     }
 
     @Override
     public String getDescription() {
-        String shortDesc = event.getDescription().length() > 10
-                ? event.getDescription().substring(0, 10) + "..."
-                : event.getDescription();
-        return "added event \"" + shortDesc + "\"";
+        return "renamed student to \"" + student.getName() + "\"";
     }
 }

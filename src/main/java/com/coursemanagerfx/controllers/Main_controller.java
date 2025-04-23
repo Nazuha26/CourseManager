@@ -16,6 +16,10 @@ import com.coursemanagerfx.logic.basic.event.date.DateType;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 import com.coursemanagerfx.logic.basic.event.date.ExpirationRule;
 import com.coursemanagerfx.logic.commands.*;
+import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
+import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
+import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
+import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.notification.AlertFX;
 import com.coursemanagerfx.notification.NotificationPosition;
@@ -23,9 +27,7 @@ import com.coursemanagerfx.notification.NotificationType;
 import eu.iamgio.animated.transition.AnimationPair;
 import eu.iamgio.animated.transition.container.AnimatedVBox;
 import javafx.animation.*;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -1389,7 +1391,6 @@ public class Main_controller {
             eventsTable.getItems().clear();
         }
     }
-
     // Действие для правильного выхода из главного окна программы
     private void actionMainExit() {
         if (stage == null) return;
