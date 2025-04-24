@@ -1,46 +1,48 @@
 package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.controllers.Main_controller;
+import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import static com.coursemanagerfx.CM_HELPER.actionClose;
+import static com.coursemanagerfx.CM_HELPER.showConfirmDialog;
 
-public class ConfirmDialog_controller {
-    private boolean confirmed = false;
-    public boolean isConfirmed() {
+public class Update_controller {
+    //private boolean confirmed = false;
+    /*public boolean isConfirmed() {
         return confirmed;
-    }
+    }*/
 
     @FXML private BorderPane rootPane;
-    @FXML private Label labelTitle;
-    @FXML private Label labelMain;
-    @FXML private Label labelPrompt;
+
+    @FXML private Label lblMain;
+    @FXML private Label lblAdditional;
+    public Label getLblMain() {
+        return lblMain;
+    }
+    public Label getLblAdditional() {
+        return lblAdditional;
+    }
+
+
+    @FXML private ProgressBar installingProgressBar;
     @FXML private Button btnClose;
     @FXML private Button btnCancel;
     @FXML private Button btnConfirm;
-    @FXML private ImageView iconType;
 
     private Stage stage;
 
     // Смещение для перетаскивания окна
     private double xOffset;
     private double yOffset;
-
-    public ImageView getIconType() {
-        return iconType;
-    }
-    public Label getLabelMain() {
-        return labelMain;
-    }
-    public Label getLabelPrompt() {
-        return labelPrompt;
-    }
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -60,17 +62,19 @@ public class ConfirmDialog_controller {
 
     @FXML
     private void btnConfirm() {
-        confirmed = true;
-        actionClose(stage, null);
+        installingProgressBar.setVisible(true);
+        UpdateUtility.downloadAndInstallUpdate(installingProgressBar);
     }
 
     @FXML
     private void btnClose() {
+        System.out.println("Update canceled...");
         actionClose(stage, null);
     }
 
     @FXML
     private void btnCancel() {
+        System.out.println("Update canceled...");
         actionClose(stage, null);
     }
 

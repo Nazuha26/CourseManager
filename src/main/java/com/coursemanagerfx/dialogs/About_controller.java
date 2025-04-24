@@ -1,25 +1,24 @@
 package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.logic.utilitys.UpdateUtility;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import static com.coursemanagerfx.CM_HELPER.CUR_VERSION;
 import static com.coursemanagerfx.CM_HELPER.actionClose;
 
 public class About_controller {
 
     @FXML private BorderPane rootPane;
     @FXML private Label lblVersion;
+    @FXML private Label lblNoUpdates;
 
     private Stage stage;
-
-    // Смещение для перетаскивания окна
-    private double xOffset;
-    private double yOffset;
+    private double xOffset, yOffset;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -27,15 +26,13 @@ public class About_controller {
 
     @FXML
     private void initialize() {
-        lblVersion.setText("Version " + CUR_VERSION);
-        // === СКРУГЛЕННЫЕ КРАЯ ===
+        lblVersion.setText("Version " + CM_HELPER.CUR_VERSION);
         Rectangle clip = new Rectangle();
         clip.widthProperty().bind(rootPane.widthProperty());
         clip.heightProperty().bind(rootPane.heightProperty());
-        clip.setArcWidth(20);         // ← стартовое значение
-        clip.setArcHeight(20);        // ← стартовое значение
-        rootPane.setClip(clip);       // ← устанавливаем новые края
-        // ========================
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        rootPane.setClip(clip);
     }
 
     @FXML
@@ -44,13 +41,25 @@ public class About_controller {
     }
 
     @FXML
-    private void onTitleBarPressed(javafx.scene.input.MouseEvent event) {
-        xOffset = event.getSceneX();
-        yOffset = event.getSceneY();
+    private void btnCheckForUpdates() {
+        lblNoUpdates.setManaged(false);  // сбросим на случай повторного клика
+        String new_version = UpdateUtility.checkForUpdates();
+        if (!new_version.equals("-1")) {
+            UpdateUtility.showUpdateDialog(stage.getScene().getWindow());
+        } else {
+            lblNoUpdates.setManaged(true);
+            Platform.runLater(stage::sizeToScene);
+        }
     }
 
     @FXML
-    private void onTitleBarDragged(javafx.scene.input.MouseEvent event) {
-        CM_HELPER.onDragged(event, stage, xOffset, yOffset);
+    private void onTitleBarPressed(javafx.scene.input.MouseEvent e) {
+        xOffset = e.getSceneX();
+        yOffset = e.getSceneY();
+    }
+
+    @FXML
+    private void onTitleBarDragged(javafx.scene.input.MouseEvent e) {
+        CM_HELPER.onDragged(e, stage, xOffset, yOffset);
     }
 }

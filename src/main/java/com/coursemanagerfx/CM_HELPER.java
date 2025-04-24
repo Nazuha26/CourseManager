@@ -9,6 +9,7 @@ import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.BinaryCmanParser;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
+import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -35,7 +36,7 @@ import java.io.IOException;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String CUR_VERSION = "1.0.4";
+    public static final String CUR_VERSION = "1.0.5";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
@@ -47,6 +48,10 @@ public class CM_HELPER {
     public static final File FIRST_RUN_FILE = new File(CONFIG_DIR, "FirstRun");
     public static final File CONFIG_FILE = new File(CONFIG_DIR, "config.json");
 
+    private static String new_version;
+    public static String get_new_version() {
+        return new_version;
+    }
     private String courseName;
     private Group[] Course;
 
@@ -140,6 +145,8 @@ public class CM_HELPER {
             return false;
         }
     }
+    // === UPDATE DIALOG ===
+
     // === NEW COURSE DIALOG ===
     /** Показывает окно «Новый курс» и возвращает его контроллер после закрытия. */
     public static NewCourseDialog_controller showNewCourseDialog(Window owner) {
@@ -355,12 +362,24 @@ public class CM_HELPER {
         Main_controller mainController = loader.getController();
         mainController.setStage(stage);
 
-        HistoryUtility.setHistory(
-                mainController.getRichTxtPaneHistory(),
-                mainController.getLblCurHistory(),
-                HistoryUtility.Types.INFO,
-                "No updates found"
-        );
+        new_version = UpdateUtility.checkForUpdates();
+
+        if (new_version.equals("-1")) {
+            HistoryUtility.setHistory(
+                    mainController.getRichTxtPaneHistory(),
+                    mainController.getLblCurHistory(),
+                    HistoryUtility.Types.INFO,
+                    "No updates found"
+            );
+        } else {
+            UpdateUtility.showUpdateDialog(stage.getScene().getWindow());
+            HistoryUtility.setHistory(
+                    mainController.getRichTxtPaneHistory(),
+                    mainController.getLblCurHistory(),
+                    HistoryUtility.Types.INFO,
+                    "New version " + new_version + " is available"
+            );
+        }
 
         //mainController.getLblCurHistory().setText("");  // ← очищаем лабель с историей
 
@@ -372,6 +391,8 @@ public class CM_HELPER {
         Task<Void> loadDataTask = getLoadDataTask(courseName, courseFile, mainController);
 
         new Thread(loadDataTask).start();
+
+
     }
 
     private static final int LOADING_DELAY = 1000;
