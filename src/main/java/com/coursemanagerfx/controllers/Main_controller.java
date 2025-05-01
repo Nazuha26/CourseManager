@@ -20,6 +20,7 @@ import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
+import com.coursemanagerfx.logic.security.CmanSecuritySaver;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.notification.AlertFX;
 import com.coursemanagerfx.notification.NotificationPosition;
@@ -37,6 +38,11 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -52,10 +58,12 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.fxmisc.richtext.InlineCssTextArea;
 
+import java.awt.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -313,7 +321,7 @@ public class Main_controller {
 
         // Mark spinner
         SpinnerValueFactory<Integer> valueFactoryMark =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 1, 1);
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerMark.setValueFactory(valueFactoryMark);
         // =====================
 
@@ -412,7 +420,7 @@ public class Main_controller {
                         if (isAnimPlaysFlag) return;
 
                         StudentEvent event = getTableRow().getItem();
-                        if (event == null) return; // на всякий случай
+                        if (event == null) return;
 
                         // Если редактируем другой ивент — сбрасываем прошлое
                         if (editingEvent != null && editingEvent != event) {
@@ -552,6 +560,11 @@ public class Main_controller {
             }
         });
         // ======================================
+
+        // Сортировка по умолчанию — по колонке "Status", по возрастанию
+        eventsTable.getSortOrder().add(statusColumn);
+        statusColumn.setSortType(TableColumn.SortType.ASCENDING);
+        eventsTable.sort();
         // ======================================================================================= \\
 
     }   // ГЛАВНАЯ ИНИЦИАЛИЗАЦИЯ
@@ -559,6 +572,8 @@ public class Main_controller {
     private StudentEvent editingEvent = null;
 
     private void stopEditing() {
+        for (Node node : tabHBox.getChildren()) node.setDisable(false);       // включаем таббар при редактировании ивента
+        for (Node node : studentVBox.getChildren()) node.setDisable(false);   // включаем выбор студента при редактировании ивента
         btnCancelEvent.setVisible(true);
         btnCancelEvent.setManaged(true);
         comBoxEventPreset.getSelectionModel().select(EventMods.FIRST.getPreset().getName());
@@ -573,6 +588,8 @@ public class Main_controller {
     }
 
     public void openEditPane(StudentEvent event) {
+        for (Node node : tabHBox.getChildren()) node.setDisable(true);      // отключаем таббар при редактировании ивента
+        for (Node node : studentVBox.getChildren()) node.setDisable(true);  // отключаем выбор студента при редактировании ивента
         // 1) Показать панель, если она скрыта
         if (!mainTopPane.isVisible()) {
             showMainTopPane(TopPaneMode.EVENT_INFO);
@@ -873,6 +890,8 @@ public class Main_controller {
 
         // 3. Загружаем события в таблицу
         eventsTable.getItems().setAll(student.getEvents());
+        statusColumn.setSortType(TableColumn.SortType.ASCENDING); // направление сортировки
+        eventsTable.sort(); // применить сортировку
     }       // ЗАГРУЗКА ИВЕНТОВ ДЛЯ СТУДЕНТА
 
     // Утилитный метод для установки стиля выбранного студента
@@ -1499,7 +1518,8 @@ public class Main_controller {
             // Формируем путь к файлу, можно использовать helper.COURSES_DIR и имя курса
             String filePath = helper.COURSES_DIR.getAbsolutePath() +
                     File.separator + helper.getCourseName() + ".cman";
-            BinaryCmanSaver.save(helper.getCourse(), new File(filePath));
+            //BinaryCmanSaver.save(helper.getCourse(), new File(filePath));
+            CmanSecuritySaver.save(helper.getCourse(), new File(filePath), CM_HELPER.getPassword());
             undoStack.clear();
             redoStack.clear();
             //Files.write(helper.TEMP_FILE.toPath(), new byte[0]);
@@ -1518,6 +1538,8 @@ public class Main_controller {
                                 ConfirmDialogType.ERROR,
                                 "Saving Error:",
                                 ex.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     @FXML private void miNew() {

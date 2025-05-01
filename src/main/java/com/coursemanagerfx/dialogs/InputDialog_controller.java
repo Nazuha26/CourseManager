@@ -21,6 +21,10 @@ public class InputDialog_controller {
     @FXML private Button btnCancel;
     @FXML private Button btnConfirm;
 
+    public Button getBtnConfirm() {
+        return btnConfirm;
+    }
+
     private Stage stage;
     private String inputText;
 
@@ -60,7 +64,7 @@ public class InputDialog_controller {
     }
 
     @FXML
-    private void btnConfirm() {
+    public void btnConfirm() {
         String text = textField.getText();
         if (text == null || text.trim().isEmpty()) {
             errorLabel.setText("Field cannot be empty!");

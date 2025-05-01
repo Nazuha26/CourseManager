@@ -40,7 +40,7 @@
                </font>
             </Label>
             <Button mnemonicParsing="false" onAction="#btnCheckForUpdates" styleClass="button-check-for-updates" text="Check for updates" />
-            <Label fx:id="lblNoUpdates" layoutX="171.0" layoutY="47.0" text="No updates available" textAlignment="CENTER" textFill="#e40000" underline="true" managed="false">
+            <Label fx:id="lblNoUpdates" layoutX="171.0" layoutY="47.0" managed="false" text="All latest updates installed" textAlignment="CENTER" textFill="#00bc3c" underline="true" >
                <font>
                   <Font size="14.0" />
                </font>

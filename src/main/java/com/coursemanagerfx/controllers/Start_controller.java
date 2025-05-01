@@ -2,10 +2,13 @@ package com.coursemanagerfx.controllers;
 
 import com.coursemanagerfx.CM_HELPER;
 import com.coursemanagerfx.custom_ui.GradientBackground;
+import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
+import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import javafx.fxml.FXML;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -30,6 +33,16 @@ public class Start_controller {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+
+        // === СКРУГЛЕННЫЕ КРАЯ ===
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(main_start.widthProperty());
+        clip.heightProperty().bind(main_start.heightProperty());
+        clip.setArcWidth(20);         // ← стартовое значение
+        clip.setArcHeight(20);        // ← стартовое значение
+        main_start.setClip(clip);       // ← устанавливаем новые края
+        // ========================
+
         // Слушатель восстановления окна
         stage.iconifiedProperty().addListener((obs, wasMinimized, isNowMinimized) -> {
             if (!isNowMinimized) {
@@ -70,6 +83,13 @@ public class Start_controller {
 
         courseName         = file.getName().replace(".cman", "");
         selectedCourseFile = file;
+
+        String password = CM_HELPER.showInputDialog(stage.getScene().getWindow(), "Password", "Enter the course password");
+        if (!CmanSecurityParser.tryParse(file, password)) {
+            showConfirmDialog(stage.getScene().getWindow(), ConfirmDialogType.ERROR,
+                    "Wrong password", "You entered an wrong password.");
+            return;
+        }
 
         // фиксируем последний открытый курс
         try (FileWriter w = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {

@@ -1,14 +1,22 @@
 package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.dialogs.password.GeneratedPass_controller;
 import com.coursemanagerfx.logic.BinaryCmanSaver;
 import com.coursemanagerfx.logic.basic.Group;
+import com.coursemanagerfx.logic.security.CmanSecuritySaver;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -91,7 +99,9 @@ public class NewCourseDialog_controller {
             for (int i = 0; i < groupsCount; i++) {
                 groups[i] = new Group(); // ← создаём пустую группу
             }
-            BinaryCmanSaver.save(groups, newCourseFile);
+            //BinaryCmanSaver.save(groups, newCourseFile);
+            showGeneratedPasswordDialog(stage.getScene().getWindow());
+            CmanSecuritySaver.save(groups, newCourseFile, CM_HELPER.getPassword());
 
             // фиксируем имя курса в FIRST_RUN
             try (FileWriter w = new FileWriter(FIRST_RUN_FILE)) {
@@ -105,6 +115,38 @@ public class NewCourseDialog_controller {
             errorLabel.setText("Cannot create course file: " + ex.getMessage());
             errorLabel.setManaged(true);
             Platform.runLater(stage::sizeToScene);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void showGeneratedPasswordDialog(Window owner) {
+        try {
+            FXMLLoader loader = new FXMLLoader(CM_HELPER.class.getResource("/com/coursemanagerfx/ui/dialogs/password/generated_dialog.fxml"));
+            Parent root = loader.load();
+
+            GeneratedPass_controller controller = loader.getController();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initOwner(owner);
+            dialogStage.initStyle(StageStyle.TRANSPARENT);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            Scene scene = new Scene(root);
+            scene.setFill(null);
+            dialogStage.setScene(scene);
+
+            controller.setStage(dialogStage);
+
+            // Запускаем анимацию сразу после того, как окно покажется
+            dialogStage.setOnShown(event -> {
+                CM_HELPER.animateAppearance(root);
+            });
+
+            // Используем только showAndWait() – она и покажет окно модально и дождется закрытия
+            dialogStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

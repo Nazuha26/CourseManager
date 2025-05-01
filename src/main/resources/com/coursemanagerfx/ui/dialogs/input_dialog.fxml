@@ -35,7 +35,7 @@
                <font>
                   <Font size="14.0" />
                </font></TextField>
-            <Label fx:id="errorLabel" text="Error labale" textFill="#cc0000">
+            <Label fx:id="errorLabel" text="Error label" textFill="#cc0000">
                <font>
                   <Font size="13.0" />
                </font>

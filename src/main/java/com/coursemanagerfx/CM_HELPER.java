@@ -8,6 +8,7 @@ import com.coursemanagerfx.dialogs.InputDialog_controller;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.BinaryCmanParser;
 import com.coursemanagerfx.logic.basic.Group;
+import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.animation.KeyFrame;
@@ -30,17 +31,27 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.*;
 import javafx.util.Duration;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String CUR_VERSION = "1.0.5";
+    public static final String CUR_VERSION = "1.0.6";   // добавлено сортировку ивентов по статусу по умолчанию
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
     // =====================
+
+    private static String password;
+    public static String getPassword() {
+        return password;
+    }
+    public static void setPassword(String password) {
+        CM_HELPER.password = password;
+    }
 
     public static final File CONFIG_DIR = new File(System.getProperty("user.home"), "AppData/Local/CManFX");
     public static final File COURSES_DIR = new File(System.getProperty("user.home"), ".cmanfx/Courses/");
@@ -272,14 +283,6 @@ public class CM_HELPER {
         Scene startScene = new Scene(startRoot);
         startScene.setFill(Color.TRANSPARENT);
 
-        // Скругление углов стартового окна
-        Rectangle startClip = new Rectangle();
-        startClip.setArcWidth(20);
-        startClip.setArcHeight(20);
-        startClip.widthProperty().bind(startScene.widthProperty());
-        startClip.heightProperty().bind(startScene.heightProperty());
-        startRoot.setClip(startClip);
-
         Stage startStage = new Stage();
         startStage.initStyle(StageStyle.TRANSPARENT);
         startStage.setScene(startScene);
@@ -387,17 +390,27 @@ public class CM_HELPER {
 
         animateAppearance(root);
 
-        // Запускаем фоновую задачу загрузки данных после появления окна
-        Task<Void> loadDataTask = getLoadDataTask(courseName, courseFile, mainController);
+        Platform.runLater(() -> {
+            String password = CM_HELPER.showInputDialog(
+                    stage, "Password", "Enter the course password");
 
-        new Thread(loadDataTask).start();
+            if (!CmanSecurityParser.tryParse(courseFile, password)) {
+                CM_HELPER.showConfirmDialog(stage, ConfirmDialogType.ERROR,
+                        "Wrong password", "You entered a wrong password.");
+                stage.close();
+                return;
+            }
+            CM_HELPER.setPassword(password);
 
-
+            Task<Void> loadTask = getLoadDataTask(courseName, courseFile,
+                    mainController, password);
+            new Thread(loadTask).start();
+        });
     }
 
     private static final int LOADING_DELAY = 1000;
     // Утилитный метод
-    private static Task<Void> getLoadDataTask(String courseName, File courseFile, Main_controller mainController) {
+    private static Task<Void> getLoadDataTask(String courseName, File courseFile, Main_controller mainController, String password) {
         ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(200);
         progressBar.setPrefHeight(40);
@@ -417,7 +430,7 @@ public class CM_HELPER {
                     updateProgress(i + 1, totalSteps);
                 }
                 // Выполнение загрузки данных (убери sleep, если задержка уже учтена)
-                loadData(mainController, courseName, courseFile);
+                loadData(mainController, courseName, courseFile, password);
                 return null;
             }
         };
@@ -432,12 +445,13 @@ public class CM_HELPER {
         return loadDataTask;
     }
     // Утилитный метод для загрузки данных
-    public static void loadData(Main_controller mainController, String courseName, File courseFile) {
+    public static void loadData(Main_controller mainController, String courseName, File courseFile, String password) {
         try {
             System.out.println("Data loading started...");
 
             CM_HELPER helper = new CM_HELPER();
-            helper.setCourse(BinaryCmanParser.parse(courseFile));
+            //helper.setCourse(BinaryCmanParser.parse(courseFile));
+            helper.setCourse(CmanSecurityParser.parse(courseFile, password));
             helper.setCourseName(courseName);
 
             javafx.application.Platform.runLater(() -> {
@@ -447,6 +461,8 @@ public class CM_HELPER {
         } catch (IOException e) {
             System.err.println("=== FATAL ERROR OF DATA LOADING ===");
             e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
