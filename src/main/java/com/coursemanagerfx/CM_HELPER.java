@@ -6,9 +6,11 @@ import com.coursemanagerfx.dialogs.ConfirmDialog_controller;
 import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.InputDialog_controller;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
+import com.coursemanagerfx.dialogs.password.InputPass_controller;
 import com.coursemanagerfx.logic.BinaryCmanParser;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.security.CmanSecurityParser;
+import com.coursemanagerfx.logic.utilitys.GetPoint;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.animation.KeyFrame;
@@ -22,6 +24,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
@@ -39,7 +42,7 @@ import java.util.function.Consumer;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String CUR_VERSION = "1.0.6";   // добавлено сортировку ивентов по статусу по умолчанию
+    public static final String CUR_VERSION = "1.0.5";   // добавлено сортировку ивентов по статусу по умолчанию
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
@@ -55,14 +58,12 @@ public class CM_HELPER {
 
     public static final File CONFIG_DIR = new File(System.getProperty("user.home"), "AppData/Local/CManFX");
     public static final File COURSES_DIR = new File(System.getProperty("user.home"), ".cmanfx/Courses/");
-    public static final File SECRET_KEY_DIR = CONFIG_DIR;
+    //public static final File SECRET_KEY_DIR = CONFIG_DIR;
     public static final File FIRST_RUN_FILE = new File(CONFIG_DIR, "FirstRun");
     public static final File CONFIG_FILE = new File(CONFIG_DIR, "config.json");
 
-    private static String new_version;
-    public static String get_new_version() {
-        return new_version;
-    }
+    //private static String new_version;
+    //public static String get_new_version() { return new_version; }
     private String courseName;
     private Group[] Course;
 
@@ -152,11 +153,39 @@ public class CM_HELPER {
 
             return controller.isConfirmed();
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            throw new RuntimeException("Failed to load confirm dialog FXML", e);
         }
     }
-    // === UPDATE DIALOG ===
+    // === CHECK PASSWORD DIALOG ===
+    public static String showCheckPasswordDialog(Window owner, File courseFile) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    CM_HELPER.class.getResource("/com/coursemanagerfx/ui/dialogs/password/input_password_dialog.fxml")
+            );
+            Parent root = loader.load();
+
+            InputPass_controller controller = loader.getController();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initOwner(owner);
+            dialogStage.initStyle(StageStyle.TRANSPARENT);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            Scene scene = new Scene(root);
+            scene.setFill(null);
+            dialogStage.setScene(scene);
+
+            controller.setStage(dialogStage);
+            controller.setFile(courseFile);
+
+            dialogStage.setOnShown(event -> CM_HELPER.animateAppearance(root));
+            dialogStage.showAndWait();
+
+            return controller.getInputPassword();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load password dialog", e);
+        }
+    }
 
     // === NEW COURSE DIALOG ===
     /** Показывает окно «Новый курс» и возвращает его контроллер после закрытия. */
@@ -214,6 +243,25 @@ public class CM_HELPER {
                         new KeyValue(window.scaleYProperty(), 1)
                 )
         );
+        fadeInAndScale.play();
+    }
+    public static void animateAppearance(Parent window, Runnable onFinished) {
+        window.setOpacity(0);
+        window.setScaleX(0.5);
+        window.setScaleY(0.5);
+
+        Timeline fadeInAndScale = new Timeline(
+                new KeyFrame(Duration.millis(ANIMATION_DURATION),
+                        new KeyValue(window.opacityProperty(), 1),
+                        new KeyValue(window.scaleXProperty(), 1),
+                        new KeyValue(window.scaleYProperty(), 1)
+                )
+        );
+
+        fadeInAndScale.setOnFinished(e -> {
+            if (onFinished != null) onFinished.run();
+        });
+
         fadeInAndScale.play();
     }
 
@@ -292,11 +340,19 @@ public class CM_HELPER {
         startStage.show();
 
         // Анимация появления стартового окна
-        animateAppearance(startRoot);
+        animateAppearance(startRoot, () -> {
+            new Thread(() -> {
+                String new_version = UpdateUtility.checkForUpdates();
+                Platform.runLater(() -> {
+                    if (!new_version.equals("-1"))
+                        UpdateUtility.showUpdateDialog(startStage);
+                });
+            }).start();
+        });
     }
 
     // === МЕТОД ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ (СРАЗУ) ===
-    public static void openMainWindow(Stage stage, String courseName, File courseFile) throws IOException {
+    /*public static void openMainWindow(Stage stage, String courseName, File courseFile) throws IOException {
         FXMLLoader loader = new FXMLLoader(CM_HELPER.class.getResource("/com/coursemanagerfx/ui/forms/main.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
@@ -306,9 +362,10 @@ public class CM_HELPER {
         stage.setScene(scene);
 
         showMainStage(stage, courseName, courseFile, loader, root);
-    }
+    }*/
     // === МЕТОД ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ (ПОСЛЕ СТАРТОВОГО ОКНА) ===
-    public static void openMainWindow(String courseName, File courseFile, boolean showOnboardingOverlay) throws IOException {
+    /** Открывает основное окно программы как новый Stage*/
+    public static void openMainWindow(String courseName, File courseFile) throws IOException {
         FXMLLoader loader = new FXMLLoader(CM_HELPER.class.getResource("/com/coursemanagerfx/ui/forms/main.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
@@ -317,6 +374,12 @@ public class CM_HELPER {
         Stage mainStage = new Stage();
         mainStage.initStyle(StageStyle.TRANSPARENT);
         mainStage.setScene(scene);
+
+        if (Launcher.isPrintMouseOnP()) GetPoint.setupMousePositionLogger(scene);
+
+        // Получаем контроллер до истории
+        Main_controller mainController = loader.getController();
+        mainController.setStage(mainStage);
 
         // === QUICK TOUR ===
         /*if (showOnboardingOverlay) {
@@ -339,8 +402,20 @@ public class CM_HELPER {
 
                     });
         }*/
-        showMainStage(mainStage, courseName, courseFile, loader, root);
+
+        mainStage.setTitle("CourseManagerFX – " + courseName);
+
+        // Устанавливаем сразу полноэкранный режим
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        mainStage.setWidth(bounds.getWidth());
+        mainStage.setHeight(bounds.getHeight());
+
+        mainStage.show();
+        animateAppearance(root, () -> Platform.runLater(() -> {
+            mainController.initAfterStageShown(mainStage, courseName, courseFile);
+        }));
     }
+
     // Утилитный метод для перезапуска приложения
     public static void restartFX(Stage currentStage) {
         Platform.runLater(() -> {
@@ -352,120 +427,6 @@ public class CM_HELPER {
             }
         });
     }
-    // Утилитный метод
-    private static void showMainStage(Stage stage, String courseName, File courseFile, FXMLLoader loader, Parent root) throws IOException {
-        stage.setTitle("CourseManagerFX – " + courseName);
-
-        // Устанавливаем размеры окна под экран
-        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-        stage.setWidth(bounds.getWidth());
-        stage.setHeight(bounds.getHeight());
-
-        // Инициализируем главный контроллер с курсом
-        Main_controller mainController = loader.getController();
-        mainController.setStage(stage);
-
-        new_version = UpdateUtility.checkForUpdates();
-
-        if (new_version.equals("-1")) {
-            HistoryUtility.setHistory(
-                    mainController.getRichTxtPaneHistory(),
-                    mainController.getLblCurHistory(),
-                    HistoryUtility.Types.INFO,
-                    "No updates found"
-            );
-        } else {
-            UpdateUtility.showUpdateDialog(stage.getScene().getWindow());
-            HistoryUtility.setHistory(
-                    mainController.getRichTxtPaneHistory(),
-                    mainController.getLblCurHistory(),
-                    HistoryUtility.Types.INFO,
-                    "New version " + new_version + " is available"
-            );
-        }
-
-        //mainController.getLblCurHistory().setText("");  // ← очищаем лабель с историей
-
-        stage.show();
-
-        animateAppearance(root);
-
-        Platform.runLater(() -> {
-            String password = CM_HELPER.showInputDialog(
-                    stage, "Password", "Enter the course password");
-
-            if (!CmanSecurityParser.tryParse(courseFile, password)) {
-                CM_HELPER.showConfirmDialog(stage, ConfirmDialogType.ERROR,
-                        "Wrong password", "You entered a wrong password.");
-                stage.close();
-                return;
-            }
-            CM_HELPER.setPassword(password);
-
-            Task<Void> loadTask = getLoadDataTask(courseName, courseFile,
-                    mainController, password);
-            new Thread(loadTask).start();
-        });
-    }
-
-    private static final int LOADING_DELAY = 1000;
-    // Утилитный метод
-    private static Task<Void> getLoadDataTask(String courseName, File courseFile, Main_controller mainController, String password) {
-        ProgressBar progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(200);
-        progressBar.setPrefHeight(40);
-        HBox progressContainer = new HBox(progressBar);
-        progressContainer.setAlignment(Pos.CENTER);      // ← выравнивание по центру
-        progressContainer.setPadding(new Insets(0, 0, 140, 0)); // ← отступ снизу
-
-        mainController.getNotificationPane().setBottom(progressContainer);
-
-        Task<Void> loadDataTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                int totalSteps = 10;
-                long stepDelay = LOADING_DELAY / totalSteps;
-                for (int i = 0; i < totalSteps; i++) {
-                    Thread.sleep(stepDelay);
-                    updateProgress(i + 1, totalSteps);
-                }
-                // Выполнение загрузки данных (убери sleep, если задержка уже учтена)
-                loadData(mainController, courseName, courseFile, password);
-                return null;
-            }
-        };
-
-        progressBar.progressProperty().bind(loadDataTask.progressProperty());
-
-        loadDataTask.setOnSucceeded(event -> {
-            mainController.getNotificationPane().setBottom(null);
-            System.out.println("Data loaded successfully");
-        });
-
-        return loadDataTask;
-    }
-    // Утилитный метод для загрузки данных
-    public static void loadData(Main_controller mainController, String courseName, File courseFile, String password) {
-        try {
-            System.out.println("Data loading started...");
-
-            CM_HELPER helper = new CM_HELPER();
-            //helper.setCourse(BinaryCmanParser.parse(courseFile));
-            helper.setCourse(CmanSecurityParser.parse(courseFile, password));
-            helper.setCourseName(courseName);
-
-            javafx.application.Platform.runLater(() -> {
-                mainController.init(helper);
-                System.out.println("=== DATA LOADING COMPLETED SUCCESSFULLY ===");
-            });
-        } catch (IOException e) {
-            System.err.println("=== FATAL ERROR OF DATA LOADING ===");
-            e.printStackTrace();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     // ------------------------------------------------------------------
 }

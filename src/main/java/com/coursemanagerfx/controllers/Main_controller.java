@@ -20,18 +20,23 @@ import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
+import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import com.coursemanagerfx.logic.security.CmanSecuritySaver;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
+import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import com.coursemanagerfx.notification.AlertFX;
 import com.coursemanagerfx.notification.NotificationPosition;
 import com.coursemanagerfx.notification.NotificationType;
 import eu.iamgio.animated.transition.AnimationPair;
 import eu.iamgio.animated.transition.container.AnimatedVBox;
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
@@ -1444,6 +1449,101 @@ public class Main_controller {
         emptyLabel.setAlignment(Pos.CENTER);
         studentVBox.getChildren().addAll(spacerTop, emptyLabel, spacerBottom);
     }
+
+    public void initAfterStageShown(Stage stage, String courseName, File courseFile) {
+        new Thread(() -> {
+            String new_version = UpdateUtility.checkForUpdates();
+
+            Platform.runLater(() -> {
+                if (!new_version.equals("-1")) {
+                    UpdateUtility.showUpdateDialog(stage);
+                    HistoryUtility.setHistory(
+                            richTxtPaneHistory,
+                            lblCurHistory,
+                            HistoryUtility.Types.INFO,
+                            "New version " + new_version + " is available"
+                    );
+                } else {
+                    HistoryUtility.setHistory(
+                            richTxtPaneHistory,
+                            lblCurHistory,
+                            HistoryUtility.Types.INFO,
+                            "No updates found"
+                    );
+                }
+
+                // 💡 Спрашиваем пароль только после обновлений:
+                String password = CM_HELPER.showCheckPasswordDialog(stage.getScene().getWindow(), courseFile);
+                if (password == null) {
+                    Platform.exit();
+                    return;
+                }
+
+                CM_HELPER.setPassword(password);
+
+                Task<Void> loadTask = getLoadDataTask(courseName, courseFile, this, password);
+                new Thread(loadTask).start();
+            });
+        }).start();
+    }
+    private static final int LOADING_DELAY = 1000;
+    // Утилитный метод
+    private static Task<Void> getLoadDataTask(String courseName, File courseFile, Main_controller mainController, String password) {
+        ProgressBar progressBar = new ProgressBar(0);
+        progressBar.setPrefWidth(200);
+        progressBar.setPrefHeight(40);
+        HBox progressContainer = new HBox(progressBar);
+        progressContainer.setAlignment(Pos.CENTER);      // ← выравнивание по центру
+        progressContainer.setPadding(new Insets(0, 0, 140, 0)); // ← отступ снизу
+
+        mainController.getNotificationPane().setBottom(progressContainer);
+
+        Task<Void> loadDataTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                int totalSteps = 10;
+                long stepDelay = LOADING_DELAY / totalSteps;
+                for (int i = 0; i < totalSteps; i++) {
+                    Thread.sleep(stepDelay);
+                    updateProgress(i + 1, totalSteps);
+                }
+                // Выполнение загрузки данных (убери sleep, если задержка уже учтена)
+                loadData(mainController, courseName, courseFile, password);
+                return null;
+            }
+        };
+
+        progressBar.progressProperty().bind(loadDataTask.progressProperty());
+
+        loadDataTask.setOnSucceeded(event -> {
+            mainController.getNotificationPane().setBottom(null);
+            System.out.println("Data loaded successfully");
+        });
+
+        return loadDataTask;
+    }
+    // Утилитный метод для загрузки данных
+    private static void loadData(Main_controller mainController, String courseName, File courseFile, String password) {
+        try {
+            System.out.println("Data loading started...");
+
+            CM_HELPER helper = new CM_HELPER();
+            //helper.setCourse(BinaryCmanParser.parse(courseFile));
+            helper.setCourse(CmanSecurityParser.parse(courseFile, password));
+            helper.setCourseName(courseName);
+
+            javafx.application.Platform.runLater(() -> {
+                mainController.init(helper);
+                System.out.println("=== DATA LOADING COMPLETED SUCCESSFULLY ===");
+            });
+        } catch (IOException e) {
+            System.err.println("=== FATAL ERROR OF DATA LOADING ===");
+            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // Метод для фильтра студентов при поиске
     private void filterStudents(String query) {
         List<Student> filteredStudents = new ArrayList<>();
@@ -1543,24 +1643,15 @@ public class Main_controller {
         }
     }
     @FXML private void miNew() {
-        // показываем диалог и получаем результат
         NewCourseDialog_controller res = showNewCourseDialog(stage);
-        if (res == null || res.getCourseName() == null) return;   // отменили
+        if (res == null || res.getCourseName() == null) return;   // Cancel
 
         String newName = res.getCourseName();
         File   newFile = res.getNewCourseFile();
 
-        // запоминаем в FirstRun
-        try (FileWriter w = new FileWriter(FIRST_RUN_FILE)) {
-            w.write(newName);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        // закрываем текущее главное окно и в колбэке открываем новое
         actionClose(stage, () -> {
             try {
-                openMainWindow(newName, newFile, false);   // создаёт свежий Stage
+                openMainWindow(newName, newFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1570,19 +1661,11 @@ public class Main_controller {
         File file = CM_HELPER.showOpenCourseDialog(stage);
         if (file == null) return;           // Cancel
 
-        String newName = file.getName().replaceFirst("\\.cman$", "");
+        String newName = file.getName().replace(".cman", "");//file.getName().replaceFirst("\\.cman$", "");
 
-        // Запоминаем последний открытый курс
-        try (FileWriter w = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {
-            w.write(newName);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        // Плавно закрываем текущее окно и в колбэке открываем новое
         actionClose(stage, () -> {
             try {
-                CM_HELPER.openMainWindow(newName, file, false);   // версия без Stage — создаёт новый
+                CM_HELPER.openMainWindow(newName, file);
             } catch (IOException e) {
                 e.printStackTrace();
             }

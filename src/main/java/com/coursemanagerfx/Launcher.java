@@ -34,8 +34,8 @@ public class Launcher extends Application {
             if (courseName != null && !courseName.trim().isEmpty()) {
                 File courseFile = new File(CM_HELPER.COURSES_DIR, courseName + ".cman");
                 if (courseFile.exists()) {
-                    openMainWindow(primaryStage, courseName, courseFile);   // ← открываем главное окно программы
-                    if (printMouseOnP) GetPoint.setupMousePositionLogger(primaryStage.getScene());
+                    //primaryStage.close();
+                    openMainWindow(courseName, courseFile);   // ← открываем главное окно программы
                     return;
                 }
             }
@@ -45,6 +45,9 @@ public class Launcher extends Application {
     }
 
     private static boolean printMouseOnP = false;
+    public static boolean isPrintMouseOnP() {
+        return printMouseOnP;
+    }
 
     public static void main(String[] args) {
         for (String arg : args) {

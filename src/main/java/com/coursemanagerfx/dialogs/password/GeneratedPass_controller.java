@@ -10,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -19,6 +20,8 @@ public class GeneratedPass_controller {
     @FXML private BorderPane rootPane;
     @FXML private Label lblPassword;
     @FXML private Label lblCopied;
+
+    private boolean copied = false;
 
     private Stage stage;
 
@@ -48,6 +51,13 @@ public class GeneratedPass_controller {
 
     @FXML
     private void btnClose() {
+        if (!copied) {
+            lblCopied.setText("You haven’t copied the password yet!");
+            lblCopied.setStyle("-fx-text-fill: #BC0000FF;");
+            lblCopied.setManaged(true);
+            Platform.runLater(() -> stage.sizeToScene());
+            return;
+        }
         actionClose(stage, null);
     }
 
@@ -57,6 +67,10 @@ public class GeneratedPass_controller {
         ClipboardContent content = new ClipboardContent();
         content.putString(CM_HELPER.getPassword());
         clipboard.setContent(content);
+
+        copied = true;
+        lblCopied.setText("Successfully copied");
+        lblCopied.setStyle("-fx-text-fill: #00bc3c;");
         lblCopied.setManaged(true);
         Platform.runLater(() -> stage.sizeToScene());
     }

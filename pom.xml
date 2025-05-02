@@ -6,7 +6,7 @@
 
   <groupId>com.coursemanagerfx</groupId>
   <artifactId>CourseManagerFX</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <name>CourseManagerFX</name>
 
   <properties>

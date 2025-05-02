@@ -7,11 +7,11 @@
 
 <BorderPane fx:id="main_start" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="window" stylesheets="@../styles/start_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.Start_controller">
     <top>
-        <HBox fx:id="titleBar" alignment="CENTER_RIGHT" onMouseDragged="#onTitleBarDragged" onMousePressed="#onTitleBarPressed" styleClass="title-bar" BorderPane.alignment="CENTER">
+        <HBox alignment="CENTER_RIGHT" onMouseDragged="#onTitleBarDragged" onMousePressed="#onTitleBarPressed" styleClass="title-bar" BorderPane.alignment="CENTER">
             <children>
             <BorderPane HBox.hgrow="ALWAYS">
                <left>
-                      <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name" text="Welcome to CourseManagerFX" textAlignment="CENTER" BorderPane.alignment="CENTER">
+                      <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name" text="Welcome to CourseManagerFX – vX.X.X" textAlignment="CENTER" BorderPane.alignment="CENTER">
                           <font>
                               <Font size="16.0" />
                           </font>
@@ -35,9 +35,9 @@
       </VBox>
    </center>
    <bottom>
-      <Label text="Created by Ha3yxa" textFill="#dddddd" BorderPane.alignment="CENTER">
+      <Label text="Created by Ha3yxa&#10;© 2025 CourseManagerFX. All rights reserved." textAlignment="CENTER" textFill="#dddddd" BorderPane.alignment="CENTER">
          <font>
-            <Font size="16.0" />
+            <Font size="14.0" />
          </font>
          <BorderPane.margin>
             <Insets />

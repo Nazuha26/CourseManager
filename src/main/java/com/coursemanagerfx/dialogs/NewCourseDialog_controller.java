@@ -103,18 +103,12 @@ public class NewCourseDialog_controller {
             showGeneratedPasswordDialog(stage.getScene().getWindow());
             CmanSecuritySaver.save(groups, newCourseFile, CM_HELPER.getPassword());
 
-            // фиксируем имя курса в FIRST_RUN
-            try (FileWriter w = new FileWriter(FIRST_RUN_FILE)) {
-                w.write(courseName);
-            }
-
-            errorLabel.setManaged(false);
+            //errorLabel.setManaged(false);
             actionClose(stage, null);   // закрываем диалог
-
         } catch (IOException ex) {
             errorLabel.setText("Cannot create course file: " + ex.getMessage());
             errorLabel.setManaged(true);
-            Platform.runLater(stage::sizeToScene);
+            Platform.runLater(() -> stage.sizeToScene());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -138,12 +132,8 @@ public class NewCourseDialog_controller {
 
             controller.setStage(dialogStage);
 
-            // Запускаем анимацию сразу после того, как окно покажется
-            dialogStage.setOnShown(event -> {
-                CM_HELPER.animateAppearance(root);
-            });
+            dialogStage.setOnShown(event -> { CM_HELPER.animateAppearance(root); });
 
-            // Используем только showAndWait() – она и покажет окно модально и дождется закрытия
             dialogStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();

@@ -6,6 +6,7 @@ import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
@@ -20,6 +21,7 @@ import static com.coursemanagerfx.CM_HELPER.*;
 
 public class Start_controller {
     @FXML private BorderPane main_start;
+    @FXML private Label labelTitle;
 
     private Stage stage;
 
@@ -33,6 +35,7 @@ public class Start_controller {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        labelTitle.setText("Welcome to CourseManagerFX – v" + CUR_VERSION);
 
         // === СКРУГЛЕННЫЕ КРАЯ ===
         Rectangle clip = new Rectangle();
@@ -40,7 +43,7 @@ public class Start_controller {
         clip.heightProperty().bind(main_start.heightProperty());
         clip.setArcWidth(20);         // ← стартовое значение
         clip.setArcHeight(20);        // ← стартовое значение
-        main_start.setClip(clip);       // ← устанавливаем новые края
+        main_start.setClip(clip);     // ← устанавливаем новые края
         // ========================
 
         // Слушатель восстановления окна
@@ -84,41 +87,18 @@ public class Start_controller {
         courseName         = file.getName().replace(".cman", "");
         selectedCourseFile = file;
 
-        String password = CM_HELPER.showInputDialog(stage.getScene().getWindow(), "Password", "Enter the course password");
-        if (!CmanSecurityParser.tryParse(file, password)) {
-            showConfirmDialog(stage.getScene().getWindow(), ConfirmDialogType.ERROR,
-                    "Wrong password", "You entered an wrong password.");
-            return;
-        }
-
-        // фиксируем последний открытый курс
-        try (FileWriter w = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {
-            w.write(courseName);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
         actionClose(stage, this::openMainWindow);
     }
 
     @FXML
     private void btnNewCourse() {
-        // Показываем модальный диалог и получаем контроллер
         NewCourseDialog_controller res = CM_HELPER.showNewCourseDialog(stage);
         if (res == null || res.getCourseName() == null) {   // Cancel
             return;
         }
 
-        // Берём данные из контроллера
         courseName         = res.getCourseName();
         selectedCourseFile = res.getNewCourseFile();
-
-        // Запоминаем последний курс
-        try (FileWriter w = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {
-            w.write(courseName);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
 
         // Закрываем стартовое окно и открываем главное
         actionClose(stage, this::openMainWindow);
@@ -127,7 +107,7 @@ public class Start_controller {
     // === *ОБЕРТКА* ДЛЯ МЕТОДА ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ ===
     private void openMainWindow() {
         try {
-            CM_HELPER.openMainWindow(courseName, selectedCourseFile, true);
+            CM_HELPER.openMainWindow(courseName, selectedCourseFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

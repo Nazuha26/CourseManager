@@ -60,7 +60,6 @@ public class InputDialog_controller {
 
         // После загрузки интерфейса фокусируем поле ввода
         Platform.runLater(() -> textField.requestFocus());
-        errorLabel.setManaged(false);
     }
 
     @FXML
@@ -74,8 +73,6 @@ public class InputDialog_controller {
             return;
         }
         inputText = text.trim();
-        errorLabel.setText("");
-        errorLabel.setManaged(false);
         CM_HELPER.actionClose(stage, null);
     }
 
