@@ -1,14 +1,12 @@
 package com.coursemanagerfx.dialogs.password;
 
 import com.coursemanagerfx.CM_HELPER;
-import com.coursemanagerfx.dialogs.ConfirmDialogType;
+import com.coursemanagerfx.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -18,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static com.coursemanagerfx.CM_HELPER.actionClose;
+import static com.coursemanagerfx.dialogs.alert.AlertFX.showConfirmDialog;
 
 public class InputPass_controller {
     @FXML private BorderPane rootPane;
@@ -78,13 +77,15 @@ public class InputPass_controller {
         }
 
         if (!CmanSecurityParser.tryParse(file, rawPassword)) {
-            CM_HELPER.showConfirmDialog(stage, ConfirmDialogType.ERROR,
-                    "Wrong password", "You entered a wrong password.\nPlease try again.");
+            showConfirmDialog(stage, AlertFX_type.ERROR,
+                    false,
+                    "Wrong password",
+                    "You entered a wrong password.\nPlease try again.");
         } else {
             inputPassword = rawPassword;
             String newName = file.getName().replace(".cman", "");
             // фиксируем последний открытый курс
-            try (FileWriter w = new FileWriter(CM_HELPER.FIRST_RUN_FILE)) {
+            try (FileWriter w = new FileWriter(CM_HELPER.LAST_RUN_FILE)) {
                 w.write(newName);
             } catch (IOException ex) {
                 ex.printStackTrace();

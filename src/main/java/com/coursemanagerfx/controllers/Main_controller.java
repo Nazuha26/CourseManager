@@ -5,9 +5,8 @@ import com.coursemanagerfx.CM_HELPER;
 import com.coursemanagerfx.logic.basic.*;
 import com.coursemanagerfx.custom_ui.GradientBackground;
 import com.coursemanagerfx.dialogs.About_controller;
-import com.coursemanagerfx.dialogs.ConfirmDialogType;
+import com.coursemanagerfx.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
-import com.coursemanagerfx.logic.*;
 import com.coursemanagerfx.logic.basic.event.EventMods;
 import com.coursemanagerfx.logic.basic.event.EventPreset;
 import com.coursemanagerfx.logic.basic.event.EventStatus;
@@ -24,7 +23,7 @@ import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import com.coursemanagerfx.logic.security.CmanSecuritySaver;
 import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.logic.utilitys.UpdateUtility;
-import com.coursemanagerfx.notification.AlertFX;
+import com.coursemanagerfx.notification.NotificationFX;
 import com.coursemanagerfx.notification.NotificationPosition;
 import com.coursemanagerfx.notification.NotificationType;
 import eu.iamgio.animated.transition.AnimationPair;
@@ -63,7 +62,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.fxmisc.richtext.InlineCssTextArea;
 
-import java.awt.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -73,6 +71,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.coursemanagerfx.CM_HELPER.*;
+import static com.coursemanagerfx.dialogs.alert.AlertFX.showConfirmDialog;
 
 enum TopPaneMode {
     HISTORY, EVENT_INFO
@@ -121,6 +120,9 @@ public class Main_controller {
     private ImageView historyIcon_Back;
 
     @FXML private Label lblAppName;
+    public Label getLblAppName() {
+        return lblAppName;
+    }
 
     private AnimatedVBox vboxLeftAnimated;
     private AnimatedVBox vboxRightAnimated;
@@ -230,8 +232,7 @@ public class Main_controller {
 
     public void init(CM_HELPER helper) {
         this.helper = helper;
-        initializeTabs(helper.getCourse());
-        lblAppName.setText("CourseManagerFX – " + helper.getCourseName());
+
     }
 
     public void setStage(Stage stage) {
@@ -639,7 +640,8 @@ public class Main_controller {
         btnDeleteEvent.setManaged(true);
         btnDeleteEvent.setOnAction(ae -> {
             if (isAnimPlaysFlag) return;
-            boolean isDelete = showConfirmDialog(mainPanel.getScene().getWindow(), ConfirmDialogType.INFO,
+            boolean isDelete = showConfirmDialog(mainPanel.getScene().getWindow(), AlertFX_type.INFO,
+                    true,
                     "Event deleting...",
                     "Do you want to delete this event?");
 
@@ -928,12 +930,12 @@ public class Main_controller {
     @FXML
     private void btnAddStudent() {
         if (currentGroup == null) {
-            AlertFX alertFX = new AlertFX(NotificationType.WARNING,
+            NotificationFX notificationFX = new NotificationFX(NotificationType.WARNING,
                     "Choose the group",
                     "",
                     NotificationPosition.TOP,
                     getVBoxRight());
-            alertFX.show();
+            notificationFX.show();
             return;
         }
 
@@ -1028,7 +1030,7 @@ public class Main_controller {
     }
 
     private void showWarning(String message) {
-        new AlertFX(NotificationType.WARNING, message, "", NotificationPosition.TOP, getVBoxRight()).show();
+        new NotificationFX(NotificationType.WARNING, message, "", NotificationPosition.TOP, getVBoxRight()).show();
     }
 
     @FXML
@@ -1428,7 +1430,8 @@ public class Main_controller {
 
         boolean confirmed = showConfirmDialog(
                 mainPanel.getScene().getWindow(),
-                ConfirmDialogType.WARNING,
+                AlertFX_type.WARNING,
+                true,
                 "You have unsaved changes.",
                 "Do you want to exit without saving?"
         );
@@ -1452,7 +1455,7 @@ public class Main_controller {
 
     public void initAfterStageShown(Stage stage, String courseName, File courseFile) {
         new Thread(() -> {
-            String new_version = UpdateUtility.checkForUpdates();
+            String new_version = UpdateUtility.checkForUpdates(stage.getScene().getWindow());
 
             Platform.runLater(() -> {
                 if (!new_version.equals("-1")) {
@@ -1488,7 +1491,7 @@ public class Main_controller {
     }
     private static final int LOADING_DELAY = 1000;
     // Утилитный метод
-    private static Task<Void> getLoadDataTask(String courseName, File courseFile, Main_controller mainController, String password) {
+    private Task<Void> getLoadDataTask(String courseName, File courseFile, Main_controller mainController, String password) {
         ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(200);
         progressBar.setPrefHeight(40);
@@ -1523,17 +1526,18 @@ public class Main_controller {
         return loadDataTask;
     }
     // Утилитный метод для загрузки данных
-    private static void loadData(Main_controller mainController, String courseName, File courseFile, String password) {
+    private void loadData(Main_controller mainController, String courseName, File courseFile, String password) {
         try {
             System.out.println("Data loading started...");
 
-            CM_HELPER helper = new CM_HELPER();
+            //CM_HELPER helper = new CM_HELPER();
             //helper.setCourse(BinaryCmanParser.parse(courseFile));
-            helper.setCourse(CmanSecurityParser.parse(courseFile, password));
-            helper.setCourseName(courseName);
+            CM_HELPER.setCourse(CmanSecurityParser.parse(courseFile, password));
+            CM_HELPER.setCourseName(courseName);
 
             javafx.application.Platform.runLater(() -> {
-                mainController.init(helper);
+                //mainController.init(helper);
+                initializeTabs(CM_HELPER.getCourse());
                 System.out.println("=== DATA LOADING COMPLETED SUCCESSFULLY ===");
             });
         } catch (IOException e) {
@@ -1624,7 +1628,7 @@ public class Main_controller {
             redoStack.clear();
             //Files.write(helper.TEMP_FILE.toPath(), new byte[0]);
 
-            AlertFX alert = new AlertFX(NotificationType.SUCCESS, "Saved successfully", "",
+            NotificationFX alert = new NotificationFX(NotificationType.SUCCESS, "Saved successfully", "",
                     NotificationPosition.TOP, vboxRightAnimated);
             alert.show();
             HistoryUtility.setHistory(richTxtPaneHistory,
@@ -1635,7 +1639,8 @@ public class Main_controller {
 
         } catch (IOException ex) {
             showConfirmDialog(mainPanel.getScene().getWindow(),
-                                ConfirmDialogType.ERROR,
+                                AlertFX_type.ERROR,
+                                false,
                                 "Saving Error:",
                                 ex.getMessage());
         } catch (Exception e) {

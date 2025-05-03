@@ -2,47 +2,32 @@ package com.coursemanagerfx;
 
 import com.coursemanagerfx.controllers.Main_controller;
 import com.coursemanagerfx.controllers.Start_controller;
-import com.coursemanagerfx.dialogs.ConfirmDialog_controller;
-import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.InputDialog_controller;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.dialogs.password.InputPass_controller;
-import com.coursemanagerfx.logic.BinaryCmanParser;
 import com.coursemanagerfx.logic.basic.Group;
-import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import com.coursemanagerfx.logic.utilitys.GetPoint;
-import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.*;
 import javafx.util.Duration;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
 
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String CUR_VERSION = "1.0.5";   // добавлено сортировку ивентов по статусу по умолчанию
+    public static final String CUR_VERSION = "1.0.7";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;
@@ -59,28 +44,29 @@ public class CM_HELPER {
     public static final File CONFIG_DIR = new File(System.getProperty("user.home"), "AppData/Local/CManFX");
     public static final File COURSES_DIR = new File(System.getProperty("user.home"), ".cmanfx/Courses/");
     //public static final File SECRET_KEY_DIR = CONFIG_DIR;
-    public static final File FIRST_RUN_FILE = new File(CONFIG_DIR, "FirstRun");
+    public static final String template = "LastRun";
+    public static final File LAST_RUN_FILE = new File(CONFIG_DIR, template + "_" + CUR_VERSION);
     public static final File CONFIG_FILE = new File(CONFIG_DIR, "config.json");
 
     //private static String new_version;
     //public static String get_new_version() { return new_version; }
-    private String courseName;
-    private Group[] Course;
+    private static String courseName;
+    private static Group[] Course;
 
-    public String getCourseName() {
+    public static String getCourseName() {
         return courseName;
     }
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
+    public static void setCourseName(String courseName) {
+        CM_HELPER.courseName = courseName;
     }
 
     // ------------------------------------------------------------------
 
-    public Group[] getCourse() {
+    public static Group[] getCourse() {
         return Course;
     }
-    public void setCourse(Group[] course) {
-        this.Course = course;
+    public static void setCourse(Group[] course) {
+        CM_HELPER.Course = course;
     }
 
     // ------------------------------------------------------------------
@@ -119,43 +105,7 @@ public class CM_HELPER {
             return null;
         }
     }
-    // === CONFIRM DIALOG ===
-    public static boolean showConfirmDialog(Window owner, ConfirmDialogType dialogType, String dialogMainText, String dialogPrompt) {
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    CM_HELPER.class.getResource("/com/coursemanagerfx/ui/dialogs/confirm_dialog.fxml")
-            );
-            Parent root = loader.load();
 
-            ConfirmDialog_controller controller = loader.getController();
-            controller.getLabelMain().setText(dialogMainText);
-            controller.getLabelPrompt().setText(dialogPrompt);
-
-            switch (dialogType) {
-                case INFO -> controller.getIconType().setImage(new Image("/com/coursemanagerfx/ui/notifications/icons/info_256x256.png"));
-                case WARNING -> controller.getIconType().setImage(new Image("/com/coursemanagerfx/ui/notifications/icons/warning_256x256.png"));
-                case ERROR -> controller.getIconType().setImage(new Image("/com/coursemanagerfx/ui/notifications/icons/error_256x256.png"));
-            }
-
-            Stage dialogStage = new Stage();
-            dialogStage.initOwner(owner);
-            dialogStage.initStyle(StageStyle.TRANSPARENT);
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-
-            Scene scene = new Scene(root);
-            scene.setFill(null);
-            dialogStage.setScene(scene);
-
-            controller.setStage(dialogStage);
-
-            dialogStage.setOnShown(event -> CM_HELPER.animateAppearance(root));
-            dialogStage.showAndWait();
-
-            return controller.isConfirmed();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load confirm dialog FXML", e);
-        }
-    }
     // === CHECK PASSWORD DIALOG ===
     public static String showCheckPasswordDialog(Window owner, File courseFile) {
         try {
@@ -342,7 +292,7 @@ public class CM_HELPER {
         // Анимация появления стартового окна
         animateAppearance(startRoot, () -> {
             new Thread(() -> {
-                String new_version = UpdateUtility.checkForUpdates();
+                String new_version = UpdateUtility.checkForUpdates(startStage.getScene().getWindow());
                 Platform.runLater(() -> {
                     if (!new_version.equals("-1"))
                         UpdateUtility.showUpdateDialog(startStage);
@@ -403,7 +353,7 @@ public class CM_HELPER {
                     });
         }*/
 
-        mainStage.setTitle("CourseManagerFX – " + courseName);
+        mainController.getLblAppName().setText("CourseManagerFX v" + CUR_VERSION + " – " + courseName);
 
         // Устанавливаем сразу полноэкранный режим
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();

@@ -43,7 +43,7 @@ public class About_controller {
     @FXML
     private void btnCheckForUpdates() {
         lblNoUpdates.setManaged(false);  // сбросим на случай повторного клика
-        String new_version = UpdateUtility.checkForUpdates();
+        String new_version = UpdateUtility.checkForUpdates(stage.getScene().getWindow());
         if (!new_version.equals("-1")) {
             UpdateUtility.showUpdateDialog(stage.getScene().getWindow());
         } else {

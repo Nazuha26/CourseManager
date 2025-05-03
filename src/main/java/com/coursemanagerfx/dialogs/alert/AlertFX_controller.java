@@ -1,4 +1,4 @@
-package com.coursemanagerfx.dialogs;
+package com.coursemanagerfx.dialogs.alert;
 
 import com.coursemanagerfx.CM_HELPER;
 import javafx.fxml.FXML;
@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 
 import static com.coursemanagerfx.CM_HELPER.actionClose;
 
-public class ConfirmDialog_controller {
+public class AlertFX_controller {
     private boolean confirmed = false;
     public boolean isConfirmed() {
         return confirmed;
@@ -40,6 +40,9 @@ public class ConfirmDialog_controller {
     }
     public Label getLabelPrompt() {
         return labelPrompt;
+    }
+    public Button getBtnCancel() {
+        return btnCancel;
     }
 
     public void setStage(Stage stage) {

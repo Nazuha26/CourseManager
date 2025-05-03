@@ -1,11 +1,9 @@
 package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
-import com.coursemanagerfx.controllers.Main_controller;
 import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
@@ -13,14 +11,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import static com.coursemanagerfx.CM_HELPER.actionClose;
-import static com.coursemanagerfx.CM_HELPER.showConfirmDialog;
 
 public class Update_controller {
-    //private boolean confirmed = false;
-    /*public boolean isConfirmed() {
-        return confirmed;
-    }*/
-
     @FXML private BorderPane rootPane;
 
     @FXML private Label lblMain;

@@ -9,7 +9,7 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-public class AlertFX {
+public class NotificationFX {
 
     private final Node notificationNode;
     private final NotificationPosition position;
@@ -26,8 +26,8 @@ public class AlertFX {
      * @param position позиция уведомления (TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT или BOTTOM_RIGHT)
      * @param container контейнер (AnimatedVBox) в который добавляются уведомления
      */
-    public AlertFX(NotificationType type, String mainText, String additionalText,
-                   NotificationPosition position, AnimatedVBox container) {
+    public NotificationFX(NotificationType type, String mainText, String additionalText,
+                          NotificationPosition position, AnimatedVBox container) {
         this.position = position;
         container.setScaleY(position == NotificationPosition.BOTTOM ? -1 : 1);
         this.container = container;

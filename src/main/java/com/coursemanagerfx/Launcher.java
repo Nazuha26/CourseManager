@@ -1,16 +1,7 @@
 package com.coursemanagerfx;
 
-import com.coursemanagerfx.logic.utilitys.GetPoint;
-import com.coursemanagerfx.logic.utilitys.UpdateUtility;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
-import javafx.stage.Window;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,11 +15,19 @@ public class Launcher extends Application {
     public void start(Stage primaryStage) throws Exception {
         if (!CONFIG_DIR.exists()) CONFIG_DIR.mkdirs();
         if (!COURSES_DIR.exists()) COURSES_DIR.mkdirs();
+        File[] files = CONFIG_DIR.listFiles((dir, name) ->
+                name.startsWith(template) && !name.equals(LAST_RUN_FILE.getName())
+        );
+        if (files != null) {
+            for (File f : files) {
+                f.delete();
+            }
+        }
 
         // Если файл FIRST_RUN существует и содержит имя курса, проверяем, что такой курс есть
-        if (CM_HELPER.FIRST_RUN_FILE.exists()) {
+        if (CM_HELPER.LAST_RUN_FILE.exists()) {
             String courseName;
-            try (BufferedReader reader = new BufferedReader(new FileReader(CM_HELPER.FIRST_RUN_FILE))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(CM_HELPER.LAST_RUN_FILE))) {
                 courseName = reader.readLine();
             }
             if (courseName != null && !courseName.trim().isEmpty()) {

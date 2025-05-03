@@ -2,19 +2,15 @@ package com.coursemanagerfx.controllers;
 
 import com.coursemanagerfx.CM_HELPER;
 import com.coursemanagerfx.custom_ui.GradientBackground;
-import com.coursemanagerfx.dialogs.ConfirmDialogType;
 import com.coursemanagerfx.dialogs.NewCourseDialog_controller;
-import com.coursemanagerfx.logic.security.CmanSecurityParser;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import static com.coursemanagerfx.CM_HELPER.*;

@@ -1,6 +1,6 @@
 package com.coursemanagerfx.controllers;
 
-import com.coursemanagerfx.dialogs.ConfirmDialogType;
+import com.coursemanagerfx.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.commands.student_comms.DeleteStudentCommand;
 import com.coursemanagerfx.logic.commands.student_comms.RenameStudentCommand;
@@ -10,6 +10,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import static com.coursemanagerfx.CM_HELPER.*;
+import static com.coursemanagerfx.dialogs.alert.AlertFX.showConfirmDialog;
 
 public class StudentPanel_controller {
     @FXML
@@ -52,7 +53,8 @@ public class StudentPanel_controller {
     private void miDelete() {
         boolean confirmed = showConfirmDialog(
                 mainController.getMainPanel().getScene().getWindow(),
-                ConfirmDialogType.INFO,
+                AlertFX_type.INFO,
+                true,
                 "Deleting the student.",
                 "Are you sure you want to remove\nthe student \"" + student.getName() + "\"?"
         );
