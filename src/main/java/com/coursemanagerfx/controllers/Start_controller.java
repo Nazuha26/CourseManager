@@ -82,6 +82,7 @@ public class Start_controller {
 
         courseName         = file.getName().replace(".cman", "");
         selectedCourseFile = file;
+        if (CM_HELPER.getPassword() != null) CM_HELPER.setPassword(null);
 
         actionClose(stage, this::openMainWindow);
     }

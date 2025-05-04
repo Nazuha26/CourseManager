@@ -625,7 +625,6 @@
 
 .date-picker-popup .spinner {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
     -fx-border-color: transparent;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
@@ -643,6 +642,11 @@
 .date-picker-popup .calendar-grid .day-cell {
     -fx-text-fill: rgba(255,255,255, 0.8);
     -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+}
+
+.date-picker-popup .calendar-grid .odd-month {
+    -fx-background-color: rgba(50, 50, 50, 0.9);
 }
 
 .date-picker-popup .calendar-grid .today {

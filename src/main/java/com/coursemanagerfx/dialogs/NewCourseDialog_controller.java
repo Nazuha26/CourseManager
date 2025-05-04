@@ -18,6 +18,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import static com.coursemanagerfx.CM_HELPER.*;
@@ -99,7 +100,16 @@ public class NewCourseDialog_controller {
             }
             //BinaryCmanSaver.save(groups, newCourseFile);
             showGeneratedPasswordDialog(stage.getScene().getWindow());
-            CmanSecuritySaver.save(groups, newCourseFile, CM_HELPER.getPassword());
+            //CmanSecuritySaver.save(groups, newCourseFile, CM_HELPER.getPassword());
+            String generatedPassword = GeneratedPass_controller.getGeneratedPassword();
+            CmanSecuritySaver.save(groups, newCourseFile, generatedPassword);
+            //CM_HELPER.setPassword(generatedPassword);
+            // фиксируем только что созданный курс
+            try (FileWriter w = new FileWriter(CM_HELPER.LAST_RUN_FILE)) {
+                w.write(courseName);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
 
             //errorLabel.setManaged(false);
             actionClose(stage, null);   // закрываем диалог

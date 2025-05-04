@@ -61,3 +61,63 @@
 .window-app-name {
     -fx-text-fill: #dddddd;
 }
+
+
+/* ========== UNDO/REDO BTN ========== */
+.redo-button,
+.undo-button {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-font-size: 14;
+
+    -fx-background-image: url("../icons/w_undo_256x256.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 24px 24px;
+
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+    -fx-border-radius: 50;
+    -fx-background-radius: 50;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-in-out;
+}
+
+.redo-button {
+    -fx-scale-x: -1;
+}
+
+.redo-button:hover,
+.undo-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+/* =================================== */
+
+
+/* ========== EXPORT BTN ========== */
+.export-button {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #dddddd;
+    -fx-font-size: 14px;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-in-out;
+}
+
+.export-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+/* ================================ */

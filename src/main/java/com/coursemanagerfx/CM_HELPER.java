@@ -27,7 +27,7 @@ import java.io.IOException;
 public class CM_HELPER {
 
     // ===== CONSTANTS =====
-    public static final String CUR_VERSION = "1.0.8";
+    public static final String CUR_VERSION = "1.0.9";
     public static final int ANIMATION_DURATION = 300;
     public static final double MAIN_SMALL_WINDOW_WIDTH = 1300;
     public static final double MAIN_SMALL_WINDOW_HEIGHT = 700;

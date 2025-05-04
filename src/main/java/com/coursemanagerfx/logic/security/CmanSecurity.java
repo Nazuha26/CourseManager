@@ -16,10 +16,10 @@ public class CmanSecurity {
     private static final int KEY_LEN  = 256;                // бит
     private static final int ITER    = 100_000;             // PBKDF2-итерации
     private static final String P_CHARS =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-                    "abcdefghijklmnopqrstuvwxyz" +
+            "ABCDEFGHJKMNPQRSTUVWXYZ" +
+                    "abcdefghjkmnpqrstuvwxyz" +
                     "0123456789" +
-                    "!@#$%&*_+=|;:\"<>?";
+                    "!@#$_<>?-*&";
 
     public static String generatePassword() {
         SecureRandom rnd = new SecureRandom();

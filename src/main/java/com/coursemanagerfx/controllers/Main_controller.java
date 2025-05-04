@@ -61,12 +61,14 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
@@ -319,8 +321,10 @@ public class Main_controller {
         });
         // ======================================
 
-        dtpkCreationDate.setDayCellFactory(setDatePickerStyle());
-        dtpkExpirationDate.setDayCellFactory(setDatePickerStyle());
+        dtpkCreationDate.setDayCellFactory(addDatePickerCSS());
+        dtpkExpirationDate.setDayCellFactory(addDatePickerCSS());
+        applyDateFormat(dtpkCreationDate, "dd.MM.yyyy");
+        applyDateFormat(dtpkExpirationDate, "dd.MM.yyyy");
 
 
         // выбираем при инициализации первую опцию days/weeks/month
@@ -714,11 +718,12 @@ public class Main_controller {
         });
     }
 
-    public static Callback<DatePicker, DateCell> setDatePickerStyle() {
+    public static Callback<DatePicker, DateCell> addDatePickerCSS() {
         return picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
+                getStyleClass().removeAll("odd-month", "even-month", "sunday", "today");
                 if (!empty && item != null) {
                     if (item.getDayOfWeek() == DayOfWeek.SUNDAY) {
                         getStyleClass().add("sunday");
@@ -726,10 +731,31 @@ public class Main_controller {
                     if (item.equals(LocalDate.now())) {
                         getStyleClass().add("today");
                     }
+                    if (item.getMonthValue() % 2 == 1) {
+                        getStyleClass().add("odd-month");
+                    }
                 }
             }
         };
     }
+    public static void applyDateFormat(DatePicker datePicker, String format) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+
+        datePicker.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(LocalDate date) {
+                return (date != null) ? formatter.format(date) : "";
+            }
+
+            @Override
+            public LocalDate fromString(String string) {
+                return (string != null && !string.isEmpty())
+                        ? LocalDate.parse(string, formatter)
+                        : null;
+            }
+        });
+    }
+
 
     private void saveEditedEvent() {
         if (editingEvent == null) return;
@@ -1738,6 +1764,7 @@ public class Main_controller {
         if (file == null) return;           // Cancel
 
         String newName = file.getName().replace(".cman", "");//file.getName().replaceFirst("\\.cman$", "");
+        if (CM_HELPER.getPassword() != null) CM_HELPER.setPassword(null);
 
         actionClose(stage, () -> {
             try {

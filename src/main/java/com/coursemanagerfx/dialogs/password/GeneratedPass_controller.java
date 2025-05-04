@@ -25,6 +25,11 @@ public class GeneratedPass_controller {
 
     private Stage stage;
 
+    private static String generatedPassword;
+    public static String getGeneratedPassword() {
+        return generatedPassword;
+    }
+
     // Смещение для перетаскивания окна
     private double xOffset;
     private double yOffset;
@@ -36,7 +41,8 @@ public class GeneratedPass_controller {
     @FXML
     private void initialize() {
         String password = CmanSecurity.generatePassword();
-        CM_HELPER.setPassword(password);
+        //CM_HELPER.setPassword(password);
+        generatedPassword = password;
         lblPassword.setText(password);
 
         // === СКРУГЛЕННЫЕ КРАЯ ===
@@ -65,7 +71,7 @@ public class GeneratedPass_controller {
     private void btnCopy() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(CM_HELPER.getPassword());
+        content.putString(generatedPassword);
         clipboard.setContent(content);
 
         copied = true;

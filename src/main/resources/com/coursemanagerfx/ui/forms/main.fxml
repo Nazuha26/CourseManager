@@ -4,6 +4,7 @@
 <?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.input.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -16,6 +17,110 @@
          <children>
             <!--<fx:include fx:id="titleBarContainer" source="title_bar.fxml" />-->
             <BorderPane fx:id="title_bar" onMouseDragged="#onTitleBarDragged" onMousePressed="#onTitleBarPressed" styleClass="title-bar" stylesheets="@../styles/title_bar_style.css">
+               <center>
+                  <Label fx:id="lblAppName" styleClass="window-app-name" text="CourseManagerFX" BorderPane.alignment="CENTER">
+                     <font>
+                        <Font size="15.0" />
+                     </font></Label>
+               </center>
+               <left>
+                  <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <MenuBar stylesheets="@../styles/menu_bar.css">
+                           <menus>
+                              <Menu mnemonicParsing="false" text="File">
+                                 <items>
+                                    <MenuItem fx:id="miNew" mnemonicParsing="false" onAction="#miNew" text="New">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                    <MenuItem fx:id="miOpen" mnemonicParsing="false" onAction="#miOpen" text="Open">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                    <MenuItem fx:id="miSave" mnemonicParsing="false" onAction="#miSave" text="Save">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                    <MenuItem fx:id="miExport" mnemonicParsing="false" onAction="#miExport" text="Export">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                    <SeparatorMenuItem mnemonicParsing="false" />
+                                    <MenuItem fx:id="miQuit" mnemonicParsing="false" onAction="#miQuit" styleClass="menu-item-quit" text="Quit">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                 </items>
+                              </Menu>
+                              <Menu mnemonicParsing="false" text="Edit">
+                                 <items>
+                                    <MenuItem mnemonicParsing="false" onAction="#miUndo" text="Undo">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                    <MenuItem mnemonicParsing="false" onAction="#miRedo" text="Redo">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                    <SeparatorMenuItem mnemonicParsing="false" />
+                                    <MenuItem mnemonicParsing="false" onAction="#miOptions" text="Options">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="DOWN" code="O" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                 </items>
+                              </Menu>
+                              <Menu mnemonicParsing="false" text="Help">
+                                 <items>
+                                    <MenuItem mnemonicParsing="false" onAction="#miAbout" text="About">
+                                       <accelerator>
+                                          <KeyCodeCombination alt="DOWN" code="A" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                                       </accelerator>
+                                    </MenuItem>
+                                 </items>
+                              </Menu>
+                           </menus>
+                        </MenuBar>
+
+                        <Button contentDisplay="RIGHT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#miExport" prefWidth="100.0" styleClass="export-button" text="Export">
+                           <tooltip>
+                              <Tooltip text="Export data to excel file" />
+                           </tooltip>
+                           <graphic>
+                              <ImageView fitHeight="24" fitWidth="24">
+                                 <Image url="@../icons/w_export_256x256.png"/>
+                              </ImageView>
+                           </graphic>
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Button>
+                        <Region prefWidth="20.0" />
+                        <Button mnemonicParsing="false" onAction="#miUndo" prefHeight="32.0" prefWidth="32.0" styleClass="undo-button">
+                           <tooltip>
+                              <Tooltip text="Undo last action" />
+                           </tooltip>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#miRedo" prefHeight="32.0" prefWidth="32.0" styleClass="redo-button">
+                           <tooltip>
+                              <Tooltip text="Redo last action" />
+                           </tooltip>
+                        </Button>
+
+                     </children>
+                  </HBox>
+               </left>
                <right>
                   <HBox alignment="CENTER_LEFT" nodeOrientation="RIGHT_TO_LEFT" BorderPane.alignment="CENTER">
                      <children>
@@ -25,74 +130,6 @@
                      </children>
                   </HBox>
                </right>
-               <center>
-                  <Label fx:id="lblAppName" styleClass="window-app-name" text="CourseManagerFX" BorderPane.alignment="CENTER">
-                     <font>
-                        <Font size="15.0" />
-                     </font></Label>
-               </center>
-               <left>
-                  <MenuBar stylesheets="@../styles/menu_bar.css" BorderPane.alignment="CENTER">
-                     <menus>
-                        <Menu mnemonicParsing="false" text="File">
-                           <items>
-                              <MenuItem fx:id="miNew" mnemonicParsing="false" onAction="#miNew" text="New">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                              <MenuItem fx:id="miOpen" mnemonicParsing="false" onAction="#miOpen" text="Open">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                              <MenuItem fx:id="miSave" mnemonicParsing="false" onAction="#miSave" text="Save">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator></MenuItem>
-                              <MenuItem fx:id="miExport" mnemonicParsing="false" onAction="#miExport" text="Export">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                              <SeparatorMenuItem mnemonicParsing="false" />
-                              <MenuItem fx:id="miQuit" mnemonicParsing="false" onAction="#miQuit" styleClass="menu-item-quit" text="Quit">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                           </items>
-                        </Menu>
-                        <Menu mnemonicParsing="false" text="Edit">
-                           <items>
-                              <MenuItem mnemonicParsing="false" onAction="#miUndo" text="Undo">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator></MenuItem>
-                              <MenuItem mnemonicParsing="false" onAction="#miRedo" text="Redo">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                              <SeparatorMenuItem mnemonicParsing="false" />
-                              <MenuItem mnemonicParsing="false" onAction="#miOptions" text="Options">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="DOWN" code="O" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator>
-                              </MenuItem>
-                           </items>
-                        </Menu>
-                        <Menu mnemonicParsing="false" text="Help">
-                           <items>
-                              <MenuItem mnemonicParsing="false" onAction="#miAbout" text="About">
-                                 <accelerator>
-                                    <KeyCodeCombination alt="DOWN" code="A" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                                 </accelerator></MenuItem>
-                           </items>
-                        </Menu>
-                     </menus>
-                  </MenuBar>
-               </left>
             </BorderPane>
              <HBox fx:id="tabHBox" spacing="5.0" styleClass="hbox">
                  <padding>
