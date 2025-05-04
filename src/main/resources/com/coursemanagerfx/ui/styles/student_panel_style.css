@@ -4,8 +4,8 @@
 .button {
     -fx-background-insets: 0;
     -fx-background-color: rgba(0, 0, 0, 0.5);
-    -fx-background-radius: 50;
-    -fx-border-radius: 50;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
     -fx-text-fill: #dddddd;
     -fx-font-size: 17px;
     -fx-border-color: transparent;
@@ -50,9 +50,10 @@
 .context-menu {
     -fx-background-radius: 10;
     -fx-border-radius: 10;
-    -fx-background-color: rgba(0, 0, 0, 0.8);
-    -fx-border-color: rgba(255, 255, 255, 0.8);
-    -fx-border-width: 1;
+    -fx-background-color: rgba(0, 0, 0, 0.9);
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-border-width: 2;
+    -fx-padding: 5;
 }
 
 .context-menu .menu-item {
@@ -61,5 +62,6 @@
 
 .context-menu .menu-item:hover {
     -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-background-radius: 5;
 }
 /* ======================= */

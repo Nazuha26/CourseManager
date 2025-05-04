@@ -2,7 +2,6 @@ package com.coursemanagerfx.dialogs;
 
 import com.coursemanagerfx.CM_HELPER;
 import com.coursemanagerfx.dialogs.password.GeneratedPass_controller;
-import com.coursemanagerfx.logic.BinaryCmanSaver;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.security.CmanSecuritySaver;
 import javafx.application.Platform;
@@ -19,7 +18,6 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import static com.coursemanagerfx.CM_HELPER.*;

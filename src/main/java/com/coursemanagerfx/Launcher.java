@@ -24,6 +24,7 @@ public class Launcher extends Application {
             }
         }
 
+        //CM_HELPER.setPassword("RMieg>mja%");
         // Если файл FIRST_RUN существует и содержит имя курса, проверяем, что такой курс есть
         if (CM_HELPER.LAST_RUN_FILE.exists()) {
             String courseName;

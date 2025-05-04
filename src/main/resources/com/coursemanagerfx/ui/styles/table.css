@@ -1,8 +1,8 @@
 /* ——— GENERAL ——— */
 .table-view {
-    -fx-background-color: rgba(0,0,0,0.6);
+    -fx-background-color: rgba(0, 0, 0, 0.3);
     -fx-background-radius: 10;
-    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-color: rgba(255, 255, 255, 0.6);
     -fx-border-width: 2;
     -fx-border-radius: 10;
 }
@@ -11,12 +11,12 @@
 .table-view .column-header,
 .table-view .column-header .label {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: #dddddd;
     -fx-font-size: 14;
 }
 
 .table-view .column-header {
-    -fx-border-color: transparent rgba(255, 255, 255, 0.3) transparent transparent; /* правая белая граница */
+    -fx-border-color: transparent rgba(255, 255, 255, 0.3) transparent transparent;
     -fx-border-width: 0 1 0 0;
 }
 
@@ -24,8 +24,8 @@
 .table-view .column-header-background {
     -fx-background-color: transparent;
     -fx-background-radius: 10 10 0 0;
-    -fx-border-width: 0 0 4 0;
-    -fx-border-color: white;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: rgba(255, 255, 255, 0.6);
 }
 
 /* ——— ЯЧЕЙКИ ——— */

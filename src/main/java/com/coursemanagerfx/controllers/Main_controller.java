@@ -59,14 +59,18 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Callback;
 import javafx.util.Duration;
+import javafx.util.converter.IntegerStringConverter;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -315,20 +319,66 @@ public class Main_controller {
         });
         // ======================================
 
+        dtpkCreationDate.setDayCellFactory(setDatePickerStyle());
+        dtpkExpirationDate.setDayCellFactory(setDatePickerStyle());
+
+
         // выбираем при инициализации первую опцию days/weeks/month
         if (!comBoxExpiredTime.getItems().isEmpty())
             comBoxExpiredTime.getSelectionModel().selectFirst();
 
         // === SPINNERS INIT ===
         // Exp. Date spinner
-        SpinnerValueFactory<Integer> valueFactoryExpTime =
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryExpTime =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerExpTimeCount.setValueFactory(valueFactoryExpTime);
 
         // Mark spinner
-        SpinnerValueFactory<Integer> valueFactoryMark =
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryMark =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerMark.setValueFactory(valueFactoryMark);
+
+        // Ограничение ввода только цифрами
+        UnaryOperator<TextFormatter.Change> integerFilter = change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("\\d*")) {
+                return change;
+            }
+            return null;
+        };
+
+        TextFormatter<Integer> formatterExp = new TextFormatter<>(
+                new IntegerStringConverter(),
+                valueFactoryExpTime.getValue(),
+                integerFilter
+        );
+        spinnerExpTimeCount.getEditor().setTextFormatter(formatterExp);
+
+        TextFormatter<Integer> formatterMark = new TextFormatter<>(
+                new IntegerStringConverter(),
+                valueFactoryMark.getValue(),
+                integerFilter
+        );
+        spinnerMark.getEditor().setTextFormatter(formatterMark);
+
+        spinnerExpTimeCount.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) spinnerExpTimeCount.increment(0); // commit
+        });
+        spinnerMark.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) spinnerMark.increment(0); // commit
+        });
+        formatterExp.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null) {
+                int minExp = valueFactoryExpTime.getMin();
+                formatterExp.setValue(minExp);
+            }
+        });
+        formatterMark.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null) {
+                int minMark = valueFactoryMark.getMin();
+                formatterMark.setValue(minMark);
+            }
+        });
         // =====================
 
 
@@ -580,6 +630,7 @@ public class Main_controller {
     private void stopEditing() {
         for (Node node : tabHBox.getChildren()) node.setDisable(false);       // включаем таббар при редактировании ивента
         for (Node node : studentVBox.getChildren()) node.setDisable(false);   // включаем выбор студента при редактировании ивента
+        txtFieldSearch.setDisable(false);                                     // включаем поле поиска студентов при редактировании ивента
         btnCancelEvent.setVisible(true);
         btnCancelEvent.setManaged(true);
         comBoxEventPreset.getSelectionModel().select(EventMods.FIRST.getPreset().getName());
@@ -596,6 +647,7 @@ public class Main_controller {
     public void openEditPane(StudentEvent event) {
         for (Node node : tabHBox.getChildren()) node.setDisable(true);      // отключаем таббар при редактировании ивента
         for (Node node : studentVBox.getChildren()) node.setDisable(true);  // отключаем выбор студента при редактировании ивента
+        txtFieldSearch.setDisable(true);                                    // отключаем поле поиска студентов при редактировании ивента
         // 1) Показать панель, если она скрыта
         if (!mainTopPane.isVisible()) {
             showMainTopPane(TopPaneMode.EVENT_INFO);
@@ -662,6 +714,23 @@ public class Main_controller {
         });
     }
 
+    public static Callback<DatePicker, DateCell> setDatePickerStyle() {
+        return picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (!empty && item != null) {
+                    if (item.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                        getStyleClass().add("sunday");
+                    }
+                    if (item.equals(LocalDate.now())) {
+                        getStyleClass().add("today");
+                    }
+                }
+            }
+        };
+    }
+
     private void saveEditedEvent() {
         if (editingEvent == null) return;
 
@@ -679,7 +748,7 @@ public class Main_controller {
 
         // expiration date: по DatePicker'у, если он виден, иначе по спиннеру+комбо
         LocalDate newExpLd;
-        if (dtpkExpirationDate.getValue() != null) {
+        if (dtpkExpirationDate.isVisible() && dtpkExpirationDate.getValue() != null) {
             newExpLd = dtpkExpirationDate.getValue();
         } else {
             int count = spinnerExpTimeCount.getValue();
@@ -905,7 +974,7 @@ public class Main_controller {
     private void setSelectedStyle(Button btn) {
         btn.setStyle("""
                         -fx-background-color: rgba(0,0,0,0.6);
-                        -fx-border-color: rgba(255,255,255,0.8);
+                        -fx-border-color: rgba(255,255,255,0.6);
                         -fx-border-width: 2;
                     """);
     }
@@ -1476,15 +1545,17 @@ public class Main_controller {
                 }
 
                 // 💡 Спрашиваем пароль только после обновлений:
-                String password = CM_HELPER.showCheckPasswordDialog(stage.getScene().getWindow(), courseFile);
-                if (password == null) {
-                    Platform.exit();
-                    return;
+                if (getPassword() == null) {
+                    String password = CM_HELPER.showCheckPasswordDialog(stage.getScene().getWindow(), courseFile);
+                    if (password == null) {
+                        Platform.exit();
+                        return;
+                    }
+
+                    CM_HELPER.setPassword(password);
                 }
 
-                CM_HELPER.setPassword(password);
-
-                Task<Void> loadTask = getLoadDataTask(courseName, courseFile, this, password);
+                Task<Void> loadTask = getLoadDataTask(courseName, courseFile, this, getPassword());
                 new Thread(loadTask).start();
             });
         }).start();

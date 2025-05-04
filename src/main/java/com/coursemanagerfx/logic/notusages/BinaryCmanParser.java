@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic;
+package com.coursemanagerfx.logic.notusages;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;

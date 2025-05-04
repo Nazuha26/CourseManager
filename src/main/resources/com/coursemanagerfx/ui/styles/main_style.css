@@ -113,7 +113,7 @@
 .scroll-pane {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
-    -fx-background-color: transparent; /* полупрозрачный черный фон */
+    -fx-background-color: transparent;
     -fx-border-color: transparent;           /* убираем голубую рамку */
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
@@ -172,10 +172,9 @@
 
 
 /* ===== FANCY STACK PANE ===== */
-.fancy-internal-left-pane,
 .fancy-left-pane,
 .fancy-pane {
-    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-background-color: rgba(0, 0, 0, 0.5);
     -fx-background-radius: 15;
     -fx-padding: 5;
 }
@@ -185,18 +184,19 @@
 
 .fancy-internal-left-pane {
     -fx-background-radius: 16;
-    -fx-border-color: rgba(255, 255, 255, 0.8);
-    -fx-border-width: 4;
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+    -fx-border-width: 2;
     -fx-border-radius: 15;
     -fx-background-insets: 0;
     -fx-border-insets: 0;
+    -fx-padding: 5;
 }
 /* ============================ */
 
 
 
 /* =============== BUTTONS =============== */
-.animated-to-schedule-button,
 .animated-back-button,
 .animated-clear-history-button,
 .animated-add-event-button,
@@ -226,7 +226,6 @@
     -fx-border-radius: 15;
 }
 
-.animated-to-schedule-button,
 .animated-back-button,
 .animated-clear-history-button {
     -fx-background-image: url("../icons/w_clear_256x256.png");
@@ -246,18 +245,6 @@
     -fx-background-radius: 99;
     -fx-border-radius: 99;
     -fx-padding: 0px;
-}
-
-.animated-to-schedule-button {
-    -fx-background-image: url("../icons/w_to_schedule_256x256.png");
-    -fx-background-size: 48px 32px;
-    -fx-background-radius: 5;
-    -fx-border-radius: 5;
-    -fx-padding: 0px;
-}
-
-.animated-to-schedule-button:hover {
-    -fx-background-color: rgba(53, 53, 53, 0.5);
 }
 
 .animated-create-button {
@@ -339,22 +326,44 @@
 
 
 /* ========== COMMON ========== */
+.animated-to-schedule-button,
 .text-area, .inline-css-text-area,
 .combo-box, .expired-combo-box, .combo-box-popup,
 .date-picker, .expired-spinner, .spinner {
     -fx-text-fill: white;
     -fx-border-width: 2px;
-    -fx-background-color: rgba(0, 0, 0, 0.6);
-    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+    -fx-border-color: rgba(255, 255, 255, 0.6);
 }
 /* ============================ */
+
+
+
+/* ===== TO SCHEDULE BUTTON ===== */
+.animated-to-schedule-button {
+    -fx-background-image: url("../icons/w_to_schedule_256x256.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: 48px 32px;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-padding: 0px;
+
+    transition-property: -fx-background-color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.animated-to-schedule-button:hover {
+    -fx-background-color: rgba(53, 53, 53, 0.5);
+}
+/* ============================== */
 
 
 
 /* ===== TEXT AREA ===== */
 .text-area {
     -fx-font-size: 16px;
-    -fx-background-color: rgba(0, 0, 0, 0.6);
     -fx-background-radius: 11px;
     -fx-border-radius: 10px;
     -fx-padding: 0;
@@ -387,7 +396,7 @@
 .text-area:focused {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
-    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
 }
 /* ===================== */
 
@@ -396,7 +405,7 @@
 /* ===== INLINE CSS TEXT AREA ===== */
 .inline-css-text-area {
     -fx-font-size: 16px;
-    -fx-border-width: 4px;
+    /*-fx-border-width: 4px;*/
     -fx-background-radius: 11px;
     -fx-border-radius: 10px;
     -fx-padding: 10px;
@@ -519,16 +528,24 @@
     -fx-border-radius: 10;
 }
 
+.combo-box-popup .list-view {
+    -fx-background-color: rgba(0, 0, 0, 0.9);
+    -fx-background-radius: 11;
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-padding: 5;
+}
+
 /* Элементы выпадающего списка */
 .combo-box-popup .list-cell {
-    -fx-text-fill: white;
-    -fx-background-color: black;
+    -fx-text-fill: #dddddd;
+    -fx-background-color: transparent;
 }
 
 /* Эффект при наведении на элементы выпадающего списка */
 .combo-box-popup .list-cell:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.5);
-    -fx-text-fill: black;
+    -fx-background-radius: 10;
 }
 /* =============================== */
 
@@ -565,12 +582,45 @@
 
 /* --- СТИЛЬ ВСПЛЫВАЮЩЕГО КАЛЕНДАРЯ --- */
 .date-picker-popup {
-    -fx-background-color: black;
+    -fx-background-color: rgba(0, 0, 0, 0.9);
     -fx-background-radius: 11;
-    -fx-border-color: white;
+    -fx-border-color: rgba(255, 255, 255, 0.6);
     -fx-border-width: 2;
     -fx-border-radius: 10;
     -fx-padding: 8;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup .label {
+    -fx-text-fill: #dddddd;
+}
+
+/* 1. Полностью гасим встроенные стрелки */
+.date-picker-popup .spinner .button .left-arrow,
+.date-picker-popup .spinner .button .right-arrow {
+    -fx-shape: "";           /* обнуляем форму */
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+}
+
+.date-picker-popup .left-button,
+.date-picker-popup .right-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5;
+    -fx-background-image: url("../icons/w_arrow_256x256.png");
+    -fx-background-size: 16px 16px;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-padding: 5;
+    -fx-rotate: 90;
+}
+
+.date-picker-popup .right-button {
+    -fx-background-image: url("../icons/w_arrow_256x256.png");
+    -fx-rotate: -90;
 }
 
 .date-picker-popup .spinner {
@@ -581,31 +631,33 @@
     -fx-background-radius: 5;
 }
 
-.date-picker-popup .spinner .increment-arrow-button,
-.date-picker-popup .spinner .decrement-arrow-button {
+.date-picker-popup .calendar-grid {
     -fx-background-color: transparent;
-    -fx-padding: 2;
 }
 
-.date-picker-popup .spinner .increment-arrow,
-.date-picker-popup .spinner .decrement-arrow {
-    -fx-background-color: white;
+.date-picker-popup .calendar-grid .day-name-cell {
+    -fx-text-fill: #dddddd;
 }
 
 /* Каждая ячейка дней */
-.date-picker-popup .day-cell {
-    -fx-text-fill: white;
-    -fx-background-color: black;
+.date-picker-popup .calendar-grid .day-cell {
+    -fx-text-fill: rgba(255,255,255, 0.8);
+    -fx-background-color: transparent;
 }
 
-.date-picker-popup .day-cell:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.2);
-    -fx-text-fill: black;
+.date-picker-popup .calendar-grid .today {
+    -fx-background-color: rgba(255, 0, 0, 0.7);
 }
 
-.date-picker-popup .day-cell:focused {
-    -fx-background-color: rgba(0, 111, 255, 0.7);
-    -fx-background-radius: 5;
+.combo-box-popup .list-cell:hover,
+.date-picker-popup .left-button:hover,
+.date-picker-popup .right-button:hover,
+.date-picker-popup .calendar-grid .day-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
+
+.date-picker-popup .calendar-grid .day-cell:focused {
+    -fx-background-color: rgba(0, 111, 255, 0.5);
 }
 /* ================================= */
 

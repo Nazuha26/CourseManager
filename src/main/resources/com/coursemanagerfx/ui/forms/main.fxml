@@ -105,6 +105,7 @@
    <center>
       <StackPane BorderPane.alignment="CENTER">
          <children>
+            <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #00000066;" />
             <BorderPane>
                <left>
                   <BorderPane styleClass="fancy-left-pane" BorderPane.alignment="CENTER">
@@ -175,7 +176,7 @@
                                                       <Insets bottom="10.0" />
                                                    </StackPane.margin>
                                                 </Label>
-                                                <HBox alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32" prefWidth="96" StackPane.alignment="TOP_RIGHT">
+                                                <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32" prefWidth="96" StackPane.alignment="BOTTOM_RIGHT">
                                                    <children>
                                                       <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0" prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
                                                          <font>
@@ -188,7 +189,7 @@
                                                       <Button mnemonicParsing="false" onAction="#setUnderlineText" prefHeight="32.0" prefWidth="32.0" styleClass="last-styled-button-underline" text="U" underline="true" />
                                                    </children>
                                                    <StackPane.margin>
-                                                      <Insets right="10.0" top="10.0" />
+                                                      <Insets bottom="10.0" right="10.0" />
                                                    </StackPane.margin>
                                                 </HBox>
                                              </children>
@@ -246,7 +247,7 @@
 
                                                                      <HBox fx:id="hboxExpiredDate" alignment="CENTER_LEFT" maxHeight="Infinity" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
                                                                         <children>
-                                                                           <Spinner fx:id="spinnerExpTimeCount" maxHeight="Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="70.0" styleClass="expired-spinner" HBox.hgrow="ALWAYS" />
+                                                                           <Spinner fx:id="spinnerExpTimeCount" editable="true" maxHeight="Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="70.0" styleClass="expired-spinner" HBox.hgrow="ALWAYS" />
                                                                            <ComboBox fx:id="comBoxExpiredTime" maxHeight="Infinity" maxWidth="1.7976931348623157E308" styleClass="expired-combo-box" HBox.hgrow="ALWAYS">
                                                                               <items>
                                                                                  <FXCollections fx:factory="observableArrayList">
@@ -275,7 +276,7 @@
                                                          <children>
                                                             <BorderPane maxHeight="-Infinity" prefHeight="70.0">
                                                                <center>
-                                                                  <Spinner fx:id="spinnerMark" maxHeight="Infinity" BorderPane.alignment="CENTER" />
+                                                                  <Spinner fx:id="spinnerMark" editable="true" maxHeight="Infinity" BorderPane.alignment="CENTER" />
                                                                </center>
                                                                <top>
                                                                   <Label maxHeight="Infinity" minWidth="-Infinity" text="Mark" textFill="#dddddd" BorderPane.alignment="CENTER">
