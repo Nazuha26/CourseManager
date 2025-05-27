@@ -1,54 +1,36 @@
 package com.coursemanagerfx.logic.commands.event_comms;
 
-import com.coursemanagerfx.controllers.Main_controller;
+import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.commands.Command;
-import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
 public class DeleteEventCommand implements Command {
     private final Group group;
     private final Student student;
     private final StudentEvent event;
-    private final Main_controller ctrl;
 
-    public DeleteEventCommand(Group group, Student student,
-                              StudentEvent event, Main_controller ctrl) {
+    public DeleteEventCommand(Group group, Student student, StudentEvent event) {
         this.group = group;
         this.student = student;
         this.event = event;
-        this.ctrl = ctrl;
     }
 
     @Override
-    public void execute(boolean isRedo) {
+    public void execute() {
         student.getEvents().remove(event);
-        ctrl.loadStudentEvents(student.getID());
-
-        String shortDesc = event.getDescription().length() > 10
-                ? event.getDescription().substring(0, 10) + "..."
-                : event.getDescription();
-
-        if (!isRedo) {
-            HistoryUtility.setHistory(
-                    ctrl.getRichTxtPaneHistory(),
-                    ctrl.getLblCurHistory(),
-                    HistoryUtility.Types.SUCCESS,
-                    "Deleted event \"" + shortDesc + "\""
-            );
-        }
+        Actions.getInstance().repaint().smartRefresh(group, student);
     }
 
     @Override
     public void undo() {
         student.getEvents().add(event);
-        ctrl.displayStudents(group);
-        ctrl.selectGroupAndStudent(group, student.getID());
+        Actions.getInstance().repaint().smartRefresh(group, student);
     }
 
     @Override
-    public String getDescription() {
+    public String getHistoryDescription() {
         String shortDesc = event.getDescription().length() > 10
                 ? event.getDescription().substring(0, 10) + "..."
                 : event.getDescription();

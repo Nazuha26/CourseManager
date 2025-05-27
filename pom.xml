@@ -6,7 +6,7 @@
 
   <groupId>com.coursemanagerfx</groupId>
   <artifactId>CourseManagerFX</artifactId>
-  <version>1.0.9</version>
+  <version>1.1.0</version>
   <name>CourseManagerFX</name>
 
   <properties>
@@ -74,6 +74,23 @@
       <groupId>org.fxmisc.richtext</groupId>
       <artifactId>richtextfx</artifactId>
       <version>0.11.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.4.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>5.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>5.13.0</version>
     </dependency>
   </dependencies>
 

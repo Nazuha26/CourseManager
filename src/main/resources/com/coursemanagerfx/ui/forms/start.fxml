@@ -5,9 +5,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="main_start" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="window" stylesheets="@../styles/start_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.Start_controller">
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="window" stylesheets="@../styles/start_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.main.Start_controller">
     <top>
-        <HBox alignment="CENTER_RIGHT" onMouseDragged="#onTitleBarDragged" onMousePressed="#onTitleBarPressed" styleClass="title-bar" BorderPane.alignment="CENTER">
+        <HBox fx:id="titleBar" alignment="CENTER_RIGHT" styleClass="title-bar" BorderPane.alignment="CENTER">
             <children>
             <BorderPane HBox.hgrow="ALWAYS">
                <left>

@@ -1,9 +1,7 @@
 package com.coursemanagerfx.logic.basic;
 
-import com.coursemanagerfx.logic.security.CmanSecurity;
-
-import java.util.Arrays;
-import java.util.Base64;
+import com.coursemanagerfx.logic.deprecated.CmanSecurity;
+import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 
 public class Course {
     private String password;
@@ -34,7 +32,7 @@ public class Course {
     }
 
     public void generateUniquePassword() {
-        password = CmanSecurity.generatePassword();
+        password = CmanSecurityUtility.generatePassword();
         System.out.println("password=" + password);
     }
 }

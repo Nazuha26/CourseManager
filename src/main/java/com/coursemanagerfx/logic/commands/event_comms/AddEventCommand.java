@@ -1,49 +1,38 @@
 package com.coursemanagerfx.logic.commands.event_comms;
 
-import com.coursemanagerfx.controllers.Main_controller;
+import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.commands.Command;
-import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
 public class AddEventCommand implements Command {
-    private Group group;
-    private Student student;
-    private StudentEvent event;
-    private Main_controller mainController;
+    private final Group group;
+    private final Student student;
+    private final StudentEvent event;
 
-    public AddEventCommand(Group group, Student student, StudentEvent event, Main_controller mainController) {
+    public AddEventCommand(Group group, Student student, StudentEvent event) {
         this.group = group;
         this.student = student;
         this.event = event;
-        this.mainController = mainController;
     }
 
     @Override
-    public void execute(boolean isRedo) {
+    public void execute() {
         student.getEvents().add(event);
-        mainController.displayStudents(group);
-        mainController.selectGroupAndStudent(group, student.getID());
-
-        if (!isRedo) {
-            String shortDesc = event.getDescription().length() > 10
-                    ? event.getDescription().substring(0, 10) + "..."
-                    : event.getDescription();
-            HistoryUtility.setHistory(mainController.getRichTxtPaneHistory(), mainController.getLblCurHistory(),
-                    HistoryUtility.Types.SUCCESS, "Added event \"" + shortDesc + "\"");
-        }
+        Actions.getInstance().repaint().smartRefresh(group, student);
+        System.out.println("added event: { ID: " + event.getID() + " }");
     }
 
     @Override
     public void undo() {
         student.getEvents().remove(event);
-        mainController.displayStudents(group);
-        mainController.selectGroupAndStudent(group, student.getID());
+        Actions.getInstance().repaint().smartRefresh(group, student);
+        System.out.println("undo adding event: { ID: " + event.getID() + " }");
     }
 
     @Override
-    public String getDescription() {
+    public String getHistoryDescription() {
         String shortDesc = event.getDescription().length() > 10
                 ? event.getDescription().substring(0, 10) + "..."
                 : event.getDescription();

@@ -6,10 +6,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="350.0" styleClass="window" stylesheets="@dialog_ui.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.dialogs.alert.AlertFX_controller">
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="350.0" styleClass="window" stylesheets="@dialog_ui.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.dialogs.alert.AlertFX_controller">
 
 <top>
-    <HBox fx:id="titleBar" alignment="CENTER_RIGHT" onMouseDragged="#onTitleBarDragged" onMousePressed="#onTitleBarPressed" styleClass="title-bar" stylesheets="@../styles/title_bar_style.css" BorderPane.alignment="CENTER">
+    <HBox fx:id="titleBar" alignment="CENTER_RIGHT" styleClass="title-bar" stylesheets="@../styles/title_bar_style.css" BorderPane.alignment="CENTER">
         <children>
             <Label fx:id="labelTitle" styleClass="window-app-name" text="Confirmation">
                 <font>
@@ -27,13 +27,11 @@
 
 <bottom>
     <HBox alignment="CENTER" spacing="10" BorderPane.alignment="CENTER">
-        <children>
-            <Button fx:id="btnConfirm" onAction="#btnConfirm" styleClass="button-confirm" text="OK" />
-            <Button fx:id="btnCancel" onAction="#btnCancel" styleClass="button-cancel" text="Cancel" />
-        </children>
         <padding>
             <Insets bottom="10" top="10" />
         </padding>
+        <Button fx:id="btnConfirm" onAction="#btnConfirm" styleClass="button-confirm" text="OK" />
+        <Button fx:id="btnCancel" onAction="#btnCancel" styleClass="button-cancel" text="Cancel" />
     </HBox>
 </bottom>
 <center>
@@ -49,12 +47,12 @@
             </ImageView>
             <VBox alignment="CENTER" spacing="10" HBox.hgrow="ALWAYS">
                 <children>
-                    <Label fx:id="labelMain" text="Main text" textFill="#dddddd">
+                    <Label fx:id="labelMain" maxWidth="300" text="Main text" textFill="#dddddd" wrapText="true">
                         <font>
                             <Font name="System Bold" size="17.0" />
                         </font>
                     </Label>
-                    <Label fx:id="labelPrompt" layoutX="149.0" layoutY="25.0" text="Some text here. It just a text &#10;to make this sentence long &#10;something about 40 words." textFill="#dddddd">
+                    <Label fx:id="labelPrompt" maxWidth="300" text="Some text here. It just a text to make this sentence long something about 40 words." textFill="#dddddd" wrapText="true">
                         <font>
                             <Font size="14.0" />
                         </font>

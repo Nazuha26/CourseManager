@@ -55,6 +55,20 @@
 }
 /* ======================== */
 
+/* ===== LOADING INDICATOR ===== */
+.progress-indicator {
+    -fx-progress-color: #70e24a;
+    -fx-background-color: transparent;
+}
+
+.progress-indicator .spinner {
+    -fx-border-width: 4px;
+    -fx-border-color: transparent #5ee24a transparent #d8fbbb;
+    -fx-border-radius: 50%;
+    -fx-padding: 4px;
+}
+/* ============================= */
+
 
 
 .vbox {

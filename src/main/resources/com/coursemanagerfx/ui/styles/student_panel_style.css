@@ -24,6 +24,28 @@
     -fx-text-fill: #dddddd;
 }
 
+/* ===== SEARCH STYLE ===== */
+.search-background {
+    -fx-background-color: rgba(223, 134, 23, 0.5);
+}
+/* ======================== */
+
+/* ===== SELECTED ===== */
+.selected-student-panel:focused,
+.selected-student-panel:selected,
+.selected-student-panel:hover,
+.selected-student-panel {
+    -fx-background-color: rgba(0,0,0,0.6);
+    -fx-border-color: rgba(255,255,255,0.6);
+    -fx-border-width: 2;
+}
+.selected-student-panel:hover {
+    -fx-background-color: rgba(0,0,0,0.5);
+    -fx-border-color: rgba(255,255,255,0.5);
+    -fx-border-width: 2;
+}
+/* ==================== */
+
 /* ===== MENU BUTTON ===== */
 .menu-button {
     -fx-background-insets: 0;

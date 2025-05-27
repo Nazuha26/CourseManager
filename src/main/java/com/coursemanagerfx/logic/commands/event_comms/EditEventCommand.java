@@ -1,11 +1,10 @@
 package com.coursemanagerfx.logic.commands.event_comms;
 
-import com.coursemanagerfx.controllers.Main_controller;
+import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.commands.Command;
-import com.coursemanagerfx.logic.utilitys.HistoryUtility;
 
 public class EditEventCommand implements Command {
     private final Group group;
@@ -13,41 +12,31 @@ public class EditEventCommand implements Command {
     private final StudentEvent event;
     private final StudentEvent before;
     private final StudentEvent after;
-    private final Main_controller ctrl;
+
     public EditEventCommand(Group group, Student student,
                             StudentEvent original,
-                            StudentEvent newCopy,
-                            Main_controller ctrl) {
+                            StudentEvent newCopy) {
         this.group   = group;
         this.student = student;
         this.event   = original;
         this.before  = new StudentEvent(original);
         this.after   = newCopy;
-        this.ctrl    = ctrl;
     }
-    @Override
-    public void execute(boolean isRedo) {
-        apply(after);
-        ctrl.loadStudentEvents(ctrl.getSelectedStudent().getID());
 
-        String shortDesc = event.getDescription().length() > 10
-                ? event.getDescription().substring(0, 10) + "..."
-                : event.getDescription();
-        if (!isRedo) HistoryUtility.setHistory(
-                ctrl.getRichTxtPaneHistory(),
-                ctrl.getLblCurHistory(),
-                HistoryUtility.Types.INFO,
-                "Edited event \"" + shortDesc + "\"");
+    @Override
+    public void execute() {
+        apply(after);
+        Actions.getInstance().repaint().smartRefresh(group, student);
     }
 
     @Override
     public void undo() {
         apply(before);
-        ctrl.displayStudents(group);
-        ctrl.selectGroupAndStudent(group, student.getID());
+        Actions.getInstance().repaint().smartRefresh(group, student);
     }
 
     private void apply(StudentEvent src) {
+        event.setType(src.getType());
         event.setDescription(src.getDescription());
         event.setCrtDate(src.getCrtDate());
         event.setMark(src.getMark());
@@ -55,10 +44,10 @@ public class EditEventCommand implements Command {
     }
 
     @Override
-    public String getDescription() {
+    public String getHistoryDescription() {
         String shortDesc = event.getDescription().length() > 10
                 ? event.getDescription().substring(0, 10) + "..."
                 : event.getDescription();
-        return "edited event \"" + shortDesc + "\"";
+        return "Edited event \"" + shortDesc + "\"";
     }
 }

@@ -6,35 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Student {
-    private String name;                // Имя студента
-    private List<StudentEvent> events;  // Список событий студента
-    private final int ID;
-    private boolean isSelected;
+    private String name;                // student name
+    private List<StudentEvent> events;  // list of student's events
+    private final int studentID;               // student id
 
-    public Student(String name) {
+    public Student(String name, int studentID) {
         this.name = name;
+        this.studentID = studentID;
         this.events = new ArrayList<>();
-        this.ID = (int)(Math.random() * 1000000);   // генерирует число от 0 до 999999 (шанс 0,0001%)
-        this.isSelected = false;
     }
 
-    public Student(String name, int ID) {
-        this.name = name;
-        this.ID = ID;
-        this.events = new ArrayList<>();
-        this.isSelected = false;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public boolean isSelected() {
-        return isSelected;
-    }
-
-    public void setSelected(boolean selected) {
-        isSelected = selected;
+    public int getStudentID() {
+        return studentID;
     }
 
     public String getName() {
@@ -52,10 +35,31 @@ public class Student {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Student student) {
+            return studentID == student.getStudentID();
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
-        return "Student { " +
-                "ID='" + ID + "'" +
-                ", name='" + name + "'\n" +
-                "\tevents=\n" + events + " }\n";
+        StringBuilder sb = new StringBuilder("Student {\n")
+                .append("  ID       : ").append(studentID).append("\n")
+                .append("  Name     : ").append(name).append("\n")
+                .append("  Events   :\n");
+
+        if (events.isEmpty()) {
+            sb.append("    <none>\n");
+        } else {
+            for (StudentEvent ev : events) {
+                sb.append("    ")
+                        .append(ev.toString().replace("\n", "\n    "))
+                        .append("\n");
+            }
+        }
+
+        sb.append("}");
+        return sb.toString();
     }
 }

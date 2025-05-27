@@ -19,6 +19,12 @@ public class Group {
 
     @Override
     public String toString() {
-        return "Group{\nstudents=" + students + "}";
+        StringBuilder sb = new StringBuilder("Group {\n");
+        for (Student student : students) {
+            // Добавляем отступы для каждого студента
+            sb.append("  ").append(student.toString().replace("\n", "\n  ")).append("\n");
+        }
+        sb.append("}");
+        return sb.toString();
     }
 }

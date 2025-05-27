@@ -1,7 +1,8 @@
 package com.coursemanagerfx.logic.commands;
 
 public interface Command {
-    void execute(boolean isRedo);
-    void undo();
-    public abstract String getDescription();
+    void execute();     // just do action
+    //void redo();        // just do action with redo history
+    void undo();        // undo action with undo history
+    String getHistoryDescription();     // text for history description
 }
