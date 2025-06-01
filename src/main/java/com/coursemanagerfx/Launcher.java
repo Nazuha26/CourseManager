@@ -6,7 +6,6 @@ import com.coursemanagerfx.logic.CourseInfo;
 import com.coursemanagerfx.logic.utilities.show.ShowWindowUtility;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -116,12 +115,14 @@ public class Launcher extends Application {
                 }
         /* ---------------------------------------------------------------------- */
 
-        //CM_HELPER.setPassword("RMieg>mja%");    // Test
-        //CM_HELPER.setPassword("lm6d!_O6A3");    // Test 2
-        presetPassword = "0Qn$rptY2*";    // 1 курс
+        //CM_HELPER.setPassword("RMieg>mja%");       // Test
+        //CM_HELPER.setPassword("lm6d!_O6A3");       // Test 2
+        //presetPassword = "0Qn$rptY2*";               // 1 курс
         LaunchCourseInfo info = existCourseFile();
+
+        primaryStage.close();
+
         if (info.exists()) {
-            primaryStage.close();
             ShowWindowUtility.showMainWindow(info.courseName(), info.courseFile());
             return;
         }

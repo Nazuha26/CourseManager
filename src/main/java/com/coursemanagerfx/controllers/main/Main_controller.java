@@ -1,61 +1,41 @@
 package com.coursemanagerfx.controllers.main;
 
-import com.coursemanagerfx.CM_HELPER;
-import com.coursemanagerfx.Launcher;
-import com.coursemanagerfx.animations.WindowOutAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
-import com.coursemanagerfx.controllers.dialogs.exceptions.SaveException;
-import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.*;
 import com.coursemanagerfx.custom_ui.GradientBackground;
-import com.coursemanagerfx.logic.basic.event.EventTypes;
+import com.coursemanagerfx.logic.basic.event.EventCategories;
 import com.coursemanagerfx.logic.basic.event.EventStatus;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
-import com.coursemanagerfx.logic.security.CmanSecurityUtility;
-import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
-import com.coursemanagerfx.logic.utilities.HistoryUtility;
-import com.coursemanagerfx.logic.utilities.UpdateUtility;
 import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
-import eu.iamgio.animated.transition.AnimationPair;
-import eu.iamgio.animated.transition.container.AnimatedVBox;
-import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.*;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import org.fxmisc.richtext.InlineCssTextArea;
 
-import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -65,58 +45,68 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.coursemanagerfx.CM_HELPER.*;
-
-enum TopPaneMode { HISTORY, EVENT_INFO }
-
 public class Main_controller implements StageAttachable {
 
-    public static final int MW_ANIM_STRIPE_COUNT = 20;  // start window
+    /* === CONSTANTS === */
+    public static final int MW_ANIM_STRIPE_COUNT = 20;  // const for anim main window
 
-    // ========== FXML ==========
+    private static final String BOLD_MARKER = "*";
+    private static final String ITALIC_MARKER = "_";
+    private static final String UNDERLINE_MARKER = "=";
 
-    @FXML private BorderPane rootPane;
-    @FXML private BorderPane titleBar;
-
-    @FXML private BorderPane notificationPane;
-    public BorderPane getNotificationPane() {
-        return notificationPane;
-    }
-
-    @FXML private BorderPane eventInfoTopPane;
-    @FXML private StackPane historyTopPane;
-    @FXML private TextField txtFieldSearch;
-    @FXML private TextArea txtPaneHistory;
-    @FXML private TextFlow txtFlowHistory;
-    @FXML private InlineCssTextArea richTxtPaneHistory;
-    @FXML private Label lblCurHistory;
-
-    @FXML private Button btnHistory;
-    @FXML private Button btnBackFromHistory;
-
-    @FXML private Label lblAppName;
-
+    /* ==================== FXML ==================== */
+    @FXML private BorderPane rootPane;      // root
+    @FXML private BorderPane titleBar;      // title bar
+    @FXML private Label lblAppName;         // app name
     @FXML private HBox tabHBox;
-    @FXML private VBox studentVBox;
-    @FXML private ScrollPane studentsScrollPane;
+    @FXML private Button btnClose;
+    @FXML private Button btnMinimize;
+
+    /* --- info top panel --- */
+    @FXML private StackPane infoTopPane;
+
+    @FXML private BorderPane eventInfoMaskPane;
+    @FXML private StackPane historyInfoMaskPane;
+
     @FXML private TextArea txtAreaEventDescrp;
     @FXML private ComboBox<String> comBoxEventType;
     @FXML private Spinner<Integer> spinnerMark;
     @FXML private DatePicker dtpkCreationDate;
+    @FXML private DatePicker dtpkExpirationDate;
+
     @FXML private Spinner<Integer> spinnerExpTimeCount;
-    @FXML private ComboBox<String> comBoxExpiredTime;
-    // --- BUTTONS ---
-    @FXML private Button btnAddStudent;
-    @FXML private Button btnAddEvent;
-    @FXML private Button btnCancelEvent;
-    @FXML private Button btnCreateEvent;
-    @FXML private Button btnClearHistory;
-    @FXML private Button btnClose;
-    @FXML private Button btnMaximize;
-    @FXML private Button btnMinimize;
+    @FXML private ComboBox<String> comBoxExpTimeType;
+    @FXML private HBox hboxExpiredTime;
+
     @FXML private Button btnToSchedule;
+    @FXML private Label lblEditing;
+    @FXML private Label placeholderLbl;
+
+    @FXML private Button btnCreateEvent;
+    @FXML private Button btnCancelEvent;
     @FXML private Button btnDeleteEvent;
-    // --- BUTTONS ---
+
+    @FXML private InlineCssTextArea richTxtPaneHistory;
+    @FXML private Button btnClearHistory;
+    @FXML private Button btnBackFromHistory;
+
+    /* --- info bottom panel --- */
+    @FXML private HBox infoBotPane;
+
+    @FXML private Label lblCurHistory;
+    @FXML private Button btnAddEvent;
+    @FXML private Button btnOpenHistory;
+
+    /* --- students vbox panel --- */
+    @FXML private VBox studentVBox;
+
+    @FXML private TextField txtFieldSearch;
+    @FXML private Button btnAddStudent;
+    @FXML private Label lblGroupNumber;
+
+    /* --- TABLE --- */
+    @FXML private StackPane tableStackPane;
+
     @FXML private TableView<StudentEvent> eventsTable;
     @FXML private TableColumn<StudentEvent, Number> numberColumn;
     @FXML private TableColumn<StudentEvent, String> crtDateColumn;
@@ -124,24 +114,18 @@ public class Main_controller implements StageAttachable {
     @FXML private TableColumn<StudentEvent, Number> marksColumn;
     @FXML private TableColumn<StudentEvent, String> expDateColumn;
     @FXML private TableColumn<StudentEvent, EventStatus> statusColumn;
+    /* --- TABLE --- */
+    /* ============================================== */
 
-    @FXML private HBox addEventBottomPane;
-    @FXML private StackPane mainTopPane;
-    @FXML private StackPane tableStackPane;
-    @FXML private Label lblEditing;
-    @FXML private Label lblGroupNumber;
-    @FXML private HBox hboxExpiredDate;
-    @FXML private DatePicker dtpkExpirationDate;
-
-    // ========== FXML ==========
-
-    // ========== FXML GETTERS/SETTERS ==========
-
-    // ===== GETTERS =====
-    public TextArea getTxtPaneHistory() {
-        return txtPaneHistory;
+    /* ==================== FXML GETTERS/SETTERS ==================== */
+    /* --- GETTERS --- */
+    public BorderPane getTitleBar() {
+        return titleBar;
     }
-    public TextFlow getTxtFlowHistory() { return txtFlowHistory; }
+    public BorderPane getRootPane() {
+        return rootPane;
+    }
+
     public InlineCssTextArea getRichTxtPaneHistory() {
         return richTxtPaneHistory;
     }
@@ -184,8 +168,8 @@ public class Main_controller implements StageAttachable {
     public Button getBtnCreateEvent() {
         return btnCreateEvent;
     }
-    public StackPane getMainTopPane() {
-        return mainTopPane;
+    public StackPane getInfoTopPane() {
+        return infoTopPane;
     }
     public DatePicker getDtpkCreationDate() {
         return dtpkCreationDate;
@@ -199,175 +183,62 @@ public class Main_controller implements StageAttachable {
     public Spinner<Integer> getSpinnerExpTimeCount() {
         return spinnerExpTimeCount;
     }
-    public ComboBox<String> getComBoxExpiredTime() {
-        return comBoxExpiredTime;
+    public ComboBox<String> getComBoxExpTimeType() {
+        return comBoxExpTimeType;
     }
     public Button getBtnAddStudent() {
         return btnAddStudent;
     }
-    public HBox getAddEventBottomPane() {
-        return addEventBottomPane;
+    public HBox getInfoBotPane() {
+        return infoBotPane;
     }
     public StackPane getTableStackPane() {
         return tableStackPane;
     }
-    public HBox getHboxExpiredDate() {
-        return hboxExpiredDate;
+    public HBox getHboxExpiredTime() {
+        return hboxExpiredTime;
     }
-    public StackPane getHistoryTopPane() {
-        return historyTopPane;
+    public StackPane getHistoryInfoMaskPane() {
+        return historyInfoMaskPane;
     }
-    public BorderPane getEventInfoTopPane() {
-        return eventInfoTopPane;
+    public BorderPane getEventInfoMaskPane() {
+        return eventInfoMaskPane;
     }
 
     public Label getLblGroupNumber() {
         return lblGroupNumber;
     }
-
-    public BorderPane getTitleBar() {
-        return titleBar;
-    }
-    public BorderPane getRootPane() {
-        return rootPane;
-    }
-    // ===== GETTERS =====
-
-    // ========== FXML GETTERS/SETTERS ==========
+    /* --- GETTERS --- */
+    /* ============================================================== */
 
 
 
-    // ========== FIELDS ==========
-
+    /* ==================== FIELDS ==================== */
     private ImageView historyIcon_To;
     private ImageView historyIcon_Back;
-    private AnimatedVBox vboxLeftAnimated;
-    private AnimatedVBox vboxRightAnimated;
     private Stage stage;
-    //private Group currentGroup;
     private Button activeEditButton = null;
+    /* ================================================ */
 
-    // ========== FIELDS ==========
+    /* ==================== FIELDS GETTERS/SETTERS ==================== */
+    /* --- GETTERS --- */
+    public Stage getStage() { return stage; }
 
-
-
-    // ========== FIELDS GETTERS/SETTERS ==========
-
-    // ===== GETTERS =====
-    public AnimatedVBox getVBoxLeft() {
-        return vboxLeftAnimated;
-    }
-    public AnimatedVBox getVBoxRight() {
-        return vboxRightAnimated;
-    }
-
-    public Stage getStage() {
-        return stage;
-    }
-
-    // ===== GETTERS =====
-
-    // ===== SETTERS =====
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-    // ===== SETTERS =====
-
-    // ========== FIELDS GETTERS/SETTERS ==========
+    /* --- SETTERS --- */
+    public void setStage(Stage stage) { this.stage = stage; }
+    /* ================================================================ */
 
 
-
-    // ========== UTILITY METHODS ==========
-
-
-    // init data picker custom style
-    public static Callback<DatePicker, DateCell> addDatePickerCSS() {
-        return picker -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate item, boolean empty) {
-                super.updateItem(item, empty);
-                getStyleClass().removeAll("odd-month", "even-month", "sunday", "today");
-                if (!empty && item != null) {
-                    if (item.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                        getStyleClass().add("sunday");
-                    }
-                    if (item.equals(LocalDate.now())) {
-                        getStyleClass().add("today");
-                    }
-                    if (item.getMonthValue() % 2 == 1) {
-                        getStyleClass().add("odd-month");
-                    }
-                }
-            }
-        };
-    }
-
-    // init data picker custom format
-    public static void applyDateFormat(DatePicker datePicker, String format) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-
-        datePicker.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(LocalDate date) {
-                return (date != null) ? formatter.format(date) : "";
-            }
-
-            @Override
-            public LocalDate fromString(String string) {
-                return (string != null && !string.isEmpty())
-                        ? LocalDate.parse(string, formatter)
-                        : null;
-            }
-        });
-    }
-
-
-
-    @FXML
-    public void initialize() {
+    /* ==================== FXML METHODS ==================== */
+    @FXML public void initialize() {
         new GradientBackground(rootPane, 0.005, 2); // gradient bg
         Actions.getInstance().setController(this);
 
-        // === NOTIFICATIONS ===
-        vboxLeftAnimated = new AnimatedVBox(new AnimationPair(new animatefx.animation.FadeInLeft(), new animatefx.animation.FadeOutLeft()).setSpeed(3, 3));
-        vboxLeftAnimated.setPrefWidth(200);
-        vboxLeftAnimated.setSpacing(5);
+        /* --- LISTENERS --- */
+        /* listener for visibility of placeholder on the text area description */
+        txtAreaEventDescrp.textProperty().addListener((obs, oldText, newText) -> placeholderLbl.setVisible(newText.isEmpty()) );
 
-        vboxRightAnimated = new AnimatedVBox(new AnimationPair(new animatefx.animation.FadeInRight(), new animatefx.animation.FadeOutRight()).setSpeed(3, 3));
-        vboxRightAnimated.setPrefWidth(200);
-        vboxRightAnimated.setSpacing(5);
-
-        //notificationPane.setLeft(vboxLeftAnimated);       // slide notifications
-        //notificationPane.setRight(vboxRightAnimated);     // slide notifications
-        // =======================
-
-        // === ИНИЦИАЛИЗАЦИЯ ОСНОВНОЙ ПАНЕЛИ ДОБАВЛЕНИЯ ИВЕНТА ===
-        mainTopPane.setTranslateX(100);
-        mainTopPane.setVisible(false);
-        mainTopPane.setManaged(false);
-        mainTopPane.setOpacity(0);
-        // =======================================================
-
-        lblEditing.setVisible(false);
-        lblEditing.setManaged(false);
-
-        // === НАСТРОЙКА ИКОНОК НА *КНОПКАХ ИСТОРИИ* ===
-        Image arrowImg = new Image(Objects.requireNonNull(getClass().getResource("/com/coursemanagerfx/ui/icons/w_arrow_256x256.png")).toExternalForm());
-        historyIcon_To = new ImageView(arrowImg);
-        historyIcon_To.setFitWidth(16);
-        historyIcon_To.setFitHeight(16);
-        btnHistory.setGraphic(historyIcon_To);
-        btnHistory.setContentDisplay(ContentDisplay.RIGHT);
-
-        historyIcon_Back = new ImageView(arrowImg);
-        historyIcon_Back.setFitWidth(16);
-        historyIcon_Back.setFitHeight(16);
-        historyIcon_Back.setRotate(180);    // ← перевернуть по умолчанию
-        btnBackFromHistory.setGraphic(historyIcon_Back);
-        btnBackFromHistory.setContentDisplay(ContentDisplay.RIGHT);
-        // =============================================
-
-        // === СЛУШАТЕЛЬ ДЛЯ ПОИСКА СТУДЕНТОВ ===
+        /* listener for search text field */
         txtFieldSearch.textProperty().addListener((observable, oldText, newText) -> {
             Group selectedGroup = Actions.getInstance().select().getSelectedGroup();
             if (selectedGroup != null) {
@@ -379,41 +250,193 @@ public class Main_controller implements StageAttachable {
                     Actions.getInstance().select().selectStudentPanel(null, selectedGroup);
             }
         });
-        // ======================================
 
+        /* init infoTopPane */
+        infoTopPane.setManaged(false);
+        infoTopPane.setVisible(false);
+
+        // === НАСТРОЙКА ИКОНОК НА *КНОПКАХ ИСТОРИИ* ===
+        /*Image arrowImg = new Image(Objects.requireNonNull(getClass().getResource("/com/coursemanagerfx/ui/icons/w_arrow_256x256.png")).toExternalForm());
+        historyIcon_To = new ImageView(arrowImg);
+        historyIcon_To.setFitWidth(16);
+        historyIcon_To.setFitHeight(16);
+        btnOpenHistory.setGraphic(historyIcon_To);
+        btnOpenHistory.setContentDisplay(ContentDisplay.RIGHT);
+
+        historyIcon_Back = new ImageView(arrowImg);
+        historyIcon_Back.setFitWidth(16);
+        historyIcon_Back.setFitHeight(16);
+        historyIcon_Back.setRotate(180);    // ← перевернуть по умолчанию
+        btnBackFromHistory.setGraphic(historyIcon_Back);
+        btnBackFromHistory.setContentDisplay(ContentDisplay.RIGHT);*/
+        // =============================================
+
+        /* init custom style for data pickers */
         dtpkCreationDate.setDayCellFactory(addDatePickerCSS());
         dtpkExpirationDate.setDayCellFactory(addDatePickerCSS());
         applyDateFormat(dtpkCreationDate, "dd.MM.yyyy");
         applyDateFormat(dtpkExpirationDate, "dd.MM.yyyy");
 
 
-        // выбираем при инициализации первую опцию days/weeks/month
-        /* INIT EXP DATE COMBOBOX */
-        comBoxExpiredTime.setItems(FXCollections.observableArrayList(
+
+        /* init expiration combobox */
+        comBoxExpTimeType.setItems(FXCollections.observableArrayList(
                 ExpDateStrings.DAYS,
                 ExpDateStrings.WEEKS,
                 ExpDateStrings.MONTHS
         ));
-        //if (!comBoxExpiredTime.getItems().isEmpty())
-            comBoxExpiredTime.getSelectionModel().selectFirst();
+        comBoxExpTimeType.getSelectionModel().selectFirst();    // and select DAYS by default
 
-        // === SPINNERS INIT ===
-        // Exp. Date spinner
+        /* init types of event combobox */
+        for (EventCategories type : EventCategories.values())
+            comBoxEventType.getItems().add(type.getEventCategory().name());
+        comBoxEventType.getSelectionModel().selectFirst();      // and select first type by default
+
+        initSpinners();     /* init mark and expiration time spinners */
+
+        initTable();        /* init event table */
+
+        /* sort by status column in ascending type by default */
+        eventsTable.getSortOrder().add(statusColumn);
+        statusColumn.setSortType(TableColumn.SortType.ASCENDING);
+        eventsTable.sort();
+    }
+
+    @FXML private void btnAddStudent() {
+        Window owner = stage.getScene().getWindow();
+
+        Group selectedGroup = Actions.getInstance().select().getSelectedGroup();
+
+        if (selectedGroup == null) {
+            AlertFX.showConfirm(owner,
+                    AlertFX_type.WARNING,
+                    "Group not selected",
+                    "Choose the group please.");
+            return;
+        }
+
+        String rawStudentName = ShowDialogUtility.showInputDialog(owner,
+                                    "Add student",
+                                    "Enter the student's name:",
+                                    "");
+
+        if (rawStudentName == null) return;     // pressed cancel
+
+        String studentName = rawStudentName.trim().replaceAll("\\s+", " ");
+        if (studentName.split(" ").length != 3) {
+            AlertFX.showNotification(
+                    owner,
+                    AlertFX_type.WARNING,
+                    "Invalid input",
+                    "Enter full name in format:\nFirstname Lastname Patronymic",
+                    true
+            );
+            return;
+        }
+
+        int studentID = Actions.getInstance().getIdGenerator().genUniqueStudentId();
+        Student newStudent = new Student(studentName, studentID);
+
+        Command cmd = new AddStudentCommand(selectedGroup, newStudent);
+        cmd.execute();
+        Actions.getInstance().undoRedo().addCommand(cmd);
+    }
+
+    @FXML private void btnAddEvent() {
+        Actions.getInstance().formAnims().loadEventInfoPane();
+        Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.SHOW);
+    }
+
+    @FXML private void btnCancelEvent()
+        { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
+
+    @FXML private void btnCreateEvent()
+        { Actions.getInstance().uiActions().createEventAction(); }
+
+    @FXML private void btnHistory() {
+        Actions.getInstance().formAnims().loadHistoryPane();
+        Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.SHOW);
+    }
+
+    @FXML private void btnBackFromHistory()
+        { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
+
+    @FXML private void btnClearHistory() {
+        richTxtPaneHistory.clear();
+        lblCurHistory.setText("");
+    }
+
+    @FXML private void toggleExpirationInput() {
+        if (Actions.getInstance().formAnims().isToggleAnimPlaysFlag()) return;
+        Actions.getInstance().uiActions().toggleExpInputAction();
+    }
+
+    // === SET STYLE FOR TEXT ===
+    @FXML
+    private void setBoldText()
+        { toggleStyleAroundSelection(BOLD_MARKER); }
+
+    @FXML
+    private void setItalicText()
+        { toggleStyleAroundSelection(ITALIC_MARKER); }
+
+    @FXML
+    private void setUnderlineText()
+        { toggleStyleAroundSelection(UNDERLINE_MARKER); }
+
+    /* ==================== TITLE BAR ==================== */
+    /* ========== MENU ========== */
+    /* === FILE === */
+    @FXML private void miHome()
+        { Actions.getInstance().menuActions().toHomeAction(); }
+    @FXML private void miSave()
+        { Actions.getInstance().menuActions().saveAction(); }
+    @FXML private void miExport()
+        { Actions.getInstance().menuActions().exportAction(); }
+    @FXML private void miQuit()
+        { Actions.getInstance().uiActions().mainExitAction(); }
+
+    /* === EDIT === */
+    @FXML private void miUndo()
+        { Actions.getInstance().undoRedo().undo(); }
+    @FXML private void miRedo()
+        { Actions.getInstance().undoRedo().redo(); }
+    @FXML private void miOptions()
+        { Actions.getInstance().menuActions().optionsAction(); }
+
+    /* === HELP === */
+    @FXML private void miAbout()
+        { ShowDialogUtility.showAboutWindow(stage.getScene().getWindow()); }
+    /* ========================== */
+
+    /* === BTN "Close" === */
+    @FXML private void windowClose()
+        { Actions.getInstance().uiActions().mainExitAction(); }
+    /* =================== */
+
+    /* === BTN "Minimize" === */
+    @FXML private void windowMinimize()
+        { stage.setIconified(true); }
+    /* ====================== */
+
+    /* =============== CORE =============== */
+    /* init spinners */
+    public void initSpinners() {
+        /* expiration time spinner */
         SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryExpTime =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerExpTimeCount.setValueFactory(valueFactoryExpTime);
 
-        // Mark spinner
+        /* mark spinner */
         SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryMark =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerMark.setValueFactory(valueFactoryMark);
 
-        // Ограничение ввода только цифрами
+        /* --- set input to digits only --- */
         UnaryOperator<TextFormatter.Change> integerFilter = change -> {
             String newText = change.getControlNewText();
-            if (newText.matches("\\d*")) {
+            if (newText.matches("\\d*"))
                 return change;
-            }
             return null;
         };
 
@@ -430,13 +453,12 @@ public class Main_controller implements StageAttachable {
                 integerFilter
         );
         spinnerMark.getEditor().setTextFormatter(formatterMark);
+        /* -------------------------------- */
 
-        spinnerExpTimeCount.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) spinnerExpTimeCount.increment(0); // commit
-        });
-        spinnerMark.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) spinnerMark.increment(0); // commit
-        });
+        spinnerExpTimeCount.focusedProperty().addListener((obs, oldVal, newVal) ->
+            { if (!newVal) spinnerExpTimeCount.increment(0); });
+        spinnerMark.focusedProperty().addListener((obs, oldVal, newVal) ->
+            { if (!newVal) spinnerMark.increment(0); });
         formatterExp.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
                 int minExp = valueFactoryExpTime.getMin();
@@ -449,22 +471,14 @@ public class Main_controller implements StageAttachable {
                 formatterMark.setValue(minMark);
             }
         });
-        // =====================
+    }
 
+    /* init table of events */
+    public void initTable() {
+        eventsTable.getColumns().forEach(col -> col.setReorderable(false));     /* remove drag of all columns */
 
-        // === INIT MODS COMBOBOX ===
-        for (EventTypes type : EventTypes.values())
-            comBoxEventType.getItems().add(type.getEventType().name());
-        comBoxEventType.getSelectionModel().selectFirst();    // select first type by default
-
-        // ============================== ***INIT EVENT TABLE***    ============================== \\
-        // *************************************************************************************** \\
-        eventsTable.getColumns().forEach(col -> col.setReorderable(false));     // ← убираем драг колонок
-
-        // ========== *КОЛОНКА* NUMBER ==========
-        numberColumn.setCellValueFactory(cellData ->
-                new ReadOnlyObjectWrapper<>(eventsTable.getItems().indexOf(cellData.getValue()) + 1)
-        );
+        /* ----- column NUMBER ----- */
+        numberColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(eventsTable.getItems().indexOf(cellData.getValue()) + 1));
         numberColumn.setSortable(false);
         numberColumn.setCellFactory(column -> new TableCell<StudentEvent, Number>() {
             @Override
@@ -479,25 +493,21 @@ public class Main_controller implements StageAttachable {
                 }
             }
         });
-        // ======================================
+        /* ------------------------- */
 
 
 
-        // ========== *КОЛОНКА* CREATION DATE ==========
-        //crtDateColumn.setCellValueFactory(new PropertyValueFactory<>("crtDate"));
-
-        // === СОРТИРОВКА ПО ДАТЕ ===
+        /* ----- column CREATION DATA ----- */
+        /* sort by date */
         crtDateColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getCrtDate().toString())
-        );
-        // =============================================
+                new SimpleStringProperty(cellData.getValue().getCrtDate().toString()));
+        /* -------------------------------- */
 
 
 
-        // ========== *КОЛОНКА* DESCRIPTION ==========
+        /* ----- column DESCRIPTION ----- */
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         descriptionColumn.setCellFactory(column -> new TableCell<StudentEvent, String>() {
-
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -506,11 +516,11 @@ public class Main_controller implements StageAttachable {
                 } else {
                     VBox vbox = new VBox(4);
 
-                    TextFlow textFlow = createTrimmedTextFlow(item);
+                    TextFlow textFlow = applyTextStyleForTextFlow(item);
                     textFlow.maxWidthProperty().bind(getTableColumn().widthProperty().subtract(6));
                     vbox.getChildren().add(new javafx.scene.Group(textFlow));
 
-                    // Кнопка
+                    /* edit event button */
                     Button btnEdit = new Button();
                     btnEdit.setPrefWidth(32);
                     btnEdit.setPrefHeight(32);
@@ -551,27 +561,33 @@ public class Main_controller implements StageAttachable {
                 }
             }
 
-            private TextFlow createTrimmedTextFlow(String textStr) {
-                TextFlow flow = new TextFlow();
-                Pattern pattern = Pattern.compile(
-                        "(\\*[^*]+\\*)|(_[^_]+_)|(=[^=]+=)|([^*_=]+)");
+            private TextFlow applyTextStyleForTextFlow(String textStr) {
+                final TextFlow flow = new TextFlow();
+
+                // Используем маркеры из констант
+                String regex = String.format("(%1$s[^%1$s]+%1$s)|(%2$s[^%2$s]+%2$s)|(%3$s[^%3$s]+%3$s)|([^%1$s%2$s%3$s]+)",
+                        Pattern.quote(BOLD_MARKER),
+                        Pattern.quote(ITALIC_MARKER),
+                        Pattern.quote(UNDERLINE_MARKER)
+                );
+
+                Pattern pattern = Pattern.compile(regex);
                 Matcher matcher = pattern.matcher(textStr);
 
                 while (matcher.find()) {
                     String group = matcher.group();
-
                     Text text = new Text();
                     text.setFill(Color.WHITE);
                     text.setStyle("-fx-font-size: 14px;");
 
-                    if (group.startsWith("*") && group.endsWith("*")) {
-                        text.setText(group.substring(1, group.length() - 1));
+                    if (group.startsWith(BOLD_MARKER) && group.endsWith(BOLD_MARKER)) {
+                        text.setText(group.substring(BOLD_MARKER.length(), group.length() - BOLD_MARKER.length()));
                         text.setStyle(text.getStyle() + "; -fx-font-weight: bold;");
-                    } else if (group.startsWith("_") && group.endsWith("_")) {
-                        text.setText(group.substring(1, group.length() - 1));
+                    } else if (group.startsWith(ITALIC_MARKER) && group.endsWith(ITALIC_MARKER)) {
+                        text.setText(group.substring(ITALIC_MARKER.length(), group.length() - ITALIC_MARKER.length()));
                         text.setStyle(text.getStyle() + "; -fx-font-style: italic;");
-                    } else if (group.startsWith("=") && group.endsWith("=")) {
-                        text.setText(group.substring(1, group.length() - 1));
+                    } else if (group.startsWith(UNDERLINE_MARKER) && group.endsWith(UNDERLINE_MARKER)) {
+                        text.setText(group.substring(UNDERLINE_MARKER.length(), group.length() - UNDERLINE_MARKER.length()));
                         text.setUnderline(true);
                     } else {
                         text.setText(group);
@@ -583,26 +599,25 @@ public class Main_controller implements StageAttachable {
                 return flow;
             }
         });
-        // ===========================================
+        /* ------------------------------ */
 
 
 
-        // ========== *КОЛОНКА* MARK ==========
+        /* ----- column MARK ----- */
         marksColumn.setCellValueFactory(new PropertyValueFactory<>("mark"));
+        /* ----------------------- */
 
 
 
-        // ========== *КОЛОНКА* EXPIRATION DATE ==========
-        //expDateColumn.setCellValueFactory(new PropertyValueFactory<>("expDate"));
-
-        // Устанавливаем количество дней в скобках между датой создания и датой окончания
+        /* ----- column EXPIRATION DATE ----- */
+        /* style "dd.MM.yyyy (xx days)" */
         expDateColumn.setCellValueFactory(cellData -> {
             StudentEvent event = cellData.getValue();
             String formatted = event.getExpDate().toFormattedWithDaysFrom(event.getCrtDate());
             return new SimpleStringProperty(formatted);
         });
 
-        // === СОРТИРОВКА ПО ДАТЕ ===
+        /* sort by date */
         expDateColumn.setComparator(Comparator.comparing(s -> {
             String[] parts = s.split(" ")[0].split("\\.");
             return LocalDate.of(
@@ -611,7 +626,8 @@ public class Main_controller implements StageAttachable {
                     Integer.parseInt(parts[0])
             );
         }));
-        // === СОРТИРОВКА ПО ЗНАЧЕНИЮ В СКОБКАХ EXP. DATE ===
+
+        /* sort by value parenthesis */
         /*expDateColumn.setComparator(Comparator.comparingInt(s -> {
             try {
                 // Извлекаем число из строки: "dd.MM.yyyy (XX days)"
@@ -622,16 +638,15 @@ public class Main_controller implements StageAttachable {
                     return Integer.parseInt(num);
                 }
             } catch (Exception e) {
-                // В случае ошибки (например, "error") — возвращаем максимум
-                return Integer.MAX_VALUE;
+                return -1;
             }
-            return Integer.MAX_VALUE;
+            return -1;
         }));*/
-        // ==================================================
+        /* ---------------------------------- */
 
 
 
-        // ========== *КОЛОНКА* STATUS ==========
+        /* ----- column STATUS ----- */
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusColumn.setCellFactory(column -> new TableCell<StudentEvent, EventStatus>() {
             @Override
@@ -639,11 +654,10 @@ public class Main_controller implements StageAttachable {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
-                    setStyle(""); // сброс
+                    setStyle(""); // reset
                 } else {
                     setText(item.name());
 
-                    // Цвет фона по статусу
                     if (item == EventStatus.ACTIVE) {
                         setStyle("-fx-background-color: rgba(0,255,0,0.3);" +
                                 "-fx-text-fill: #00d800;" +
@@ -658,330 +672,49 @@ public class Main_controller implements StageAttachable {
                 }
             }
         });
-        // ======================================
-
-        // Сортировка по умолчанию — по колонке "Status", по возрастанию
-        eventsTable.getSortOrder().add(statusColumn);
-        statusColumn.setSortType(TableColumn.SortType.ASCENDING);
-        eventsTable.sort();
-        // ======================================================================================= \\
-
-    }   // MAIN INITIALIZATION
-
-
-    // сделано
-    @FXML private void btnAddStudent() {
-        Window owner = stage.getScene().getWindow();
-
-        Group selectedGroup = Actions.getInstance().select().getSelectedGroup();
-
-        if (selectedGroup == null) {
-            AlertFX.showConfirm(owner,
-                    AlertFX_type.WARNING,
-                    "Group not selected",
-                    "Choose the group please.");
-            return;
-        }
-
-        String rawStudentName = ShowDialogUtility.showInputDialog(owner,
-                                    "Add student",
-                                    "Enter the student's name:",
-                                    "");
-
-        if (rawStudentName == null) return;     // pressed cancel
-
-        String studentName = rawStudentName.trim().replaceAll("\\s+", " ");
-        if (studentName.split(" ").length != 3) {
-            AlertFX.showConfirm(owner,
-                    AlertFX_type.WARNING,
-                    "Invalid input",
-                    "Enter full name in format: Firstname Lastname Patronymic");
-            return;
-        }
-
-        int studentID = Actions.getInstance().getIdGenerator().genUniqueStudentId();
-        Student newStudent = new Student(studentName, studentID);
-
-        Command cmd = new AddStudentCommand(selectedGroup, newStudent);
-        cmd.execute();
-        Actions.getInstance().undoRedo().addCommand(cmd);
     }
 
-    // сделано
-    @FXML
-    private void btnAddEvent() {
-        Actions.getInstance().formAnims().loadEventInfoPane();
-        Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.SHOW);
-    }
-
-    // сделано
-    @FXML
-    private void btnCancelEvent()
-        { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
-
-    // сделано
-    @FXML
-    private void btnCreateEvent()
-        { Actions.getInstance().uiActions().createEventAction(); }
-
-    // сделано
-    @FXML
-    private void btnHistory() {
-        Actions.getInstance().formAnims().loadHistoryPane();
-        Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.SHOW);
-    }
-
-    // сделано
-    @FXML
-    private void btnBackFromHistory()
-        { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
-
-    // сделано
-    @FXML
-    private void btnClearHistory() {
-        richTxtPaneHistory.clear();
-        lblCurHistory.setText("");
-    }
-
-    // сделано
-    @FXML
-    private void toggleExpirationInput() {
-        if (Actions.getInstance().formAnims().isToggleAnimPlaysFlag()) return;
-        Actions.getInstance().uiActions().toggleExpInputAction();
-    }
-
-
-    // ==== СДЕЛАТЬ
-    public void initAfterStageShown(Stage stage, String courseName, File courseFile) {
-        new Thread(() -> {
-            String new_version = UpdateUtility.checkForUpdates(stage.getScene().getWindow());
-
-            Platform.runLater(() -> {
-                if (!new_version.equals("-1")) {
-                    UpdateUtility.showUpdateDialog(stage);
-                    HistoryUtility.setHistory(
-                            richTxtPaneHistory,
-                            lblCurHistory,
-                            HistoryUtility.Types.INFO,
-                            "New version " + new_version + " is available"
-                    );
-                } else {
-                    HistoryUtility.setHistory(
-                            richTxtPaneHistory,
-                            lblCurHistory,
-                            HistoryUtility.Types.INFO,
-                            "No updates found"
-                    );
-                }
-
-                // Спрашиваем пароль только после обновлений:
-                if (getPassword() == null) {
-                    String password = "";//CM_HELPER.showCheckPasswordDialog(stage.getScene().getWindow(), courseFile);
-
-                    CM_HELPER.setPassword(password);
-                }
-
-
-            });
-        }).start();
-    }
-
-    private static final int LOADING_DELAY = 5000;
-
-    public void dataLoaderTask() {
-        /* task for loading */
-        Task<Void> loadTask = new Task<>() {
+    /* init data picker custom style */
+    public Callback<DatePicker, DateCell> addDatePickerCSS() {
+        return picker -> new DateCell() {
             @Override
-            protected Void call() throws Exception {
-                int totalSteps = 10;
-                long baseDelay = LOADING_DELAY / totalSteps;
-
-
-                return null;
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().removeAll("odd-month", "even-month", "sunday", "today");
+                if (!empty && item != null) {
+                    if (item.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                        getStyleClass().add("sunday");
+                    }
+                    if (item.equals(LocalDate.now())) {
+                        getStyleClass().add("today");
+                    }
+                    if (item.getMonthValue() % 2 == 1) {
+                        getStyleClass().add("odd-month");
+                    }
+                }
             }
         };
+    }
 
-        ProgressSpinner progressSpinner = new ProgressSpinner();
-        progressSpinner.setFont(new Font("Roboto", 32));
-        progressSpinner.progressProperty().bind(loadTask.progressProperty());
+    /* init data picker custom format */
+    public void applyDateFormat(DatePicker datePicker, String format) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 
-        StackPane root = new StackPane(progressSpinner);
-        root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: transparent"); // transparent
+        datePicker.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(LocalDate date) {
+                return (date != null) ? formatter.format(date) : "";
+            }
 
-        Scene scene = new Scene(root);
-        scene.setFill(Color.TRANSPARENT);
-
-        // Модальное окно
-        Stage dialog = new Stage();
-        dialog.initStyle(StageStyle.TRANSPARENT);
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.initOwner(getStage());
-        dialog.setScene(scene);
-        dialog.setAlwaysOnTop(true);
-
-        /* === centering === */
-        dialog.setOnShown(ev -> {
-            Window owner = dialog.getOwner();
-            if (owner != null) {
-                dialog.setX(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2);
-                dialog.setY(owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
+            @Override
+            public LocalDate fromString(String string) {
+                return (string != null && !string.isEmpty())
+                        ? LocalDate.parse(string, formatter)
+                        : null;
             }
         });
-        /* ================= */
-
-        // При завершении задачи
-        loadTask.setOnSucceeded(e -> {
-            dialog.close();
-            Actions.getInstance().repaint().initGroupTabs();
-            System.out.println("=== DATA LOADING COMPLETED SUCCESSFULLY ===");
-        });
-
-        loadTask.setOnFailed(e -> {
-            dialog.close();
-            System.err.println("DATA LOADING FAILED");
-            e.getSource().getException().printStackTrace();
-        });
-
-        // Запуск
-        new Thread(loadTask).start();
-        dialog.show();
-    }   // УБРАТЬ
-
-    public Stage createLoadingDialog(Task<?> task) {
-        ProgressBar progressBar = new ProgressBar();
-        progressBar.setPrefWidth(250);
-        progressBar.setPrefHeight(30);
-        progressBar.progressProperty().bind(task.progressProperty());
-
-        VBox root = new VBox(progressBar);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: transparent;");
-
-        Scene scene = new Scene(root);
-        scene.setFill(Color.TRANSPARENT); // прозрачный фон
-
-        Stage dialog = new Stage();
-        dialog.initStyle(StageStyle.TRANSPARENT);           // без рамки
-        dialog.initModality(Modality.APPLICATION_MODAL);    // модальное
-        dialog.initOwner(this.getStage());                  // главное окно
-        dialog.setScene(scene);
-        dialog.setAlwaysOnTop(true);
-
-        return dialog;
     }
 
-
-    // ==== СДЕЛАТЬ
-    private void filterStudents(String query) {
-        Group selectedGroup = Actions.getInstance().select().getSelectedGroup();
-
-        List<Student> filteredStudents = new ArrayList<>();
-        for (Student student : selectedGroup.getStudents()) {
-            if (student.getName().toLowerCase().contains(query.toLowerCase())) {
-                filteredStudents.add(student);
-            }
-        }
-        filteredStudents.sort((s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
-
-        studentVBox.getChildren().clear();
-
-        Student selectedStudent = Actions.getInstance().select().getSelectedStudent();
-
-        /*if (filteredStudents.isEmpty()) {
-            showEmptyLabel("No matching students found");
-        } else {
-            int number = 1;
-            for (Student student : filteredStudents) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagerfx/ui/forms/student_panel.fxml"));
-                    BorderPane studentPanel = loader.load();
-                    studentPanel.setStyle("-fx-background-color: rgba(255,144,0,0.3)");
-
-                    StudentPanel_controller spc = loader.getController();
-                    spc.setStudent(student);
-                    spc.setCtrl(this);
-
-                    Button studentButton = spc.getBtnStudent();
-                    studentButton.setText(student.getName());
-                    studentButton.setOnAction(e -> {
-                        // Сбрасываем выделение у всех студентов
-                        for (Student s : currentGroup.getStudents()) {
-                            s.setSelected(false);
-                        }
-                        studentVBox.getChildren().forEach(node -> {
-                            if (node instanceof BorderPane bp) {
-                                Button btn = findStudentBtn(bp.getCenter());
-                                if (btn != null) btn.setStyle("");
-                            }
-                        });
-                        setSelectedStyle(studentButton);
-                        student.setSelected(true);
-                        loadStudentEvents(student.getStudentID());
-                    });
-                    studentButton.setUserData(student);
-
-                    Label studentNumber = (Label) studentPanel.getLeft();
-                    studentNumber.setText(String.valueOf(number));
-
-                    // Если этот студент ранее был выбран, то выделяем его
-                    if (selectedStudent != null && student.getStudentID() == selectedStudent.getStudentID()) {
-                        setSelectedStyle(studentButton);
-                    }
-
-                    studentVBox.getChildren().add(studentPanel);
-                    number++;
-                } catch (IOException e) {
-                    System.err.println("Error loading student_panel.fxml: " + e.getMessage());
-                }
-            }
-        }*/
-    }
-
-    // ========== TITLE BAR ==========
-
-    // ===== MENU BAR =====
-    // === FILE ===
-    @FXML private void miHome()
-        { Actions.getInstance().menuActions().toHomeAction(); }
-    @FXML private void miSave()
-        { Actions.getInstance().menuActions().saveAction(); }
-    @FXML private void miExport()
-        { Actions.getInstance().menuActions().exportAction(); }
-    @FXML private void miQuit()
-        { Actions.getInstance().uiActions().mainExitAction(); }
-
-    // === EDIT ===
-    @FXML private void miUndo()
-        { Actions.getInstance().undoRedo().undo(); }
-    @FXML private void miRedo()
-        { Actions.getInstance().undoRedo().redo(); }
-    @FXML private void miOptions()
-        { Actions.getInstance().menuActions().optionsAction(); }
-
-    // === HELP ===
-    @FXML private void miAbout()
-        { ShowDialogUtility.showAboutWindow(stage.getScene().getWindow()); }
-    // ======================================
-
-    // === SET STYLE FOR TEXT ===
-    @FXML
-    private void setBoldText() {
-        toggleStyleAroundSelection("*");
-    }
-
-    @FXML
-    private void setItalicText() {
-        toggleStyleAroundSelection("_");
-    }
-
-    @FXML
-    private void setUnderlineText() {
-        toggleStyleAroundSelection("=");
-    }
-
-    // === CORE LOGIC ===
     private void toggleStyleAroundSelection(String marker) {
         String text = txtAreaEventDescrp.getText();
         int start = txtAreaEventDescrp.getSelection().getStart();
@@ -998,33 +731,21 @@ public class Main_controller implements StageAttachable {
         boolean hasAfter = after <= text.length() && text.substring(end, after).equals(marker);
 
         String newText;
-        int newStart, newEnd;
+        int caretPos;
 
         if (hasBefore && hasAfter) {
             /* removing markers */
             newText = text.substring(0, before) + selected + text.substring(after);
-            newStart = before;
-            newEnd = before + selected.length();
+            caretPos = before + selected.length();
         } else {
             /* adding markers */
             newText = text.substring(0, start) + marker + selected + marker + text.substring(end);
-            newStart = start + marker.length();
-            newEnd = end + marker.length();
+            caretPos = end + 2 * marker.length();
         }
 
+        txtAreaEventDescrp.requestFocus();
         txtAreaEventDescrp.setText(newText);
-        txtAreaEventDescrp.selectRange(newStart, newEnd);
-        txtAreaEventDescrp.positionCaret(newEnd);
+        txtAreaEventDescrp.positionCaret(caretPos);
     }
-
-
-    // === КНОПКА "ЗАКРЫТЬ" ===
-    @FXML private void windowClose()
-        { Actions.getInstance().uiActions().mainExitAction(); }
-    // ========================
-
-    // === УМЕНЬШИТЬ ОКНО ===
-    @FXML private void windowMinimize()
-        { stage.setIconified(true); }
-    // ===============================
+    /* ==================================== */
 }

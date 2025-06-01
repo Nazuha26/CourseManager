@@ -2,7 +2,7 @@ package com.coursemanagerfx.logic.security;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.EventTypes;
+import com.coursemanagerfx.logic.basic.event.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 
@@ -275,7 +275,7 @@ public class BinaryPlainCmanUtility {
                     description,
                     ev.mark,
                     parseEventDate(expiredDate),
-                    EventTypes.values()[ev.typeOrdinal]
+                    EventCategories.values()[ev.typeOrdinal]
             );
 
             // Добавляем событие нужному студенту
@@ -352,7 +352,7 @@ public class BinaryPlainCmanUtility {
         String creationDate;
         String description;
         String expiredDate;
-        EventTypes type;
+        EventCategories type;
 
         SaverEvent(StudentEvent e, int studentId) {
             this.id = e.getID();
@@ -361,7 +361,7 @@ public class BinaryPlainCmanUtility {
             this.description = e.getDescription();
             this.mark = e.getMark();
             this.expiredDate = e.getExpDate().toString();        // EventDate → String
-            this.type = e.getType();
+            this.type = e.getCategory();
         }
     }
 

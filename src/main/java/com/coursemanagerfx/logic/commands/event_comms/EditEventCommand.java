@@ -36,7 +36,7 @@ public class EditEventCommand implements Command {
     }
 
     private void apply(StudentEvent src) {
-        event.setType(src.getType());
+        event.setCategory(src.getCategory());
         event.setDescription(src.getDescription());
         event.setCrtDate(src.getCrtDate());
         event.setMark(src.getMark());

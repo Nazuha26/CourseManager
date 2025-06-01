@@ -8,74 +8,77 @@
 <BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0" styleClass="window" stylesheets="@dialog_ui.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.dialogs.About_controller">
 
     <top>
-        <HBox fx:id="titleBar" alignment="CENTER_RIGHT" stylesheets="@../styles/title_bar_style.css" BorderPane.alignment="CENTER">
-            <children>
-            <BorderPane HBox.hgrow="ALWAYS">
-               <left>
-                      <Label alignment="CENTER" contentDisplay="CENTER" styleClass="window-app-name" text="About" BorderPane.alignment="CENTER">
-                          <font>
-                              <Font size="14.0" />
-                          </font>
-                      </Label>
-               </left>
-            </BorderPane>
-                <Button fx:id="btnClose" onAction="#btnClose" prefHeight="30.0" prefWidth="30.0" styleClass="window-button-close" HBox.hgrow="ALWAYS" />
-            </children>
+        <HBox fx:id="titleBar" alignment="CENTER_RIGHT" stylesheets="@../styles/title_bar_style.css"
+              BorderPane.alignment="CENTER">
             <padding>
-                <Insets left="10.0" />
+                <Insets left="10.0"/>
             </padding>
+            <BorderPane HBox.hgrow="ALWAYS">
+                <left>
+                    <Label alignment="CENTER" contentDisplay="CENTER" styleClass="window-app-name" text="About"
+                           BorderPane.alignment="CENTER">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                </left>
+            </BorderPane>
+            <Button fx:id="btnClose" onAction="#btnClose" prefHeight="30.0" prefWidth="30.0"
+                    styleClass="window-button-close" HBox.hgrow="ALWAYS"/>
         </HBox>
     </top>
    <center>
-          <VBox alignment="CENTER" spacing="10" BorderPane.alignment="CENTER">
-              <children>
-                  <Label text="CourseManagerFX" textFill="#dddddd">
-                            <font>
-                          <Font name="System Bold" size="17.0" />
-                      </font>
-                  </Label>
-            <Label fx:id="lblVersion" layoutX="43.0" layoutY="47.0" text="Version 1.0.0" textAlignment="CENTER" textFill="#dddddd" underline="true">
+       <VBox alignment="CENTER" spacing="10" BorderPane.alignment="CENTER">
+           <BorderPane.margin>
+               <Insets bottom="10.0" top="10.0"/>
+           </BorderPane.margin>
+           <Label text="CourseManagerFX" textFill="#dddddd">
                <font>
-                  <Font size="14.0" />
+                   <Font name="System Bold" size="17.0"/>
                </font>
-            </Label>
-            <Button mnemonicParsing="false" onAction="#btnCheckForUpdates" styleClass="button-check-for-updates" text="Check for updates" />
-            <Label fx:id="lblNoUpdates" layoutX="171.0" layoutY="47.0" managed="false" text="All latest updates installed" textAlignment="CENTER" textFill="#00bc3c" underline="true" >
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Label>
-            <Label layoutX="146.0" layoutY="47.0" text="This application is designed to help you &#10;manage student groups, track events, and visualize progress." textAlignment="CENTER" textFill="#dddddd">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Label>
-            <VBox spacing="3.0">
-               <children>
-                  <Label text="For support, suggestions or bug reports, contact me:" textFill="#dddddd">
-                     <font>
-                        <Font size="14.0" />
-                     </font>
-                  </Label>
-                  <Label text="coolfr490@gmail.com" textFill="#0077ff" underline="true">
-                     <font>
-                        <Font size="14.0" />
-                     </font>
-                  </Label>
-               </children>
+           </Label>
+           <Label fx:id="lblVersion" layoutX="43.0" layoutY="47.0" text="Version 1.0.0" textAlignment="CENTER"
+                  textFill="#dddddd" underline="true">
+              <font>
+                  <Font size="14.0"/>
+              </font>
+           </Label>
+           <Button mnemonicParsing="false" onAction="#btnCheckForUpdates" styleClass="button-check-for-updates"
+                   text="Check for updates"/>
+           <!--<Label fx:id="lblNoUpdates" layoutX="171.0" layoutY="47.0" managed="false"
+                  text="All latest updates installed" textAlignment="CENTER" textFill="#00bc3c" underline="true">
+              <font>
+                  <Font size="14.0"/>
+              </font>
+           </Label>-->
+           <Label layoutX="146.0" layoutY="47.0"
+                  text="This application is designed to help you &#10;manage student groups, track events, and visualize progress."
+                  textAlignment="CENTER" textFill="#dddddd">
+              <font>
+                  <Font size="14.0"/>
+              </font>
+           </Label>
+           <VBox spacing="3.0">
                <padding>
-                  <Insets left="20.0" right="20.0" />
+                   <Insets left="20.0" right="20.0"/>
                </padding>
-            </VBox>
-                  <Label layoutX="149.0" layoutY="25.0" text="© 2025 CourseManagerFX. All rights reserved." textAlignment="CENTER" textFill="#dddddd" underline="true">
-                      <font>
-                          <Font size="14.0" />
-                      </font>
-                  </Label>
-              </children>
-         <BorderPane.margin>
-            <Insets bottom="10.0" top="10.0" />
-         </BorderPane.margin>
-          </VBox>
+               <Label text="For support, suggestions or bug reports, contact me:" textFill="#dddddd">
+                   <font>
+                       <Font size="14.0"/>
+                   </font>
+               </Label>
+               <Label text="coolfr490@gmail.com" textFill="#0077ff" underline="true">
+                   <font>
+                       <Font size="14.0"/>
+                   </font>
+               </Label>
+           </VBox>
+           <Label layoutX="149.0" layoutY="25.0" text="© 2025 CourseManagerFX. All rights reserved."
+                  textAlignment="CENTER" textFill="#dddddd" underline="true">
+               <font>
+                   <Font size="14.0"/>
+               </font>
+           </Label>
+       </VBox>
    </center>
 </BorderPane>

@@ -1,0 +1,5 @@
+package com.coursemanagerfx.logic.deprecated.notification;
+
+public enum NotificationType {
+    ERROR, WARNING, INFO, SUCCESS
+}

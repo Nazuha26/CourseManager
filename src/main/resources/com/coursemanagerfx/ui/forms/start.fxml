@@ -8,31 +8,32 @@
 <BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="window" stylesheets="@../styles/start_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.main.Start_controller">
     <top>
         <HBox fx:id="titleBar" alignment="CENTER_RIGHT" styleClass="title-bar" BorderPane.alignment="CENTER">
-            <children>
-            <BorderPane HBox.hgrow="ALWAYS">
-               <left>
-                      <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name" text="Welcome to CourseManagerFX – vX.X.X" textAlignment="CENTER" BorderPane.alignment="CENTER">
-                          <font>
-                              <Font size="16.0" />
-                          </font>
-                      </Label>
-               </left>
-            </BorderPane>
-            <Button fx:id="btnMinimize" layoutX="570.0" layoutY="10.0" onAction="#btnMinimize" prefHeight="40.0" prefWidth="40.0" styleClass="button-minimize" />
-                <Button fx:id="btnClose" onAction="#btnClose" prefHeight="40.0" prefWidth="40.0" styleClass="button-close" />
-            </children>
             <padding>
-                <Insets left="10.0" />
+                <Insets left="10.0"/>
             </padding>
+            <BorderPane HBox.hgrow="ALWAYS">
+                <left>
+                    <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name"
+                           text="Welcome to CourseManagerFX – vX.X.X" textAlignment="CENTER"
+                           BorderPane.alignment="CENTER">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                    </Label>
+                </left>
+            </BorderPane>
+            <Button fx:id="btnMinimize" layoutX="570.0" layoutY="10.0" onAction="#btnMinimize" prefHeight="40.0"
+                    prefWidth="40.0" styleClass="button-minimize"/>
+            <Button fx:id="btnClose" onAction="#btnClose" prefHeight="40.0" prefWidth="40.0" styleClass="button-close"/>
         </HBox>
     </top>
    <center>
-      <VBox alignment="CENTER" spacing="30.0" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="btnNewCourse" mnemonicParsing="false" onAction="#btnNewCourse" styleClass="button-main" text="Create new course" />
-            <Button fx:id="btnOpenCourse" mnemonicParsing="false" onAction="#btnOpenCourse" styleClass="button-main" text="Open an existing course" />
-         </children>
-      </VBox>
+       <VBox alignment="CENTER" spacing="30.0" BorderPane.alignment="CENTER">
+           <Button fx:id="btnNewCourse" mnemonicParsing="false" onAction="#btnNewCourse" styleClass="button-main"
+                   text="Create new course"/>
+           <Button fx:id="btnOpenCourse" mnemonicParsing="false" onAction="#btnOpenCourse" styleClass="button-main"
+                   text="Open an existing course"/>
+       </VBox>
    </center>
    <bottom>
       <Label text="Created by Ha3yxa&#10;© 2025 CourseManagerFX. All rights reserved." textAlignment="CENTER" textFill="#dddddd" BorderPane.alignment="CENTER">

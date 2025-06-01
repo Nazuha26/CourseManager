@@ -2,7 +2,7 @@ package com.coursemanagerfx.logic.security;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.EventTypes;
+import com.coursemanagerfx.logic.basic.event.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 
@@ -15,15 +15,15 @@ public class TestCmanUtility {
     private static void testCreate(String password) {
         // Группа 1
         List<StudentEvent> events1 = new ArrayList<>();
-        events1.add(new StudentEvent(10001, new EventDate(1, 1, 2025), "Math exam", 5, new EventDate(2, 1, 2025), EventTypes.MOD_1));
-        events1.add(new StudentEvent(10002, new EventDate(3, 1, 2025), "Biology lab", 4, new EventDate(5, 1, 2025), EventTypes.MOD_2));
-        events1.add(new StudentEvent(10003, new EventDate(5, 1, 2025), "Chemistry quiz", 3, new EventDate(6, 1, 2025), EventTypes.MOD_3));
+        events1.add(new StudentEvent(10001, new EventDate(1, 1, 2025), "Math exam", 5, new EventDate(2, 1, 2025), EventCategories.MOD_1));
+        events1.add(new StudentEvent(10002, new EventDate(3, 1, 2025), "Biology lab", 4, new EventDate(5, 1, 2025), EventCategories.MOD_2));
+        events1.add(new StudentEvent(10003, new EventDate(5, 1, 2025), "Chemistry quiz", 3, new EventDate(6, 1, 2025), EventCategories.MOD_3));
         Student student1 = new Student("Артем", 1);
         student1.setEvents(events1);
 
         List<StudentEvent> events2 = new ArrayList<>();
-        events2.add(new StudentEvent(20001, new EventDate(2, 1, 2025), "History presentation", 5, new EventDate(3, 1, 2025), EventTypes.MOD_2));
-        events2.add(new StudentEvent(20002, new EventDate(4, 1, 2025), "Physics forces", 4, new EventDate(6, 1, 2025), EventTypes.MOD_1));
+        events2.add(new StudentEvent(20001, new EventDate(2, 1, 2025), "History presentation", 5, new EventDate(3, 1, 2025), EventCategories.MOD_2));
+        events2.add(new StudentEvent(20002, new EventDate(4, 1, 2025), "Physics forces", 4, new EventDate(6, 1, 2025), EventCategories.MOD_1));
         Student student2 = new Student("Оля", 2);
         student2.setEvents(events2);
 
@@ -32,8 +32,8 @@ public class TestCmanUtility {
 
         // Группа 2
         List<StudentEvent> events3 = new ArrayList<>();
-        events3.add(new StudentEvent(30001, new EventDate(7, 1, 2025), "Art portfolio presentation", 5, new EventDate(8, 1, 2025), EventTypes.MOD_3));
-        events3.add(new StudentEvent(30002, new EventDate(9, 1, 2025), "Music theory test", 3, new EventDate(10, 1, 2025), EventTypes.MOD_1));
+        events3.add(new StudentEvent(30001, new EventDate(7, 1, 2025), "Art portfolio presentation", 5, new EventDate(8, 1, 2025), EventCategories.MOD_3));
+        events3.add(new StudentEvent(30002, new EventDate(9, 1, 2025), "Music theory test", 3, new EventDate(10, 1, 2025), EventCategories.MOD_1));
         Student student3 = new Student("Максим", 3);
         student3.setEvents(events3);
 
@@ -42,14 +42,14 @@ public class TestCmanUtility {
 
         // Группа 3
         List<StudentEvent> events4 = new ArrayList<>();
-        events4.add(new StudentEvent(40001, new EventDate(11, 1, 2025), "Literature essay: Lesya Ukrainka", 4, new EventDate(13, 1, 2025), EventTypes.MOD_2));
-        events4.add(new StudentEvent(40002, new EventDate(12, 1, 2025), "Geography quiz", 5, new EventDate(14, 1, 2025), EventTypes.MOD_3));
+        events4.add(new StudentEvent(40001, new EventDate(11, 1, 2025), "Literature essay: Lesya Ukrainka", 4, new EventDate(13, 1, 2025), EventCategories.MOD_2));
+        events4.add(new StudentEvent(40002, new EventDate(12, 1, 2025), "Geography quiz", 5, new EventDate(14, 1, 2025), EventCategories.MOD_3));
         Student student4 = new Student("Ірина", 4);
         student4.setEvents(events4);
 
         List<StudentEvent> events5 = new ArrayList<>();
-        events5.add(new StudentEvent(50001, new EventDate(14, 1, 2025), "Economics case study", 3, new EventDate(15, 1, 2025), EventTypes.MOD_1));
-        events5.add(new StudentEvent(50002, new EventDate(15, 1, 2025), "Programming contest", 5, new EventDate(16, 1, 2025), EventTypes.MOD_2));
+        events5.add(new StudentEvent(50001, new EventDate(14, 1, 2025), "Economics case study", 3, new EventDate(15, 1, 2025), EventCategories.MOD_1));
+        events5.add(new StudentEvent(50002, new EventDate(15, 1, 2025), "Programming contest", 5, new EventDate(16, 1, 2025), EventCategories.MOD_2));
         Student student5 = new Student("Богдан", 5);
         student5.setEvents(events5);
 
@@ -58,8 +58,8 @@ public class TestCmanUtility {
 
         // Группа 4
         List<StudentEvent> events6 = new ArrayList<>();
-        events6.add(new StudentEvent(60001, new EventDate(17, 1, 2025), "Biology research project", 5, new EventDate(18, 1, 2025), EventTypes.MOD_3));
-        events6.add(new StudentEvent(60002, new EventDate(18, 1, 2025), "Algebra exam", 4, new EventDate(19, 1, 2025), EventTypes.MOD_1));
+        events6.add(new StudentEvent(60001, new EventDate(17, 1, 2025), "Biology research project", 5, new EventDate(18, 1, 2025), EventCategories.MOD_3));
+        events6.add(new StudentEvent(60002, new EventDate(18, 1, 2025), "Algebra exam", 4, new EventDate(19, 1, 2025), EventCategories.MOD_1));
         Student student6 = new Student("Наташа", 6);
         student6.setEvents(events6);
 
@@ -81,15 +81,15 @@ public class TestCmanUtility {
     private static void testSave(String password) {
         // Группа 1
         List<StudentEvent> events1 = new ArrayList<>();
-        events1.add(new StudentEvent(10001, new EventDate(1, 1, 2025), "Math exam", 5, new EventDate(2, 1, 2025), EventTypes.MOD_1));
-        events1.add(new StudentEvent(10002, new EventDate(3, 1, 2025), "Biology lab", 4, new EventDate(5, 1, 2025), EventTypes.MOD_2));
-        events1.add(new StudentEvent(10003, new EventDate(5, 1, 2025), "Chemistry quiz", 3, new EventDate(6, 1, 2025), EventTypes.MOD_3));
+        events1.add(new StudentEvent(10001, new EventDate(1, 1, 2025), "Math exam", 5, new EventDate(2, 1, 2025), EventCategories.MOD_1));
+        events1.add(new StudentEvent(10002, new EventDate(3, 1, 2025), "Biology lab", 4, new EventDate(5, 1, 2025), EventCategories.MOD_2));
+        events1.add(new StudentEvent(10003, new EventDate(5, 1, 2025), "Chemistry quiz", 3, new EventDate(6, 1, 2025), EventCategories.MOD_3));
         Student student1 = new Student("Артем", 1);
         student1.setEvents(events1);
 
         List<StudentEvent> events2 = new ArrayList<>();
-        events2.add(new StudentEvent(20001, new EventDate(2, 1, 2025), "History presentation", 5, new EventDate(3, 1, 2025), EventTypes.MOD_2));
-        events2.add(new StudentEvent(20002, new EventDate(4, 1, 2025), "Physics forces", 4, new EventDate(6, 1, 2025), EventTypes.MOD_1));
+        events2.add(new StudentEvent(20001, new EventDate(2, 1, 2025), "History presentation", 5, new EventDate(3, 1, 2025), EventCategories.MOD_2));
+        events2.add(new StudentEvent(20002, new EventDate(4, 1, 2025), "Physics forces", 4, new EventDate(6, 1, 2025), EventCategories.MOD_1));
         Student student2 = new Student("Оля", 2);
         student2.setEvents(events2);
 
@@ -98,8 +98,8 @@ public class TestCmanUtility {
 
         // Группа 2
         List<StudentEvent> events3 = new ArrayList<>();
-        events3.add(new StudentEvent(30001, new EventDate(7, 1, 2025), "Art portfolio presentation", 5, new EventDate(8, 1, 2025), EventTypes.MOD_3));
-        events3.add(new StudentEvent(30002, new EventDate(9, 1, 2025), "Music theory test", 3, new EventDate(10, 1, 2025), EventTypes.MOD_1));
+        events3.add(new StudentEvent(30001, new EventDate(7, 1, 2025), "Art portfolio presentation", 5, new EventDate(8, 1, 2025), EventCategories.MOD_3));
+        events3.add(new StudentEvent(30002, new EventDate(9, 1, 2025), "Music theory test", 3, new EventDate(10, 1, 2025), EventCategories.MOD_1));
         Student student3 = new Student("Максим", 3);
         student3.setEvents(events3);
 
@@ -108,14 +108,14 @@ public class TestCmanUtility {
 
         // Группа 3
         List<StudentEvent> events4 = new ArrayList<>();
-        events4.add(new StudentEvent(40001, new EventDate(11, 1, 2025), "Literature essay: Lesya Ukrainka", 4, new EventDate(13, 1, 2025), EventTypes.MOD_2));
-        events4.add(new StudentEvent(40002, new EventDate(12, 1, 2025), "Geography quiz", 5, new EventDate(14, 1, 2025), EventTypes.MOD_3));
+        events4.add(new StudentEvent(40001, new EventDate(11, 1, 2025), "Literature essay: Lesya Ukrainka", 4, new EventDate(13, 1, 2025), EventCategories.MOD_2));
+        events4.add(new StudentEvent(40002, new EventDate(12, 1, 2025), "Geography quiz", 5, new EventDate(14, 1, 2025), EventCategories.MOD_3));
         Student student4 = new Student("Ірина", 4);
         student4.setEvents(events4);
 
         List<StudentEvent> events5 = new ArrayList<>();
-        events5.add(new StudentEvent(50001, new EventDate(14, 1, 2025), "Economics case study", 3, new EventDate(15, 1, 2025), EventTypes.MOD_1));
-        events5.add(new StudentEvent(50002, new EventDate(15, 1, 2025), "Programming contest", 5, new EventDate(16, 1, 2025), EventTypes.MOD_2));
+        events5.add(new StudentEvent(50001, new EventDate(14, 1, 2025), "Economics case study", 3, new EventDate(15, 1, 2025), EventCategories.MOD_1));
+        events5.add(new StudentEvent(50002, new EventDate(15, 1, 2025), "Programming contest", 5, new EventDate(16, 1, 2025), EventCategories.MOD_2));
         Student student5 = new Student("Богдан", 5);
         student5.setEvents(events5);
 

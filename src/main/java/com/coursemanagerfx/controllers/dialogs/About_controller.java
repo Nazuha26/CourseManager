@@ -3,13 +3,23 @@ package com.coursemanagerfx.controllers.dialogs;
 import com.coursemanagerfx.Launcher;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.custom_ui.ProgressSpinner;
+import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.utilities.UpdateUtility;
+import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.util.logging.Level;
 
 public class About_controller implements StageAttachable {
 
@@ -17,7 +27,6 @@ public class About_controller implements StageAttachable {
     @FXML private BorderPane rootPane;
     @FXML private HBox titleBar;
     @FXML private Label lblVersion;
-    @FXML private Label lblNoUpdates;
     // ========== FXML ==========
 
     private Stage stage;
@@ -49,13 +58,7 @@ public class About_controller implements StageAttachable {
 
     @FXML
     private void btnCheckForUpdates() {
-        lblNoUpdates.setManaged(false);  // сбросим на случай повторного клика
-        String new_version = UpdateUtility.checkForUpdates(stage.getScene().getWindow());
-        if (!new_version.equals("-1")) {
-            UpdateUtility.showUpdateDialog(stage.getScene().getWindow());
-        } else {
-            lblNoUpdates.setManaged(true);
-            Platform.runLater(stage::sizeToScene);
-        }
+        Actions.getInstance().updateActions().checkAndInstallUpdate(
+                stage.getOwner().getScene().getWindow(), true);
     }
 }

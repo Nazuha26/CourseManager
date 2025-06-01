@@ -32,6 +32,39 @@
 
 
 
+/* ===== CONTEXT MENU ===== */
+.context-menu {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-background-color: rgba(0, 0, 0, 0.9);
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-border-width: 2;
+    -fx-padding: 5;
+}
+
+.context-menu .menu-item .label {
+    -fx-font-size: 14px;
+    -fx-alignment: center;
+    -fx-text-fill: #dddddd;
+}
+
+.context-menu .separator .line {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+}
+
+.context-menu .menu-item {
+    -fx-background-color: transparent;
+}
+
+.context-menu .menu-item:hover {
+    -fx-background-color: rgba(80, 80, 80, 0.9);
+    -fx-background-radius: 5;
+}
+/* ======================== */
+
+
+
 /* ===== PROGRESS BAR ===== */
 .progress-bar {
     -fx-accent: linear-gradient(to right, #46d65e, #3ccf54);
@@ -413,6 +446,15 @@
     -fx-border-color: rgba(255, 255, 255, 0.8);
 }
 /* ===================== */
+
+
+
+/* ===== LABEL TEXT AREA PLACEHOLDER ===== */
+.label-placeholder {
+    -fx-font-size: 18;
+    -fx-text-fill: rgba(255, 255, 255, 0.4);
+}
+/* ======================================= */
 
 
 

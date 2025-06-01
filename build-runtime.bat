@@ -1,15 +1,15 @@
 @echo off
 setlocal
 
-set "JDK_MODS=C:\Program Files\Java\jdk-24\jmods"
-set "JAVAFX_MODS=C:\Program Files\Java\javafx-sdk-24\jmods"
+
 set "OUTPUT_DIR=runtime"
 
 echo [INFO] Building custom Java runtime...
 
+
 jlink ^
-  --module-path "%JDK_MODS%;%JAVAFX_MODS%" ^
-  --add-modules java.base,java.desktop,java.logging,java.xml,javafx.base,javafx.controls,javafx.fxml,javafx.graphics ^
+  --module-path "C:\Program Files\BellSoft\LibericaJDK-24-Full\jmods;C:\javafx-sdk-21.0.2\jmods" ^
+  --add-modules java.base,java.logging,java.desktop,javafx.controls,javafx.graphics,javafx.fxml ^
   --output "%OUTPUT_DIR%" ^
   --strip-debug ^
   --no-header-files ^

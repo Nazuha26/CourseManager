@@ -7,6 +7,36 @@
     -fx-background-color: rgba(0, 0, 0, 0.9);
 }
 
+/* ===== CONTEXT MENU ===== */
+.context-menu {
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-background-color: rgba(0, 0, 0, 0.9);
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-border-width: 2;
+    -fx-padding: 5;
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: white;
+}
+
+.context-menu .separator .line {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+}
+
+.context-menu .menu-item {
+    -fx-background-color: transparent;
+}
+
+.context-menu .menu-item:hover {
+    -fx-background-color: rgba(151, 151, 151, 0.9);
+    -fx-background-radius: 5;
+}
+/* ======================== */
+
 /* Стиль для текстового поля */
 .text-field {
     -fx-background-color: rgba(0,0,0,0.6);

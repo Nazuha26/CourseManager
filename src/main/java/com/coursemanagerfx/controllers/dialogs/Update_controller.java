@@ -50,7 +50,7 @@ public class Update_controller implements StageAttachable {
     @FXML
     private void btnConfirm() {
         installingProgressBar.setVisible(true);
-        UpdateUtility.downloadAndInstallUpdate(installingProgressBar);
+        //UpdateUtility.downloadAndInstallUpdate(installingProgressBar);
     }
 
     @FXML

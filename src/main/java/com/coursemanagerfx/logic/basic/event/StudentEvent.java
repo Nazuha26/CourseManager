@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 public class StudentEvent {
     private final int eventID;
-    private EventTypes type;
+    private EventCategories category;
     private EventDate crtEventDate;         // Дата создания ивента
     private String description;             // Название и текст ивента
     private int mark;                       // Оценка за ивент
@@ -19,14 +19,14 @@ public class StudentEvent {
         this.description = before.description;
         this.mark = before.mark;
         this.expEventDate = before.expEventDate;
-        this.type = before.type;
+        this.category = before.category;
     }
     // ========================
 
     // === DEF CONSTRUCTOR ===
-    public StudentEvent(int eventID, EventDate crtEventDate, String description, int mark, EventDate expEventDate, EventTypes type) {
+    public StudentEvent(int eventID, EventDate crtEventDate, String description, int mark, EventDate expEventDate, EventCategories category) {
         this.eventID = eventID;
-        this.type = type;
+        this.category = category;
         this.crtEventDate = crtEventDate;
         this.description = description;
         this.mark = mark;
@@ -44,11 +44,11 @@ public class StudentEvent {
         return expDate.isBefore(now) ? EventStatus.COMPLETED : EventStatus.ACTIVE;
     }
 
-    public EventTypes getType() {
-        return type;
+    public EventCategories getCategory() {
+        return category;
     }
-    public void setType(EventTypes type) {
-        this.type = type;
+    public void setCategory(EventCategories category) {
+        this.category = category;
     }
 
     public EventDate getCrtDate() {
@@ -79,13 +79,12 @@ public class StudentEvent {
         this.expEventDate = expEventDate;
     }
 
-    // В классе StudentEvent
     @Override
     public String toString() {
-        String formattedType = type.getEventType().toString().replace("\n", "\n  ");
+        String formattedCategory = category.getEventCategory().toString().replace("\n", "\n  ");
         return "Event {\n" +
                 "  ID          : " + eventID + "\n" +
-                "  Type        : " + formattedType + "\n" +
+                "  Category    : " + formattedCategory + "\n" +
                 "  Created     : " + crtEventDate + "\n" +
                 "  Expires     : " + expEventDate + "\n" +
                 "  Mark        : " + mark + "\n" +

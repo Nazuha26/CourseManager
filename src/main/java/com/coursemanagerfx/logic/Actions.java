@@ -11,7 +11,7 @@ import com.coursemanagerfx.controllers.main.StudentPanel_controller;
 import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.EventTypes;
+import com.coursemanagerfx.logic.basic.event.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
@@ -22,27 +22,27 @@ import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
 import com.coursemanagerfx.logic.utilities.HistoryUtility;
+import com.coursemanagerfx.logic.utilities.UpdateUtility;
+import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -60,23 +60,25 @@ public final class Actions {
     public void setController(Main_controller controller) { this.ctrl = controller; }
 
     /* ========================= SUB-ACTIONS ========================= */
-    private final Repaint      repaint     = new Repaint();
-    private final Select       select      = new Select();
-    private final uiActions    uiActions   = new uiActions();
-    private final MenuActions  menuActions = new MenuActions();
-    private final IdGenerator  idGenerator = new IdGenerator();
-    private final FormAnims    formAnims   = new FormAnims();
-    private final UndoRedo     undoRedo    = new UndoRedo();
-    private final TaskLoader   taskLoader  = new TaskLoader();
+    private final Repaint       repaint       = new Repaint();
+    private final Select        select        = new Select();
+    private final uiActions     uiActions     = new uiActions();
+    private final MenuActions   menuActions   = new MenuActions();
+    private final IdGenerator   idGenerator   = new IdGenerator();
+    private final FormAnims     formAnims     = new FormAnims();
+    private final UndoRedo      undoRedo      = new UndoRedo();
+    private final TaskLoader    taskLoader    = new TaskLoader();
+    private final UpdateActions updateActions = new UpdateActions();
 
-    public Repaint     repaint()         { return repaint; }
-    public Select      select()          { return select; }
-    public uiActions   uiActions()       { return uiActions; }
-    public MenuActions menuActions()     { return menuActions; }
-    public IdGenerator getIdGenerator()  { return idGenerator; }
-    public FormAnims   formAnims()       { return formAnims; }
-    public UndoRedo    undoRedo()        { return undoRedo; }
-    public TaskLoader  taskLoader()      { return taskLoader; }
+    public Repaint       repaint()         { return repaint; }
+    public Select        select()          { return select; }
+    public uiActions     uiActions()       { return uiActions; }
+    public MenuActions   menuActions()     { return menuActions; }
+    public IdGenerator   getIdGenerator()  { return idGenerator; }
+    public FormAnims     formAnims()       { return formAnims; }
+    public UndoRedo      undoRedo()        { return undoRedo; }
+    public TaskLoader    taskLoader()      { return taskLoader; }
+    public UpdateActions updateActions()   { return updateActions; }
 
     /* ******************************************************************
      *                          CLASS  Repaint
@@ -303,7 +305,7 @@ public final class Actions {
         public void startEditing(StudentEvent event) {
             if (ctrl == null) return;
 
-            if (!ctrl.getMainTopPane().isVisible()) {
+            if (!ctrl.getInfoTopPane().isVisible()) {
                 formAnims.loadEventInfoPane();
                 formAnims.mainTopPanelInOut(FormAnims.State.SHOW);
             }
@@ -325,7 +327,7 @@ public final class Actions {
             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(false));       // turn off sortable of event table
 
             /* === fill in the panel === */
-            ctrl.getComBoxEventType().getSelectionModel().select(event.getType().getEventType().name()); // type
+            ctrl.getComBoxEventType().getSelectionModel().select(event.getCategory().getEventCategory().name()); // type
             ctrl.getTxtAreaEventDescrp().setText(event.getDescription());                                // description
             /* creation date */
             EventDate cd = event.getCrtDate();
@@ -342,7 +344,7 @@ public final class Actions {
             /* expiration date spinner & combobox */
             int days = (int) ChronoUnit.DAYS.between(creation, expiration);
             ctrl.getSpinnerExpTimeCount().getValueFactory().setValue(days);
-            ctrl.getComBoxExpiredTime().getSelectionModel().select(ExpDateStrings.DAYS);
+            ctrl.getComBoxExpTimeType().getSelectionModel().select(ExpDateStrings.DAYS);
             /* ---------------------------------- */
 
             /* replace "Create event" button to "Save event" button */
@@ -376,7 +378,7 @@ public final class Actions {
 
             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(true));       // turn on sortable of event table
 
-            ctrl.getComBoxEventType().getSelectionModel().select(EventTypes.MOD_1.getEventType().name());
+            ctrl.getComBoxEventType().getSelectionModel().select(EventCategories.MOD_1.getEventCategory().name());
             ctrl.getTxtAreaEventDescrp().setText("");
 
             ctrl.getBtnDeleteEvent().setVisible(false);
@@ -390,7 +392,7 @@ public final class Actions {
             if (ctrl == null) return;
             if (isInvalidEventForm()) return;
 
-            EventTypes selectedType = returnTypeByName(ctrl.getComBoxEventType().getSelectionModel().getSelectedItem());    // get event type
+            EventCategories selectedType = returnCategoryByName(ctrl.getComBoxEventType().getSelectionModel().getSelectedItem());    // get event type
 
             /* get creation date */
             LocalDate creationDateRaw = ctrl.getDtpkCreationDate().getValue();
@@ -472,7 +474,7 @@ public final class Actions {
                 /* --------------- */
                 int days = (int) ChronoUnit.DAYS.between(creationDateRaw, expirationDateRaw);
                 ctrl.getSpinnerExpTimeCount().getValueFactory().setValue(days);
-                ctrl.getComBoxExpiredTime().getSelectionModel().select(ExpDateStrings.DAYS);
+                ctrl.getComBoxExpTimeType().getSelectionModel().select(ExpDateStrings.DAYS);
                 ctrl.getDtpkExpirationDate().setValue(null);
             }
             formAnims.expDateInOut();
@@ -529,7 +531,7 @@ public final class Actions {
 
             String newDesc = ctrl.getTxtAreaEventDescrp().getText().trim();      // description
 
-            EventTypes newType = returnTypeByName(ctrl.getComBoxEventType()
+            EventCategories newType = returnCategoryByName(ctrl.getComBoxEventType()
                                         .getSelectionModel().getSelectedItem()); // type
 
             int newMark = ctrl.getSpinnerMark().getValue();                      // mark
@@ -611,14 +613,14 @@ public final class Actions {
         }
 
         /* ======  HELPERS  ====== */
-        /* get event type by name in combobox */
-        private EventTypes returnTypeByName(String name) {
-            for (EventTypes mod : EventTypes.values()) {
-                if (mod.getEventType().name().equals(name)) {
+        /* get event category by name in combobox */
+        private EventCategories returnCategoryByName(String name) {
+            for (EventCategories mod : EventCategories.values()) {
+                if (mod.getEventCategory().name().equals(name)) {
                     return mod;
                 }
             }
-            return EventTypes.CUSTOM;
+            return EventCategories.CUSTOM;
         }
 
         /* check all fields in event form during creation event or saving edited event */
@@ -659,9 +661,9 @@ public final class Actions {
         private LocalDate calculateExpirationDate(LocalDate creationDateRaw) {
             if (ctrl.getDtpkExpirationDate().isVisible()) {
                 return ctrl.getDtpkExpirationDate().getValue();
-            } else if (ctrl.getSpinnerExpTimeCount().isVisible() && ctrl.getComBoxExpiredTime().isVisible()) {
+            } else if (ctrl.getSpinnerExpTimeCount().isVisible() && ctrl.getComBoxExpTimeType().isVisible()) {
                 int count = ctrl.getSpinnerExpTimeCount().getValue();
-                String unit = ctrl.getComBoxExpiredTime().getSelectionModel().getSelectedItem();
+                String unit = ctrl.getComBoxExpTimeType().getSelectionModel().getSelectedItem();
 
                 return switch (unit) {
                     case ExpDateStrings.DAYS   -> creationDateRaw.plusDays(count);
@@ -768,10 +770,19 @@ public final class Actions {
         }
         /* done */
         public void exportAction() {
-            ExcelExportUtility.exportToExcel(
+            boolean successExport = ExcelExportUtility.exportToExcel(
                     Launcher.getCourseInfo().getCourse(),
                     Launcher.getCourseInfo().getCourseName(),
                     new File(System.getProperty("user.home") + File.separator + "Desktop"));
+            if (successExport) {
+                AlertFX.showNotification(
+                        ctrl.getStage().getScene().getWindow(),
+                        AlertFX_type.INFO,
+                        "Export completed successfully",
+                        "The Excel file has been saved to your Desktop.",
+                        true
+                );
+            }
         }
 
         /* === EDIT === */
@@ -858,17 +869,17 @@ public final class Actions {
         /* load necessary view in main top panel */
         public void loadEventInfoPane() {
             if (ctrl == null) return;
-            ctrl.getHistoryTopPane().setManaged(false);
-            ctrl.getHistoryTopPane().setVisible(false);
-            ctrl.getEventInfoTopPane().setManaged(true);
-            ctrl.getEventInfoTopPane().setVisible(true);
+            ctrl.getHistoryInfoMaskPane().setManaged(false);
+            ctrl.getHistoryInfoMaskPane().setVisible(false);
+            ctrl.getEventInfoMaskPane().setManaged(true);
+            ctrl.getEventInfoMaskPane().setVisible(true);
         }
         public void loadHistoryPane() {
             if (ctrl == null) return;
-            ctrl.getEventInfoTopPane().setManaged(false);
-            ctrl.getEventInfoTopPane().setVisible(false);
-            ctrl.getHistoryTopPane().setManaged(true);
-            ctrl.getHistoryTopPane().setVisible(true);
+            ctrl.getEventInfoMaskPane().setManaged(false);
+            ctrl.getEventInfoMaskPane().setVisible(false);
+            ctrl.getHistoryInfoMaskPane().setManaged(true);
+            ctrl.getHistoryInfoMaskPane().setVisible(true);
         }
         /* ========================== */
 
@@ -880,7 +891,7 @@ public final class Actions {
 
             /* --- hide bottom info panel --- */
             ParallelTransition hideBottom = buildSlideFadeY(
-                    ctrl.getAddEventBottomPane(),
+                    ctrl.getInfoBotPane(),
                     0, 30,
                     1, 0,
                     half
@@ -888,15 +899,15 @@ public final class Actions {
 
             /* --- show top info panel (starts after bottom hidden) --- */
             ParallelTransition showTop = buildSlideFadeX(
-                    ctrl.getMainTopPane(),
+                    ctrl.getInfoTopPane(),
                     50, 0,
                     0, 1,
                     half
             );
 
             hideBottom.setOnFinished(ev -> {
-                toggle(ctrl.getAddEventBottomPane(), false);
-                toggle(ctrl.getMainTopPane(),        true);
+                toggle(ctrl.getInfoBotPane(), false);
+                toggle(ctrl.getInfoTopPane(),        true);
                 showTop.play();
             });
 
@@ -911,7 +922,7 @@ public final class Actions {
 
             /* --- hide top info panel --- */
             ParallelTransition hideTop = buildSlideFadeX(
-                    ctrl.getMainTopPane(),
+                    ctrl.getInfoTopPane(),
                     0,  50,
                     1, 0,
                     half
@@ -919,15 +930,15 @@ public final class Actions {
 
             /* --- show bottom info panel (starts after top hidden) --- */
             ParallelTransition showBottom = buildSlideFadeY(
-                    ctrl.getAddEventBottomPane(),
+                    ctrl.getInfoBotPane(),
                     30, 0,
                     0, 1,
                     half
             );
 
             hideTop.setOnFinished(ev -> {
-                toggle(ctrl.getMainTopPane(),        false);
-                toggle(ctrl.getAddEventBottomPane(), true);
+                toggle(ctrl.getInfoTopPane(),        false);
+                toggle(ctrl.getInfoBotPane(), true);
                 showBottom.play();
             });
 
@@ -941,7 +952,7 @@ public final class Actions {
 
             /* ----- hide expiration hbox ----- */
             ParallelTransition hideExpHBox = buildSlideFadeX(
-                    ctrl.getHboxExpiredDate(),
+                    ctrl.getHboxExpiredTime(),
                     0, -30,
                     1, 0,
                     half
@@ -956,7 +967,7 @@ public final class Actions {
             );
 
             hideExpHBox.setOnFinished(e -> {
-                toggle(ctrl.getHboxExpiredDate(), false);
+                toggle(ctrl.getHboxExpiredTime(), false);
                 toggle(ctrl.getDtpkExpirationDate(), true);
                 showExpDtpk.play();
             });
@@ -981,7 +992,7 @@ public final class Actions {
 
             /* ----- show expiration hbox ----- */
             ParallelTransition showExpHBox = buildSlideFadeX(
-                    ctrl.getHboxExpiredDate(),
+                    ctrl.getHboxExpiredTime(),
                     -30, 0,
                     0, 1,
                     half
@@ -989,7 +1000,7 @@ public final class Actions {
 
             hideExpDtpk.setOnFinished(e -> {
                 toggle(ctrl.getDtpkExpirationDate(), false);
-                toggle(ctrl.getHboxExpiredDate(), true);
+                toggle(ctrl.getHboxExpiredTime(), true);
                 showExpHBox.play();
             });
 
@@ -1105,7 +1116,10 @@ public final class Actions {
     public class TaskLoader {
         public static final Logger LOGGER = Logger.getLogger(TaskLoader.class.getName());
 
-        public void loadTask(int ms, Runnable onSuccess, Consumer<Throwable> onFailure) {
+        public void loadTask(int ms,
+                             ProgressSpinner ps,
+                             Runnable onSuccess,
+                             Consumer<Throwable> onFailure) {
             if (ctrl == null) return;
 
             int totalSteps = 10;
@@ -1130,46 +1144,171 @@ public final class Actions {
             };
 
             /* === creating progress spinner === */
-            ProgressSpinner spinner = new ProgressSpinner();
-            spinner.setFont(Font.font("Roboto", 32));
-            spinner.progressProperty().bind(loadTask.progressProperty());
-
-            StackPane root = new StackPane(spinner);
-            root.setAlignment(Pos.CENTER);
-            root.setStyle("-fx-background-color: transparent");
-            Scene scene = new Scene(root);
-            scene.setFill(Color.TRANSPARENT);
-
-            Stage dialog = new Stage();
-            dialog.initStyle(StageStyle.TRANSPARENT);
-            //dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.initOwner(ctrl.getStage());
-            dialog.setScene(scene);
-            dialog.setAlwaysOnTop(true);
-            /* ================================= */
-
-            /* === centering its === */
-            dialog.setOnShown(ev -> {
-                Window owner = dialog.getOwner();
-                if (owner != null) {
-                    dialog.setX(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2);
-                    dialog.setY(owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
-                }
-            });
-            /* ===================== */
+            ps.progressProperty().bind(loadTask.progressProperty());
+            Platform.runLater(ps::show);
 
             loadTask.setOnSucceeded(e -> {
-                dialog.close();
-                if (onSuccess != null) onSuccess.run();
+                Platform.runLater(() -> {
+                    if (onSuccess != null) onSuccess.run();
+                });
             });
 
             loadTask.setOnFailed(e -> {
-                dialog.close();
-                if (onFailure != null) onFailure.accept(e.getSource().getException());
+                Platform.runLater(() -> {
+                    if (onFailure != null) onFailure.accept(loadTask.getException());
+                });
             });
 
             new Thread(loadTask).start();
-            dialog.show();
+        }
+
+        public <T> void loadRealTask(ProgressSpinner ps,
+                                     Task<T> realTask,
+                                     Consumer<T> onSuccess,
+                                     Consumer<Throwable> onFailure) {
+            /* if (ctrl == null) return; we do not need to check it here cause this is common method */
+
+            // === создаём спиннер ===
+            ps.progressProperty().bind(realTask.progressProperty());
+            Platform.runLater(ps::show);
+
+            realTask.setOnSucceeded(e -> {
+                Platform.runLater(() -> {
+                    if (onSuccess != null) onSuccess.accept(realTask.getValue());
+                });
+            });
+
+            realTask.setOnFailed(e -> {
+                Platform.runLater(() -> {
+                    if (onFailure != null) onFailure.accept(realTask.getException());
+                });
+            });
+
+            new Thread(realTask).start();
+        }
+    }
+
+    /* ******************************************************************
+     *                          CLASS  UpdateActions
+     * *****************************************************************/
+    public static class UpdateActions {
+        /* ===== PUBLIC API ===== */
+
+        public void checkAndInstallUpdate(Window owner, boolean showNotAvailableUpdatesNotify) {
+            checkForUpdates(
+                    owner,
+                    latest -> {
+
+                        boolean yes = AlertFX.showConfirm(
+                                owner, AlertFX_type.INFO,
+                                "New v" + latest + " update is available",
+                                "Do you want to install it now?");
+                        if (yes) installUpdate(latest, owner);
+                    },
+
+                    () -> {
+                        if (showNotAvailableUpdatesNotify)
+                            AlertFX.showNotification(owner,
+                                    AlertFX_type.INFO,
+                                    "There are no new updates",
+                                    "You have all the latest updates installed.",
+                                    true);
+                    }
+            );
+        }
+
+
+
+        /* ===== CORE ===== */
+        private void checkForUpdates(Window owner,
+                                     Consumer<String> onUpdateAvailable,
+                                     Runnable onUpToDate) {
+
+            ProgressSpinner ps = new ProgressSpinner(
+                    owner,
+                    ProgressSpinner.Style.SMALL,
+                    Color.rgb(50, 70, 150),
+                    ProgressSpinner.Position.BOTTOM,
+                    Modality.NONE,
+                    "Checking for updates");
+
+            Task<String> task = new Task<>() {
+                @Override protected String call() throws Exception {
+                    updateProgress(0.15, 1); Thread.sleep(400);
+                    updateProgress(0.50, 1);
+                    String latest = UpdateUtility.getLatestGitVersion();
+                    updateProgress(0.80, 1); Thread.sleep(400);
+                    return latest;
+                }
+            };
+
+            Actions.getInstance().taskLoader().loadRealTask(
+                    ps, task,
+                    latest -> {
+                        ps.close();
+
+                        try {
+                            if (!"-1".equals(latest)
+                                    && UpdateUtility.compareVersions(latest, Launcher.CUR_VERSION) > 0) {
+                                onUpdateAvailable.accept(latest);
+                            } else {
+                                onUpToDate.run();
+                            }
+                        } catch (NoInternetConnection e) {
+                            AlertFX.showNotification(
+                                    owner, AlertFX_type.ERROR,
+                                    "No internet connection",
+                                    "Could not check for updates. Please connect to the Internet.",
+                                    true);
+                        }
+                    },
+                    ex -> {
+                        ps.close();
+                        AlertFX.showNotification(
+                                owner, AlertFX_type.ERROR,
+                                "Update check failed",
+                                ex.getMessage(), true);
+                        Actions.TaskLoader.LOGGER.log(
+                                Level.SEVERE, "=== UPDATE CHECK FAILED ===", ex);
+                    });
+        }
+
+        private void installUpdate(String version, Window owner) {
+            ProgressSpinner psd = new ProgressSpinner(
+                    owner,
+                    ProgressSpinner.Style.SMALL,
+                    Color.rgb(50, 150, 70),
+                    ProgressSpinner.Position.BOTTOM,
+                    Modality.NONE,
+                    "Downloading update v" + version);
+
+            Task<Void> task = new Task<>() {
+                @Override protected Void call() throws Exception {
+                    updateProgress(0.25, 1); Thread.sleep(300);
+                    updateProgress(0.70, 1);
+                    UpdateUtility.installUpdate(version, p -> updateProgress(p, 1));
+                    updateProgress(0.80, 1); Thread.sleep(200);
+                    updateProgress(1.0, 1);
+                    return null;
+                }
+            };
+
+            Actions.getInstance().taskLoader().loadRealTask(
+                    psd, task,
+                    unused -> {
+                        psd.close();
+                        try { UpdateUtility.restartApp(); }
+                        catch (Exception e) { throw new RuntimeException(e); }
+                    },
+                    ex -> {
+                        psd.close();
+                        AlertFX.showNotification(
+                                owner, AlertFX_type.ERROR,
+                                "Installation failed",
+                                ex.getMessage(), true);
+                        Actions.TaskLoader.LOGGER.log(
+                                Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", ex);
+                    });
         }
     }
 }

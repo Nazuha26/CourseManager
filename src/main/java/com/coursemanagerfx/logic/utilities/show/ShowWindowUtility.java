@@ -1,6 +1,7 @@
 package com.coursemanagerfx.logic.utilities.show;
 
 import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.CourseInfo;
 import com.coursemanagerfx.Launcher;
@@ -13,20 +14,20 @@ import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.Start_controller;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
-import com.coursemanagerfx.logic.utilities.show.exceptions.WindowLoadException;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
+import javafx.stage.*;
 import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class ShowWindowUtility {
@@ -36,6 +37,17 @@ public class ShowWindowUtility {
         Scene scene = new Scene(root);
 
         scene.setFill(Color.TRANSPARENT);
+
+        stage.getIcons().addAll(
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-1.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-2.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-3.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-4.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-5.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-6.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-7.png"))),
+                new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-8.png")))
+        );
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setScene(scene);
 
@@ -56,22 +68,8 @@ public class ShowWindowUtility {
 
             controller.setStage(startStage);
 
-            /*animateAppearance(controller.getRootPane(), () -> {
-                Thread updateCheck = new Thread(() -> {
-                    String newVersion = UpdateUtility.checkForUpdates(startStage);
-                    Platform.runLater(() -> {
-                        if (!newVersion.equals("-1")) {
-                            UpdateUtility.showUpdateDialog(startStage);
-                        }
-                    });
-                });
-                updateCheck.setDaemon(true);
-                updateCheck.start();
-            });*/
-
             startStage.show();
 
-            // ПОКА БЕЗ ПРОВЕРКИ ПРОВЕРКИ НА ОБНОВЛЕНИЯ
             WindowInAnimation.play(
                     controller,
                     controller.getRootPane().getWidth(),
@@ -80,6 +78,12 @@ public class ShowWindowUtility {
                     Duration.seconds(1),
                     () -> StageSetupUtility.setup(controller, startStage)
             );
+
+            /* === CHECK FOR UPDATES === */
+            Actions.getInstance().updateActions().checkAndInstallUpdate(
+                    startStage.getScene().getWindow(), true);
+            /* ---===================--- */
+
         } catch (IOException ex) {
             AlertFX.showNotification(
                     null,
@@ -116,7 +120,6 @@ public class ShowWindowUtility {
             mainStage.show();
             controller.getLblAppName().setText("CourseManagerFX v" + Launcher.CUR_VERSION + " – " + courseName);
 
-            // ПОКА БЕЗ ПРОВЕРКИ ПРОВЕРКИ НА ОБНОВЛЕНИЯ
             WindowInAnimation.play(
                     controller,
                     controller.getRootPane().getWidth(),
@@ -129,6 +132,11 @@ public class ShowWindowUtility {
             String password;
             Group[] course = null;
             Window owner = mainStage.getScene().getWindow();
+
+            /* === CHECK FOR UPDATES === */
+            Actions.getInstance().updateActions().checkAndInstallUpdate(
+                    owner, false);
+            /* ---===================--- */
 
             if (Launcher.getPresetPassword() == null) {
                 // === password checking ===
@@ -166,16 +174,44 @@ public class ShowWindowUtility {
                 }
             }
 
+
+
             Launcher.setCourseInfo(new CourseInfo(courseName, password, course));
 
-            Actions.getInstance().taskLoader().loadTask(    // add check updates
-                    2000,
-                    () -> {                               // onSuccess
-                        System.out.println("=== DATA LOADING COMPLETED SUCCESSFULLY ===");
-                        Actions.getInstance().repaint().initGroupTabs();
-                    },
+
+
+            Task<Void> dataLoadingTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    updateProgress(0.15, 1);
+                    Thread.sleep(1000);
+
+                    updateProgress(0.50, 1);
+                    Thread.sleep(1000);
+
+                    updateProgress(0.80, 1);
+                    Thread.sleep(1000);
+
+                    Platform.runLater(() -> Actions.getInstance().repaint().initGroupTabs());
+
+                    updateProgress(1.0, 1);
+                    return null;
+                }
+            };
+
+            ProgressSpinner psl = new ProgressSpinner(owner,
+                    ProgressSpinner.Style.BIG,
+                    ProgressSpinner.Position.CENTER,
+                    Modality.APPLICATION_MODAL,
+                    "Data loading");
+            Actions.getInstance().taskLoader().loadRealTask(
+                    psl,
+                    dataLoadingTask,
+
+                    unused -> psl.close(),
 
                     ex -> {                               // onFailure
+                        psl.close();
                         AlertFX.showNotification(
                                 mainStage.getScene().getWindow(),
                                 AlertFX_type.ERROR,
