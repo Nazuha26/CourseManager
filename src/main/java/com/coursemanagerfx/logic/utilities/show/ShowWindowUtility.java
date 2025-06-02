@@ -1,6 +1,6 @@
 package com.coursemanagerfx.logic.utilities.show;
 
-import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.CourseInfo;
@@ -32,7 +32,7 @@ import java.util.logging.Level;
 
 public class ShowWindowUtility {
     private static <T> T loadWindow(String fxmlPath, Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(CM_HELPER.class.getResource(fxmlPath));
+        FXMLLoader loader = new FXMLLoader(AppConstants.class.getResource(fxmlPath));
         Parent root = loader.load();
         Scene scene = new Scene(root);
 
@@ -118,7 +118,7 @@ public class ShowWindowUtility {
             // ---=======================---
 
             mainStage.show();
-            controller.getLblAppName().setText("CourseManagerFX v" + Launcher.CUR_VERSION + " – " + courseName);
+            controller.getLblAppName().setText("CourseManagerFX v" + AppConstants.CUR_VERSION + " – " + courseName);
 
             WindowInAnimation.play(
                     controller,
@@ -138,7 +138,7 @@ public class ShowWindowUtility {
                     owner, false);
             /* ---===================--- */
 
-            if (Launcher.getPresetPassword() == null) {
+            if (Launcher.getDefaultPassword().equals("magic")) {       // default password will never be NULL
                 // === password checking ===
                 do {
                     password = ShowDialogUtility.showCheckPasswordDialog(owner);
@@ -160,7 +160,7 @@ public class ShowWindowUtility {
                 } while (course == null);
                 // =========================
             } else {
-                password = Launcher.getPresetPassword();
+                password = Launcher.getDefaultPassword();
                 try {
                     course = CmanSecurityUtility.readSecureFile(file, password);
                 } catch (Exception e) {

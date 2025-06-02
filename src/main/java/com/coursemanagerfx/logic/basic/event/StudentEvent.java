@@ -9,7 +9,7 @@ public class StudentEvent {
     private EventCategories category;
     private EventDate crtEventDate;         // Дата создания ивента
     private String description;             // Название и текст ивента
-    private int mark;                       // Оценка за ивент
+    private double mark;                    // Оценка за ивент
     private EventDate expEventDate;         // Дата истечения ивента
 
     // === COPY CONSTRUCTOR ===
@@ -24,7 +24,7 @@ public class StudentEvent {
     // ========================
 
     // === DEF CONSTRUCTOR ===
-    public StudentEvent(int eventID, EventDate crtEventDate, String description, int mark, EventDate expEventDate, EventCategories category) {
+    public StudentEvent(int eventID, EventDate crtEventDate, String description, double mark, EventDate expEventDate, EventCategories category) {
         this.eventID = eventID;
         this.category = category;
         this.crtEventDate = crtEventDate;
@@ -65,10 +65,10 @@ public class StudentEvent {
         this.description = description;
     }
 
-    public int getMark() {
+    public double getMark() {
         return mark;
     }
-    public void setMark(int mark) {
+    public void setMark(double mark) {
         this.mark = mark;
     }
 

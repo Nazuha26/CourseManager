@@ -9,34 +9,29 @@
     <top>
         <HBox fx:id="titleBar" alignment="CENTER_RIGHT" styleClass="title-bar" BorderPane.alignment="CENTER">
             <padding>
-                <Insets left="10.0"/>
+                <Insets left="10.0" />
             </padding>
             <BorderPane HBox.hgrow="ALWAYS">
                 <left>
-                    <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name"
-                           text="Welcome to CourseManagerFX – vX.X.X" textAlignment="CENTER"
-                           BorderPane.alignment="CENTER">
+                    <Label fx:id="labelTitle" alignment="CENTER" contentDisplay="CENTER" styleClass="label-name" text="Welcome to CourseManagerFX – vX.X.X" textAlignment="CENTER" BorderPane.alignment="CENTER">
                         <font>
-                            <Font size="16.0"/>
+                            <Font size="16.0" />
                         </font>
                     </Label>
                 </left>
             </BorderPane>
-            <Button fx:id="btnMinimize" layoutX="570.0" layoutY="10.0" onAction="#btnMinimize" prefHeight="40.0"
-                    prefWidth="40.0" styleClass="button-minimize"/>
-            <Button fx:id="btnClose" onAction="#btnClose" prefHeight="40.0" prefWidth="40.0" styleClass="button-close"/>
+            <Button fx:id="btnMinimize" layoutX="570.0" layoutY="10.0" onAction="#btnMinimize" prefHeight="40.0" prefWidth="40.0" styleClass="button-minimize" />
+            <Button fx:id="btnClose" onAction="#btnClose" prefHeight="40.0" prefWidth="40.0" styleClass="button-close" />
         </HBox>
     </top>
    <center>
        <VBox alignment="CENTER" spacing="30.0" BorderPane.alignment="CENTER">
-           <Button fx:id="btnNewCourse" mnemonicParsing="false" onAction="#btnNewCourse" styleClass="button-main"
-                   text="Create new course"/>
-           <Button fx:id="btnOpenCourse" mnemonicParsing="false" onAction="#btnOpenCourse" styleClass="button-main"
-                   text="Open an existing course"/>
+           <Button fx:id="btnNewCourse" mnemonicParsing="false" onAction="#btnNewCourse" styleClass="button-main" text="Create new course" />
+           <Button fx:id="btnOpenCourse" mnemonicParsing="false" onAction="#btnOpenCourse" styleClass="button-main" text="Open an existing course" />
        </VBox>
    </center>
    <bottom>
-      <Label text="Created by Ha3yxa&#10;© 2025 CourseManagerFX. All rights reserved." textAlignment="CENTER" textFill="#dddddd" BorderPane.alignment="CENTER">
+      <Label text="Created by Nazuha26&#10;Powered by MaXXer29&#10;© 2025 CourseManagerFX. All rights reserved." textAlignment="CENTER" textFill="#dddddd" BorderPane.alignment="CENTER">
          <font>
             <Font size="14.0" />
          </font>

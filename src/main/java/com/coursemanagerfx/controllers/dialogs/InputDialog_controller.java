@@ -1,5 +1,6 @@
 package com.coursemanagerfx.controllers.dialogs;
 
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import javafx.application.Platform;
@@ -66,6 +67,7 @@ public class InputDialog_controller implements StageAttachable {
         String text = textField.getText();
         if (text == null || text.trim().isEmpty()) {
             errorLabel.setText("Field cannot be empty!");
+            errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
             errorLabel.setManaged(true);
             stage.sizeToScene();
             return;

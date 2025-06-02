@@ -18,15 +18,14 @@ public class AddStudentCommand implements Command {
     public void execute() {
         group.getStudents().add(student);
         Actions.getInstance().repaint().refreshStudentView(group, student);
-        System.out.println("added student: { name: \"" + student.getName() + "\"; ID: " + student.getStudentID() + " }");
+        System.out.println("added student: { name: \"" + student.getName() + "\"; global ID: " + student.getStudentID() + " }");
     }
 
     @Override
     public void undo() {
         group.getStudents().remove(student);
-        Actions.getInstance().repaint().repaintStudentPanels(group);
-        Actions.getInstance().select().selectAnyOrClear(group);
-        System.out.println("undo adding student: { name: \"" + student.getName() + "\"; ID: " + student.getStudentID() + " }");
+        Actions.getInstance().select().selectFirstOrClear(group);
+        System.out.println("undo adding student: { name: \"" + student.getName() + "\"; global ID: " + student.getStudentID() + " }");
     }
 
     @Override

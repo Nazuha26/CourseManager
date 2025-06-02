@@ -22,15 +22,15 @@
             </center>
             <left>
                <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
-                  <MenuBar stylesheets="@../styles/menu_bar.css" styleClass="menu-bar-root">
+                  <MenuBar styleClass="menu-bar-root" stylesheets="@../styles/menu_bar.css">
                      <Menu mnemonicParsing="false" text="File">
-                        <MenuItem fx:id="miHome" mnemonicParsing="false" onAction="#miHome" text="Home" styleClass="menu-bar-item" />
-                        <MenuItem fx:id="miSave" mnemonicParsing="false" onAction="#miSave" text="Save" styleClass="menu-bar-item">
+                        <MenuItem fx:id="miHome" mnemonicParsing="false" onAction="#miHome" styleClass="menu-bar-item" text="Home" />
+                        <MenuItem fx:id="miSave" mnemonicParsing="false" onAction="#miSave" styleClass="menu-bar-item" text="Save">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
-                        <MenuItem fx:id="miExport" mnemonicParsing="false" onAction="#miExport" text="Export" styleClass="menu-bar-item">
+                        <MenuItem fx:id="miExport" mnemonicParsing="false" onAction="#miExport" styleClass="menu-bar-item" text="Export">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
@@ -43,25 +43,25 @@
                         </MenuItem>
                      </Menu>
                      <Menu mnemonicParsing="false" text="Edit">
-                        <MenuItem mnemonicParsing="false" onAction="#miUndo" text="Undo" styleClass="menu-bar-item">
+                        <MenuItem fx:id="miUndo" disable="true" mnemonicParsing="false" onAction="#miUndo" styleClass="menu-bar-item" text="Undo">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#miRedo" text="Redo" styleClass="menu-bar-item">
+                        <MenuItem fx:id="miRedo" disable="true" mnemonicParsing="false" onAction="#miRedo" styleClass="menu-bar-item" text="Redo">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
                         <SeparatorMenuItem mnemonicParsing="false" styleClass="menu-bar-separator" />
-                        <MenuItem mnemonicParsing="false" onAction="#miOptions" text="Options" styleClass="menu-bar-item">
+                        <MenuItem mnemonicParsing="false" onAction="#miOptions" styleClass="menu-bar-item" text="Options">
                            <accelerator>
                               <KeyCodeCombination alt="DOWN" code="O" control="UP" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
                      </Menu>
                      <Menu mnemonicParsing="false" text="Help">
-                        <MenuItem mnemonicParsing="false" onAction="#miAbout" text="About" styleClass="menu-bar-item">
+                        <MenuItem mnemonicParsing="false" onAction="#miAbout" styleClass="menu-bar-item" text="About">
                            <accelerator>
                               <KeyCodeCombination alt="DOWN" code="A" control="UP" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
@@ -86,12 +86,12 @@
                      </HBox.margin>
                   </Button>
                   <Region prefWidth="20.0" />
-                  <Button mnemonicParsing="false" onAction="#miUndo" prefHeight="32.0" prefWidth="32.0" styleClass="undo-button">
+                  <Button fx:id="btnUndo" disable="true" mnemonicParsing="false" onAction="#miUndo" prefHeight="32.0" prefWidth="32.0" styleClass="undo-button">
                      <tooltip>
                         <Tooltip text="Undo last action" />
                      </tooltip>
                   </Button>
-                  <Button mnemonicParsing="false" onAction="#miRedo" prefHeight="32.0" prefWidth="32.0" styleClass="redo-button">
+                  <Button fx:id="btnRedo" disable="true" mnemonicParsing="false" onAction="#miRedo" prefHeight="32.0" prefWidth="32.0" styleClass="redo-button">
                      <tooltip>
                         <Tooltip text="Redo last action" />
                      </tooltip>
@@ -180,7 +180,7 @@
                                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                           </StackPane.margin>
                                        </Button>
-                                       <Label fx:id="lblEditing" opacity="0.4" text="Editing..." textFill="#dddddd" StackPane.alignment="BOTTOM_CENTER" managed="false" visible="false">
+                                       <Label fx:id="lblEditing" managed="false" opacity="0.4" text="Editing..." textFill="#dddddd" visible="false" StackPane.alignment="BOTTOM_CENTER">
                                           <font>
                                              <Font size="18.0" />
                                           </font>
@@ -188,21 +188,46 @@
                                              <Insets bottom="10.0" />
                                           </StackPane.margin>
                                        </Label>
-                                       <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32" prefWidth="96" StackPane.alignment="BOTTOM_RIGHT">
+                                       <HBox alignment="BOTTOM_RIGHT" pickOnBounds="false" spacing="5.0">
                                           <StackPane.margin>
-                                             <Insets bottom="10.0" right="10.0" />
+                                             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
                                           </StackPane.margin>
-                                          <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0" prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
-                                             <font>
-                                                <Font name="System Bold" size="12.0" />
-                                             </font>
+                                          <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
+                                                minHeight="-Infinity" minWidth="-Infinity">
+                                             <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0"
+                                                     prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
+                                                <font>
+                                                   <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                                <tooltip>
+                                                   <Tooltip text="Makes the selected text bold" />
+                                                </tooltip>
+                                             </Button>
+                                             <Button mnemonicParsing="false" onAction="#setItalicText" prefHeight="32.0"
+                                                     prefWidth="32.0" styleClass="middle-styled-button-italic" text="I">
+                                                <font>
+                                                   <Font name="System Italic" size="12.0"/>
+                                                </font>
+                                                <tooltip>
+                                                   <Tooltip text="Makes the selected text italic" />
+                                                </tooltip>
+                                             </Button>
+                                             <Button mnemonicParsing="false" onAction="#setUnderlineText"
+                                                     prefHeight="32.0" prefWidth="32.0"
+                                                     styleClass="last-styled-button-underline" text="U"
+                                                     underline="true">
+                                                <tooltip>
+                                                   <Tooltip text="Underlines the selected text" />
+                                                </tooltip>
+                                             </Button>
+                                          </HBox>
+                                          <Button mnemonicParsing="false" onAction="#btnClearEventInfo"
+                                                  prefHeight="32.0" prefWidth="64.0" styleClass="clear-all-button"
+                                                  text="clear">
+                                             <tooltip>
+                                                <Tooltip text="Clears all entered information in this panel" />
+                                             </tooltip>
                                           </Button>
-                                          <Button mnemonicParsing="false" onAction="#setItalicText" prefHeight="32.0" prefWidth="32.0" styleClass="middle-styled-button-italic" text="I">
-                                             <font>
-                                                <Font name="System Italic" size="12.0" />
-                                             </font>
-                                          </Button>
-                                          <Button mnemonicParsing="false" onAction="#setUnderlineText" prefHeight="32.0" prefWidth="32.0" styleClass="last-styled-button-underline" text="U" underline="true" />
                                        </HBox>
                                     </StackPane>
                                  </center>
@@ -211,7 +236,7 @@
                                        <BorderPane VBox.vgrow="ALWAYS">
                                           <center>
                                              <!-- Растягивается на всю оставшуюся ширину -->
-                                             <ComboBox fx:id="comBoxEventType" maxHeight="Infinity" maxWidth="Infinity" />
+                                             <ComboBox fx:id="comBoxEventCategory" maxHeight="Infinity" maxWidth="Infinity" />
                                           </center>
                                           <top>
                                              <HBox BorderPane.alignment="CENTER">
@@ -265,7 +290,7 @@
                                                 </top>
                                              </BorderPane>
                                           </VBox>
-                                          <VBox alignment="CENTER" prefWidth="70.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                          <VBox alignment="CENTER" prefWidth="80.0" spacing="5.0" HBox.hgrow="ALWAYS">
                                              <BorderPane maxHeight="-Infinity" prefHeight="70.0">
                                                 <center>
                                                    <Spinner fx:id="spinnerMark" editable="true" maxHeight="Infinity" BorderPane.alignment="CENTER" />

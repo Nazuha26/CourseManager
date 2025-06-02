@@ -5,34 +5,34 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="panelBg" maxHeight="-Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../styles/student_panel_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.main.StudentPanel_controller">
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../styles/student_panel_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.main.StudentPanel_controller">
+
+   <fx:define>
+      <ContextMenu fx:id="ctxStudentMenu">
+         <items>
+            <MenuItem mnemonicParsing="false" onAction="#miRename" text="Rename" />
+            <MenuItem fx:id="miDelete" mnemonicParsing="false" onAction="#miDelete" text="Delete" />
+         </items>
+      </ContextMenu>
+   </fx:define>
+
    <left>
-      <Label fx:id="lblStdNum" text="X" BorderPane.alignment="CENTER">
-         <padding>
-            <Insets right="10.0" />
-         </padding></Label>
+      <Label fx:id="lblStdNum" text="X" BorderPane.alignment="CENTER" />
    </left>
-   <center>
-      <StackPane style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
-         <Button fx:id="btnStudent" maxWidth="Infinity" mnemonicParsing="false" onAction="#onStudent" onKeyPressed="#handleKeyPressed" text="Иванов Иван Иванович">
-            <font>
-               <Font size="17.0" />
-            </font>
-         </Button>
-         <MenuButton alignment="CENTER" mnemonicParsing="false" popupSide="TOP" StackPane.alignment="CENTER_RIGHT">
-            <items>
-               <MenuItem mnemonicParsing="false" onAction="#miRename" text="Rename">
-               </MenuItem>
-               <MenuItem fx:id="miDelete" mnemonicParsing="false" onAction="#miDelete" text="Delete">
-               </MenuItem>
-            </items>
-            <StackPane.margin>
-               <Insets right="5.0" />
-            </StackPane.margin>
-         </MenuButton>
-      </StackPane>
-   </center>
    <padding>
-      <Insets bottom="5.0" left="5.0" right="15.0" top="5.0" />
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
    </padding>
+   <center>
+
+      <Button fx:id="btnStudent" maxWidth="320.0" mnemonicParsing="false" onAction="#onStudent"  onMousePressed="#handleContextMenu" text="Иванов Иван Иванович" BorderPane.alignment="CENTER">
+         <!--onKeyPressed="#handleKeyPressed"-->
+         <font>
+            <Font size="17.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Right-click to open the context menu for renaming or deleting this student." />
+         </tooltip>
+      </Button>
+
+   </center>
 </BorderPane>

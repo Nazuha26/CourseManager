@@ -1,14 +1,14 @@
 package com.coursemanagerfx.controllers.main;
 
-import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.Launcher;
-import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.animations.WindowOutAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.custom_ui.GradientBackground;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -54,7 +54,7 @@ public class Start_controller implements StageAttachable {
     @FXML
     private void initialize() {
         new GradientBackground(rootPane);
-        labelTitle.setText("Welcome to CourseManagerFX – v" + Launcher.CUR_VERSION);
+        labelTitle.setText("Welcome to CourseManagerFX – v" + AppConstants.CUR_VERSION);
     }
 
     @FXML
@@ -74,7 +74,7 @@ public class Start_controller implements StageAttachable {
         stage.setIconified(true);
     }
 
-    @FXML
+    /*@FXML
     private void btnOpenCourse() {
         Window owner = stage.getScene().getWindow();
         File file = ShowDialogUtility.showOpenCourse(owner);
@@ -94,7 +94,7 @@ public class Start_controller implements StageAttachable {
         }
 
         // remember the opened course
-        try (FileWriter w = new FileWriter(CM_HELPER.LAST_RUN_FILE)) {
+        try (FileWriter w = new FileWriter(AppConstants.LAST_RUN_FILE)) {
             String baseName = file.getName();
             if (baseName.endsWith(".cman")) {
                 baseName = baseName.substring(0, baseName.length() - 5);
@@ -118,6 +118,49 @@ public class Start_controller implements StageAttachable {
                     true);
             return;
         }
+
+        AlertFX.showNotification(owner, AlertFX_type.INFO,
+                "Course chose successfully",
+                "To apply the changes, please restart the application.",
+                true);
+        WindowOutAnimation.play(
+                this,
+                rootPane.getWidth(),
+                rootPane.getHeight(),
+                SW_ANIM_STRIPE_COUNT,
+                Duration.seconds(1),
+                stage::close
+        );
+    }*/
+
+    @FXML private void btnOpenCourse() {
+        Window owner = stage.getScene().getWindow();
+        File file = ShowDialogUtility.showOpenCourse(owner);
+        if (file == null) return;
+
+        String password = ShowDialogUtility.showCheckPasswordDialog(owner);
+        if (password == null) return;
+
+        String courseName;
+        try {
+            CmanSecurityUtility.readSecureFile(file, password);
+
+            // ======== GET COURSE NAME ==========
+            courseName = file.getName();
+            if (courseName.endsWith(".cman"))
+                courseName = courseName.substring(0, courseName.length() - 5);
+        } catch (Exception e) {
+            ConfigManager.setOpenCourse("none");
+            AlertFX.showNotification(owner,
+                    AlertFX_type.ERROR,
+                    "Unable to open the course file",
+                    "The password is incorrect or the file is corrupted. Please try again.",
+                    true);
+            return;
+        }
+
+        // ======= SAVE COURSE NAME TO CONFIG FILE ========
+        ConfigManager.setOpenCourse(courseName);
 
         AlertFX.showNotification(owner, AlertFX_type.INFO,
                 "Course chose successfully",

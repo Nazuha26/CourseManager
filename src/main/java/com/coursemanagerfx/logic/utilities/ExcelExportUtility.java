@@ -2,6 +2,7 @@ package com.coursemanagerfx.logic.utilities;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
+import com.coursemanagerfx.logic.basic.event.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -107,26 +108,8 @@ public class ExcelExportUtility {
                 StudentRow studentRow = new StudentRow();
                 studentRow.name = student.getName();
 
-                for (StudentEvent ev : student.getEvents()) {
-                    studentRow.description = ev.getDescription();
-                    switch (ev.getCategory()) {
-                        case MOD_1   ->   studentRow.sessiya                += ev.getMark();
-                        case MOD_2   ->   studentRow.sfp                    += ev.getMark();
-                        case MOD_3   ->   studentRow.skKgKv                 += ev.getMark();
-                        case MOD_4   ->   studentRow.zaohochennya           += ev.getMark();
-                        case MOD_5   ->   studentRow.styagnennya            += ev.getMark();
-                        case MOD_6   ->   studentRow.sekretniki             += ev.getMark();
-                        case MOD_7   ->   studentRow.redkolegiya            += ev.getMark();
-                        case MOD_8   ->   studentRow.jurnalisty             += ev.getMark();
-                        case MOD_9   ->   studentRow.sportorgi              += ev.getMark();
-                        case MOD_10  ->   studentRow.naukova_diyalnist      += ev.getMark();
-                        case MOD_11  ->   studentRow.sertifikaty            += ev.getMark();
-                        case MOD_12  ->   studentRow.prizery_zmagan         += ev.getMark();
-                        case MOD_13  ->   studentRow.volonterska_diyalnist  += ev.getMark();
-                        case MOD_14  ->   studentRow.gromadske_jittya       += ev.getMark();
-                        case CUSTOM  ->   studentRow.dodatkovi_baly         += ev.getMark();
-                    }
-                }
+                for (StudentEvent ev : student.getEvents())
+                    { studentRow.add(ev.getCategory(), ev.getMark(), ev.getDescription()); }
 
                 studentRows.add(studentRow);
             }
@@ -138,8 +121,8 @@ public class ExcelExportUtility {
             /* === SET STUDENTS INFO === */
 
             studentRows.sort(Comparator
-                    .comparingInt(StudentRow::total).reversed()     // sort by total mark
-                    .thenComparing(sr -> sr.name)                   // sort by name if total mark equals
+                    .comparingDouble(StudentRow::total).reversed()     // sort by total mark
+                    .thenComparing(sr -> sr.name)                      // sort by name if total mark equals
             );
 
             int startRow = 2;
@@ -160,22 +143,18 @@ public class ExcelExportUtility {
                 c1.setCellStyle(pibStyle);
                 /* ----------------- */
 
-                /* if 0 skip */
-                if (sr.sessiya != 0)                { XSSFCell c = studentRow.createCell(2);  c.setCellValue(sr.sessiya);                c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.sfp != 0)                    { XSSFCell c = studentRow.createCell(3);  c.setCellValue(sr.sfp);                    c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.skKgKv != 0)                 { XSSFCell c = studentRow.createCell(4);  c.setCellValue(sr.skKgKv);                 c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.zaohochennya != 0)           { XSSFCell c = studentRow.createCell(5);  c.setCellValue(sr.zaohochennya);           c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.styagnennya != 0)            { XSSFCell c = studentRow.createCell(6);  c.setCellValue(sr.styagnennya);            c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.sekretniki != 0)             { XSSFCell c = studentRow.createCell(7);  c.setCellValue(sr.sekretniki);             c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.redkolegiya != 0)            { XSSFCell c = studentRow.createCell(8);  c.setCellValue(sr.redkolegiya);            c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.jurnalisty != 0)             { XSSFCell c = studentRow.createCell(9);  c.setCellValue(sr.jurnalisty);             c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.sportorgi != 0)              { XSSFCell c = studentRow.createCell(10); c.setCellValue(sr.sportorgi);              c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.naukova_diyalnist != 0)      { XSSFCell c = studentRow.createCell(11); c.setCellValue(sr.naukova_diyalnist);      c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.sertifikaty != 0)            { XSSFCell c = studentRow.createCell(12); c.setCellValue(sr.sertifikaty);            c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.prizery_zmagan != 0)         { XSSFCell c = studentRow.createCell(13); c.setCellValue(sr.prizery_zmagan);         c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.volonterska_diyalnist != 0)  { XSSFCell c = studentRow.createCell(14); c.setCellValue(sr.volonterska_diyalnist);  c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.gromadske_jittya != 0)       { XSSFCell c = studentRow.createCell(15); c.setCellValue(sr.gromadske_jittya);       c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
-                if (sr.dodatkovi_baly != 0)         { XSSFCell c = studentRow.createCell(16); c.setCellValue(sr.dodatkovi_baly);         c.setCellStyle(centerStyle);   addHiddenCommentToCell(wb, sheet, c, sr.description); }
+                for (var entry : COL.entrySet()) {
+                    EventCategories cat = entry.getKey();
+                    int col_number = entry.getValue();
+                    double mark = sr.sum(cat);
+
+                    if (mark != 0) {    /* if 0 skip */
+                        XSSFCell c = studentRow.createCell(col_number);
+                        c.setCellValue(mark);
+                        c.setCellStyle(centerStyle);
+                        addHiddenCommentToCell(wb, sheet, c, sr.comment(cat));
+                    }
+                }
 
                 /* total number of marks */
                 XSSFCell c17 = studentRow.createCell(17);
@@ -234,6 +213,24 @@ public class ExcelExportUtility {
     }
 
     /* ===== CORE ===== */
+    private static final Map<EventCategories, Integer> COL = Map.ofEntries(
+            Map.entry(EventCategories.MOD_1,  2),
+            Map.entry(EventCategories.MOD_2,  3),
+            Map.entry(EventCategories.MOD_3,  4),
+            Map.entry(EventCategories.MOD_4,  5),
+            Map.entry(EventCategories.MOD_5,  6),
+            Map.entry(EventCategories.MOD_6,  7),
+            Map.entry(EventCategories.MOD_7,  8),
+            Map.entry(EventCategories.MOD_8,  9),
+            Map.entry(EventCategories.MOD_9,  10),
+            Map.entry(EventCategories.MOD_10, 11),
+            Map.entry(EventCategories.MOD_11, 12),
+            Map.entry(EventCategories.MOD_12, 13),
+            Map.entry(EventCategories.MOD_13, 14),
+            Map.entry(EventCategories.MOD_14, 15),
+            Map.entry(EventCategories.CUSTOM, 16)
+    );
+
     private static void addHiddenCommentToCell(XSSFWorkbook workbook, XSSFSheet sheet, XSSFCell cell, String text) {
         CreationHelper factory = workbook.getCreationHelper();
         Drawing<?> drawing = sheet.createDrawingPatriarch();
@@ -304,30 +301,68 @@ public class ExcelExportUtility {
     }
 }
 
+/*
 class StudentRow {
     String name;
     String description;
 
-    int sessiya;
-    int sfp;
-    int skKgKv;
-    int zaohochennya;
-    int styagnennya;
-    int sekretniki;
-    int redkolegiya;
-    int jurnalisty;
-    int sportorgi;
-    int naukova_diyalnist;
-    int sertifikaty;
-    int prizery_zmagan;
-    int volonterska_diyalnist;
-    int gromadske_jittya;
-    int dodatkovi_baly;
+    double sessiya;
+    double sfp;
+    double skKgKv;
+    double zaohochennya;
+    double styagnennya;
+    double sekretniki;
+    double redkolegiya;
+    double jurnalisty;
+    double sportorgi;
+    double naukova_diyalnist;
+    double sertifikaty;
+    double prizery_zmagan;
+    double volonterska_diyalnist;
+    double gromadske_jittya;
+    double dodatkovi_baly;
 
-    int total() {
+    double total() {
         return  sessiya               + sfp               + skKgKv         + zaohochennya   +
                 styagnennya           + sekretniki        + redkolegiya    + jurnalisty     +
                 sportorgi             + naukova_diyalnist + sertifikaty    + prizery_zmagan +
                 volonterska_diyalnist + gromadske_jittya  + dodatkovi_baly;
     }
+}*/
+
+// === class StudentRow ===
+class StudentRow {
+
+    private static class CatData {
+        double sum = 0;
+        List<String> comments = new ArrayList<>();
+    }
+
+    private final EnumMap<EventCategories, CatData> data = new EnumMap<>(EventCategories.class);
+
+    String name;                                 // П.І.Б.
+
+    void add(EventCategories cat, double mark, String descr) {
+        CatData d = data.computeIfAbsent(cat, k -> new CatData());
+        d.sum += mark;
+        d.comments.add(formatMark(mark) + " – " + descr);
+    }
+
+    double sum(EventCategories cat) {
+        return data.getOrDefault(cat, new CatData()).sum;
+    }
+
+    String comment(EventCategories cat) {
+        return String.join("\n",
+                data.getOrDefault(cat, new CatData()).comments);
+    }
+
+    double total() {
+        return data.values().stream()
+                .mapToDouble(d -> d.sum)
+                .sum();
+    }
+
+    private static String formatMark(double m)
+        { return (m % 1 == 0) ? String.valueOf((int) m) : String.valueOf(m); }
 }

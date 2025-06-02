@@ -21,14 +21,14 @@ public class AddEventCommand implements Command {
     public void execute() {
         student.getEvents().add(event);
         Actions.getInstance().repaint().smartRefresh(group, student);
-        System.out.println("added event: { ID: " + event.getID() + " }");
+        System.out.println("added event: { global ID: " + event.getID() + " }");
     }
 
     @Override
     public void undo() {
         student.getEvents().remove(event);
         Actions.getInstance().repaint().smartRefresh(group, student);
-        System.out.println("undo adding event: { ID: " + event.getID() + " }");
+        System.out.println("undo adding event: { global ID: " + event.getID() + " }");
     }
 
     @Override

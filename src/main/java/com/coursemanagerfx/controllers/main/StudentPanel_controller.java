@@ -10,15 +10,19 @@ import com.coursemanagerfx.logic.commands.student_comms.RenameStudentCommand;
 import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Window;
 
 public class StudentPanel_controller {
-    @FXML private BorderPane panelBg;
+    @FXML private BorderPane rootPane;
     @FXML private Button btnStudent;
+    @FXML private ContextMenu ctxStudentMenu;
     @FXML private Label lblStdNum;
     @FXML private MenuItem miDelete;
 
@@ -38,10 +42,10 @@ public class StudentPanel_controller {
         miDelete.setDisable(selectedGroup == null || selectedGroup.getStudents().size() <= 1);
 
         if (searched) {
-            if (!panelBg.getStyleClass().contains("search-background"))
-                panelBg.getStyleClass().add("search-background");
+            if (!rootPane.getStyleClass().contains("search-background"))
+                rootPane.getStyleClass().add("search-background");
         } else {
-            panelBg.getStyleClass().remove("search-background");
+            rootPane.getStyleClass().remove("search-background");
         }
     }
 
@@ -49,30 +53,52 @@ public class StudentPanel_controller {
     private void onStudent()
         { Actions.getInstance().select().selectStudentPanel(student); }
 
-    // Переименование студента
-    @FXML
-    private void miRename() {
+    /* show context menu */
+    @FXML private void handleContextMenu(MouseEvent e) {
+        if (e.isSecondaryButtonDown()) {
+            Actions.getInstance().select().selectStudentPanel(student);
+            ctxStudentMenu.show(btnStudent, e.getScreenX(), e.getScreenY());
+        }
+    }
+
+    /* student RENAMING */
+    @FXML private void miRename() {
+        Window owner = ctrl.getStage().getScene().getWindow();
+
+        String oldName = student.getName();
         String raw = ShowDialogUtility.showInputDialog(
-                ctrl.getStage().getScene().getWindow(),
+                owner,
                 "Rename student",
                 "Enter new name:",
-                student.getName()
+                oldName
         );
         if (raw == null) return;
 
         String newName = raw.trim().replaceAll("\\s+", " ");
-        RenameStudentCommand cmd = new RenameStudentCommand(
-                Actions.getInstance().select().getSelectedGroup(),
-                student,
-                newName
-        );
-        cmd.execute();
-        Actions.getInstance().undoRedo().addCommand(cmd);
+        if (newName.split(" ").length != 3) {
+            AlertFX.showNotification(
+                    owner,
+                    AlertFX_type.WARNING,
+                    "Invalid input",
+                    "Enter full name in format:\nFirstname Lastname Patronymic",
+                    true
+            );
+            return;
+        }
+
+        if (!newName.equals(oldName)) {
+            RenameStudentCommand cmd = new RenameStudentCommand(
+                    Actions.getInstance().select().getSelectedGroup(),
+                    student,
+                    newName
+            );
+            cmd.execute();
+            Actions.getInstance().undoRedo().addCommand(cmd);
+        }
     }
 
-    // Удаление студента
-    @FXML
-    private void miDelete() {
+    /* student DELETING */
+    @FXML private void miDelete() {
 
         boolean confirmed = AlertFX.showConfirm(
                 ctrl.getStage().getScene().getWindow(),
@@ -90,10 +116,10 @@ public class StudentPanel_controller {
         Actions.getInstance().undoRedo().addCommand(cmd);
     }
 
-    @FXML
-    private void handleKeyPressed(KeyEvent event) {
+    /* for delete key */
+    /*@FXML private void handleKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE) {
             miDelete();
         }
-    }
+    }*/
 }

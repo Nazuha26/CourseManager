@@ -304,16 +304,17 @@
     -fx-border-color: rgb(76, 186, 88);
     -fx-background-color: rgba(92, 239, 107, 0.3);
 }
-
 .animated-cancel-button {
-    -fx-background-color: rgba(188, 19, 19, 0.2);
+    -fx-padding: 4 8 4 8;
     -fx-border-color: rgba(230, 25, 25, 0.6);
+    -fx-background-color: rgba(188, 19, 19, 0.2);
 }
+
 
 .animated-back-button:hover,
 .animated-cancel-button:hover {
-    -fx-background-color: rgba(188, 19, 19, 0.4);
     -fx-border-color: rgba(230, 25, 25, 0.8);
+    -fx-background-color: rgba(188, 19, 19, 0.4);
 }
 
 .animated-add-student-button {
@@ -329,7 +330,8 @@
 }
 /* ======================================= */
 
-/* ===== TEXT STYLED BUTTONS ===== */
+/* ===== TEXT STYLED BUTTONS _AND_ CLEAR ALL BUTTON ===== */
+.clear-all-button,
 .last-styled-button-underline,
 .middle-styled-button-italic,
 .first-styled-button-bold {
@@ -363,12 +365,22 @@
     -fx-border-radius: 0 10 10 0;
 }
 
+.clear-all-button:hover,
 .last-styled-button-underline:hover,
 .middle-styled-button-italic:hover,
 .first-styled-button-bold:hover {
     -fx-background-color: rgba(53, 53, 53, 0.5);
 }
 /* =============================== */
+
+
+
+/* ========== CLEAR ALL BUTTON ========== */
+.clear-all-button {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+/* ====================================== */
 
 
 

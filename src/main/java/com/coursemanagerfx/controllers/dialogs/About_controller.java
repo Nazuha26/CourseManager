@@ -1,25 +1,19 @@
 package com.coursemanagerfx.controllers.dialogs;
 
-import com.coursemanagerfx.Launcher;
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
-import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.Actions;
-import com.coursemanagerfx.logic.utilities.UpdateUtility;
-import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import java.util.logging.Level;
 
 public class About_controller implements StageAttachable {
 
@@ -27,6 +21,7 @@ public class About_controller implements StageAttachable {
     @FXML private BorderPane rootPane;
     @FXML private HBox titleBar;
     @FXML private Label lblVersion;
+    @FXML private Label lblEmail;
     // ========== FXML ==========
 
     private Stage stage;
@@ -48,7 +43,33 @@ public class About_controller implements StageAttachable {
 
     @FXML
     private void initialize() {
-        lblVersion.setText("v" + Launcher.CUR_VERSION);
+        lblVersion.setText("v" + AppConstants.CUR_VERSION);
+    }
+
+    @FXML private void onLblEmailHover() {
+        lblEmail.setCursor(Cursor.HAND);
+        lblEmail.setStyle("-fx-text-fill: #005ec9;");    // hovered color
+    }
+
+    @FXML
+    private void onLblEmailUnhover() {
+        lblEmail.setCursor(Cursor.DEFAULT);
+        lblEmail.setStyle("-fx-text-fill: #0077ff;");    // default color
+    }
+
+    @FXML private void onLblEmailClicked() {
+        final Clipboard clipboard = Clipboard.getSystemClipboard();
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(lblEmail.getText());
+        clipboard.setContent(content);
+
+        AlertFX.showNotification(
+                stage.getScene().getWindow(),
+                AlertFX_type.INFO,
+                "Copied",
+                "Email successfully copied to clipboard",
+                true
+        );
     }
 
     @FXML

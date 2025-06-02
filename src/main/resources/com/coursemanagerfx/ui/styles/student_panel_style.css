@@ -10,6 +10,9 @@
     -fx-font-size: 17px;
     -fx-border-color: transparent;
 
+    -fx-alignment: CENTER_LEFT;
+    /*-fx-text-alignment: LEFT;*/
+
     transition-property: -fx-background-color;
     transition-duration: 0.1s;
     transition-timing-function: ease-in-out;

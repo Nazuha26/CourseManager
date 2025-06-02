@@ -1,6 +1,6 @@
 package com.coursemanagerfx.logic;
 
-import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.Launcher;
 import com.coursemanagerfx.animations.WindowOutAnimation;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
@@ -23,9 +23,12 @@ import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
 import com.coursemanagerfx.logic.utilities.HistoryUtility;
 import com.coursemanagerfx.logic.utilities.UpdateUtility;
+import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
 import javafx.animation.*;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -45,8 +48,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static com.coursemanagerfx.CM_HELPER.*;
 
 public final class Actions {
 
@@ -74,7 +75,7 @@ public final class Actions {
     public Select        select()          { return select; }
     public uiActions     uiActions()       { return uiActions; }
     public MenuActions   menuActions()     { return menuActions; }
-    public IdGenerator   getIdGenerator()  { return idGenerator; }
+    public IdGenerator   idGenerator()     { return idGenerator; }
     public FormAnims     formAnims()       { return formAnims; }
     public UndoRedo      undoRedo()        { return undoRedo; }
     public TaskLoader    taskLoader()      { return taskLoader; }
@@ -234,13 +235,15 @@ public final class Actions {
             ctrl.getTxtFieldSearch().setText("");
 
             /* repaint students and select first if it possible */
-            List<Student> sorted = repaint.repaintStudentPanels(group);
+            /*List<Student> sorted = repaint.repaintStudentPanels(group);
             if (!sorted.isEmpty()) {
                 selectStudentPanel(sorted.getFirst(), group);
             } else {
                 selectedStudent = null;
                 repaint.repaintEventTable(null, group);
-            }
+            }*/
+
+            selectFirstOrClear(group);
         }
 
         /* select student in selected group */
@@ -248,14 +251,12 @@ public final class Actions {
             if (ctrl == null || student == null || selectedGroup == null) return;
 
             for (Node n : ctrl.getStudentVBox().getChildren()) {
-                if (n instanceof BorderPane bp && bp.getCenter() instanceof StackPane sp) {
-                    for (Node ch : sp.getChildren()) {
-                        if (ch instanceof Button btn && btn.getUserData() instanceof Student st) {
+                if (n instanceof BorderPane bp &&
+                        bp.getCenter() instanceof Button btn &&
+                        btn.getUserData() instanceof Student st) {
                             btn.getStyleClass().remove("selected-student-panel");
                             if (st.equals(student))
                                 btn.getStyleClass().add("selected-student-panel");
-                        }
-                    }
                 }
             }
 
@@ -269,14 +270,15 @@ public final class Actions {
         }
 
         /* util method only for AddStudentCommand & DeleteStudentCommand */
-        public void selectAnyOrClear(Group group) {
+        public void selectFirstOrClear(Group group) {
             if (group == null) return;
 
-            if (!group.getStudents().isEmpty()) {
-                Student firstStudent = group.getStudents().getFirst();
-                select().selectStudentPanel(firstStudent, group);
+            List<Student> sorted = repaint.repaintStudentPanels(group);
+            if (!sorted.isEmpty()) {
+                selectStudentPanel(sorted.getFirst(), group);
             } else {
-                repaint().repaintEventTable(null, group);
+                selectedStudent = null;
+                repaint.repaintEventTable(null, group);
             }
         }
 
@@ -327,7 +329,7 @@ public final class Actions {
             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(false));       // turn off sortable of event table
 
             /* === fill in the panel === */
-            ctrl.getComBoxEventType().getSelectionModel().select(event.getCategory().getEventCategory().name()); // type
+            ctrl.getComBoxEventCategory().getSelectionModel().select(event.getCategory().getEventCategory().name()); // type
             ctrl.getTxtAreaEventDescrp().setText(event.getDescription());                                // description
             /* creation date */
             EventDate cd = event.getCrtDate();
@@ -378,21 +380,22 @@ public final class Actions {
 
             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(true));       // turn on sortable of event table
 
-            ctrl.getComBoxEventType().getSelectionModel().select(EventCategories.MOD_1.getEventCategory().name());
-            ctrl.getTxtAreaEventDescrp().setText("");
+            ctrl.getComBoxEventCategory().getSelectionModel().select(EventCategories.MOD_1.getEventCategory().name());
 
             ctrl.getBtnDeleteEvent().setVisible(false);
             ctrl.getBtnDeleteEvent().setManaged(false);
 
             ctrl.getBtnCreateEvent().setText("Create");
             ctrl.getBtnCreateEvent().setOnAction(evt -> createEventAction());
+
+            clearAllInfoData();
         }
 
         public void createEventAction() {
             if (ctrl == null) return;
             if (isInvalidEventForm()) return;
 
-            EventCategories selectedType = returnCategoryByName(ctrl.getComBoxEventType().getSelectionModel().getSelectedItem());    // get event type
+            EventCategories selectedType = returnCategoryByName(ctrl.getComBoxEventCategory().getSelectionModel().getSelectedItem());    // get event type
 
             /* get creation date */
             LocalDate creationDateRaw = ctrl.getDtpkCreationDate().getValue();
@@ -404,7 +407,7 @@ public final class Actions {
             /* ----------------- */
 
             String description = ctrl.getTxtAreaEventDescrp().getText().trim();    // get description date
-            int mark = ctrl.getSpinnerMark().getValue();                           // get mark
+            double mark = ctrl.getSpinnerMark().getValue();                        // get mark
 
             /* expiration date */
             LocalDate expirationDateRaw = calculateExpirationDate(creationDateRaw);
@@ -433,7 +436,7 @@ public final class Actions {
             );
             /* --------------- */
 
-            int eventID = idGenerator.genUniqueEventId();
+            int eventID = idGenerator.genGlobalEventId();
             StudentEvent newEvent = new StudentEvent(
                     eventID,
                     creationDate,
@@ -478,6 +481,22 @@ public final class Actions {
                 ctrl.getDtpkExpirationDate().setValue(null);
             }
             formAnims.expDateInOut();
+            isShowingDataPickerFlag = !formAnims.showingDatePicker;
+        }
+
+        public void clearAllInfoData() {
+            if (ctrl == null) return;
+
+            ctrl.getTxtAreaEventDescrp().setText("");
+            ctrl.getComBoxEventCategory().getSelectionModel().selectFirst();
+            ctrl.getSpinnerMark().getValueFactory().setValue(1.0);
+
+            if (isShowingDataPickerFlag) toggleExpInputAction();
+
+            ctrl.getSpinnerExpTimeCount().getValueFactory().setValue(1);
+            ctrl.getComBoxExpTimeType().getSelectionModel().selectFirst();
+
+            ctrl.getDtpkCreationDate().setValue(null);
         }
 
         public void mainExitAction() {
@@ -514,6 +533,8 @@ public final class Actions {
         /* ========================== */
 
         /* ======  CORE  ====== */
+        private boolean isShowingDataPickerFlag = false;
+
         private void saveEventAction() {
             if (ctrl == null || editingEvent == null) return;
             if (isInvalidEventForm()) return;
@@ -531,10 +552,10 @@ public final class Actions {
 
             String newDesc = ctrl.getTxtAreaEventDescrp().getText().trim();      // description
 
-            EventCategories newType = returnCategoryByName(ctrl.getComBoxEventType()
+            EventCategories newType = returnCategoryByName(ctrl.getComBoxEventCategory()
                                         .getSelectionModel().getSelectedItem()); // type
 
-            int newMark = ctrl.getSpinnerMark().getValue();                      // mark
+            double newMark = ctrl.getSpinnerMark().getValue();                      // mark
 
             /* expiration date */
             LocalDate newExpirationDateRaw = calculateExpirationDate(creationDateRaw);
@@ -683,7 +704,6 @@ public final class Actions {
         /* ======  PUBLIC API  ====== */
 
         /* === FILE === */
-        /* done */
         public void toHomeAction() {
             Window owner = ctrl.getStage().getScene().getWindow();
 
@@ -693,7 +713,7 @@ public final class Actions {
                     "Are you sure you want to leave the current course and return to the home screen?");
             if (!yes) return;
 
-            try {
+            /*try {
                 if (!LAST_RUN_FILE.delete()) {
                     System.err.println("Failed to delete file: " + LAST_RUN_FILE.getAbsolutePath());
                     AlertFX.showNotification(
@@ -717,7 +737,9 @@ public final class Actions {
                         true
                 );
                 return;
-            }
+            }*/
+
+            ConfigManager.setOpenCourse("none");        // set opened course as none for backing home
 
             AlertFX.showNotification(owner,
                     AlertFX_type.INFO,
@@ -738,13 +760,16 @@ public final class Actions {
         public void saveAction() {
             Window owner = ctrl.getStage().getScene().getWindow();
             try {
-                File file = new File(CM_HELPER.COURSES_DIR.getAbsolutePath() +
-                        File.separator + Launcher.getCourseInfo().getCourseName() + ".cman");    // full path with file
+                File file = AppConstants.COURSES_PATH
+                        .resolve(Launcher.getCourseInfo().getCourseName() + ".cman")
+                        .toFile();
 
                 CmanSecurityUtility.updateSecureFile(
                         Launcher.getCourseInfo().getCourse(), file, Launcher.getCourseInfo().getPassword());
-                Actions.getInstance().undoRedo().getUndoStack().clear();    // clear undo stack
-                Actions.getInstance().undoRedo().getRedoStack().clear();    // clear redo stack
+
+                undoRedo.getUndoStack().clear();    // clear undo stack
+                undoRedo.getRedoStack().clear();    // clear redo stack
+                undoRedo.updateState();
 
                 /*AlertFX.showNotification(
                         owner,
@@ -770,13 +795,26 @@ public final class Actions {
         }
         /* done */
         public void exportAction() {
+            Window owner = ctrl.getStage().getScene().getWindow();
+
+            if (Launcher.getCourseInfo().isEmpty()) {
+                AlertFX.showNotification(
+                        owner,
+                        AlertFX_type.WARNING,
+                        "There is nothing to export",
+                        "The whole course is empty, there is nothing to export to Excel.",
+                        true
+                );
+                return;
+            }
+
             boolean successExport = ExcelExportUtility.exportToExcel(
                     Launcher.getCourseInfo().getCourse(),
                     Launcher.getCourseInfo().getCourseName(),
                     new File(System.getProperty("user.home") + File.separator + "Desktop"));
             if (successExport) {
                 AlertFX.showNotification(
-                        ctrl.getStage().getScene().getWindow(),
+                        owner,
                         AlertFX_type.INFO,
                         "Export completed successfully",
                         "The Excel file has been saved to your Desktop.",
@@ -808,7 +846,7 @@ public final class Actions {
      *                          CLASS  IdGenerator
      * *****************************************************************/
     public static class IdGenerator {
-        public int genUniqueStudentId() {
+        public int genGlobalStudentId() {
             Set<Integer> existingIds = new HashSet<>();
 
             for (Group group : Launcher.getCourseInfo().getCourse())
@@ -819,7 +857,7 @@ public final class Actions {
             while (existingIds.contains(newId)) newId++;
             return newId;
         }
-        public int genUniqueEventId() {
+        public int genGlobalEventId() {
             Set<Integer> existingIds = new HashSet<>();
 
             for (Group group : Launcher.getCourseInfo().getCourse())
@@ -1083,10 +1121,25 @@ public final class Actions {
             return redoStack;
         }
 
+        private final BooleanProperty canUndo = new SimpleBooleanProperty(false);
+        private final BooleanProperty canRedo = new SimpleBooleanProperty(false);
+
+        public BooleanProperty canUndoProperty() { return canUndo; }
+        public BooleanProperty canRedoProperty() { return canRedo; }
+
+        private void updateState() {
+            canUndo.set(!undoStack.isEmpty());
+            canRedo.set(!redoStack.isEmpty());
+        }
+
+        public UndoRedo()
+            { updateState(); }
+
         public void addCommand(Command cmd) {
             if (ctrl == null || cmd == null) return;
             undoStack.addLast(cmd);
             redoStack.clear();
+            updateState();
         }
 
         public void undo() {
@@ -1097,6 +1150,7 @@ public final class Actions {
             HistoryUtility.setHistory(ctrl.getRichTxtPaneHistory(), ctrl.getLblCurHistory(),
                     HistoryUtility.Types.INFO, "Undo: " + cmd.getHistoryDescription());
             redoStack.addLast(cmd);
+            updateState();
         }
 
         public void redo() {
@@ -1107,6 +1161,7 @@ public final class Actions {
             HistoryUtility.setHistory(ctrl.getRichTxtPaneHistory(), ctrl.getLblCurHistory(),
                     HistoryUtility.Types.INFO, "Redo: " + cmd.getHistoryDescription());
             undoStack.addLast(cmd);
+            updateState();
         }
     }
 
@@ -1227,7 +1282,7 @@ public final class Actions {
             ProgressSpinner ps = new ProgressSpinner(
                     owner,
                     ProgressSpinner.Style.SMALL,
-                    Color.rgb(50, 70, 150),
+                    Color.rgb(40, 75, 220),
                     ProgressSpinner.Position.BOTTOM,
                     Modality.NONE,
                     "Checking for updates");
@@ -1249,7 +1304,7 @@ public final class Actions {
 
                         try {
                             if (!"-1".equals(latest)
-                                    && UpdateUtility.compareVersions(latest, Launcher.CUR_VERSION) > 0) {
+                                    && UpdateUtility.compareVersions(latest, AppConstants.CUR_VERSION) > 0) {
                                 onUpdateAvailable.accept(latest);
                             } else {
                                 onUpToDate.run();
@@ -1277,7 +1332,7 @@ public final class Actions {
             ProgressSpinner psd = new ProgressSpinner(
                     owner,
                     ProgressSpinner.Style.SMALL,
-                    Color.rgb(50, 150, 70),
+                    Color.rgb(45, 215, 75),
                     ProgressSpinner.Position.BOTTOM,
                     Modality.NONE,
                     "Downloading update v" + version);
@@ -1297,6 +1352,7 @@ public final class Actions {
                     psd, task,
                     unused -> {
                         psd.close();
+                        ConfigManager.setOpenCourse("none");    // when installed new update reset the opened course
                         try { UpdateUtility.restartApp(); }
                         catch (Exception e) { throw new RuntimeException(e); }
                     },

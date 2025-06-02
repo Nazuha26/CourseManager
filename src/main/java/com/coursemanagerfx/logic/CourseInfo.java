@@ -31,4 +31,14 @@ public class CourseInfo {
     public void clearPassword() {
         this.password = null;
     }
+
+    public boolean isEmpty() {
+        if (course == null) return true;
+        for (Group group : course) {
+            if (group != null && group.getStudents() != null && !group.getStudents().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

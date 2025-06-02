@@ -1,5 +1,6 @@
 package com.coursemanagerfx.controllers.dialogs.password;
 
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import javafx.application.Platform;
@@ -15,7 +16,7 @@ public class InputPass_controller implements StageAttachable {
     @FXML private BorderPane rootPane;
     @FXML private HBox titleBar;
     @FXML private PasswordField passField;
-    @FXML private Label infoLabel;
+    @FXML private Label errorLabel;
     // ========== FXML ==========
 
     private Stage stage;
@@ -52,14 +53,14 @@ public class InputPass_controller implements StageAttachable {
 
     @FXML
     private void btnConfirm() {
-        infoLabel.setText("");
-        infoLabel.setManaged(false);
+        errorLabel.setText("");
+        errorLabel.setManaged(false);
         stage.sizeToScene();
         String rawPassword = passField.getText();
         if (rawPassword == null || rawPassword.trim().isEmpty()) {
-            infoLabel.setText("Field cannot be empty!");
-            infoLabel.setStyle("-fx-text-fill: #BC0000FF;");
-            infoLabel.setManaged(true);
+            errorLabel.setText("Field cannot be empty!");
+            errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
+            errorLabel.setManaged(true);
             stage.sizeToScene();
             return;
         }

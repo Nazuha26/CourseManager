@@ -45,7 +45,7 @@ import java.util.*;
  * │              │   – eventID (4 байта, int)                                          │
  * │              │   – studentID (4 байта, int)                                        │
  * │              │   – creationOffset (4 байта, uint32, смещение в TBLE)               │
- * │              │   – mark (4 байта, int)                                             │
+ * │              │   – mark (8 байт, double)                                           │
  * │              │   – expiredOffset (4 байта, uint32, смещение в TBLE)                │
  * │              │   – type (1 байт, порядковый номер типа из enum EventTypes)         │
  * ├──────────────┼─────────────────────────────────────────────────────────────────────┤
@@ -129,7 +129,7 @@ public class BinaryPlainCmanUtility {
             dosEvts.writeInt(e.id);
             dosEvts.writeInt(e.studentId);
             dosEvts.writeInt(textOffset.get(e.id + "|" + e.creationDate));
-            dosEvts.writeInt(e.mark);
+            dosEvts.writeDouble(e.mark);
             dosEvts.writeInt(textOffset.get(e.id + "|" + e.expiredDate));
             dosEvts.writeByte(e.type.ordinal()); // ← записываем тип события (1 байт)
         }
@@ -245,7 +245,7 @@ public class BinaryPlainCmanUtility {
             int eid = buffer.getInt();
             int sid = buffer.getInt();
             int creationOff = buffer.getInt();
-            int mark = buffer.getInt();
+            double mark = buffer.getDouble();
             int expiredOff = buffer.getInt();
             int typeOrd = Byte.toUnsignedInt(buffer.get());
             rawEvents.add(new HolderEvent(eid, sid, creationOff, mark, expiredOff, typeOrd));
@@ -333,8 +333,9 @@ public class BinaryPlainCmanUtility {
     private record HolderStudent(int id, int nameOffset) { }
 
     private static class HolderEvent {
-        final int eventID, studentId, creationOffset, mark, expiredOffset, typeOrdinal;
-        HolderEvent(int eid, int sid, int co, int mark, int eo, int typeOrdinal) {
+        final int eventID, studentId, creationOffset, expiredOffset, typeOrdinal;
+        final double mark;
+        HolderEvent(int eid, int sid, int co, double mark, int eo, int typeOrdinal) {
             this.eventID = eid;
             this.studentId = sid;
             this.creationOffset = co;
@@ -348,7 +349,7 @@ public class BinaryPlainCmanUtility {
     public static class SaverEvent {
         int id;
         int studentId;
-        int mark;
+        double mark;
         String creationDate;
         String description;
         String expiredDate;

@@ -1,6 +1,6 @@
 package com.coursemanagerfx.logic.utilities.show;
 
-import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.ShowAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.StageSetupUtility;
@@ -8,7 +8,6 @@ import com.coursemanagerfx.controllers.dialogs.InputDialog_controller;
 import com.coursemanagerfx.controllers.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_controller;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
-import com.coursemanagerfx.controllers.dialogs.password.GeneratedPass_controller;
 import com.coursemanagerfx.controllers.dialogs.password.InputPass_controller;
 import com.coursemanagerfx.logic.utilities.show.exceptions.DialogLoadException;
 import javafx.application.Platform;
@@ -19,13 +18,14 @@ import javafx.stage.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.function.Consumer;
 
-import static com.coursemanagerfx.CM_HELPER.COURSES_DIR;
+import static com.coursemanagerfx.AppConstants.COURSES_PATH;
 
 public class ShowDialogUtility {
     private static <T> T showDialog(String fxml, Window owner, boolean modal, Consumer<T> controllerConfigurator) throws IOException {
-        FXMLLoader loader = new FXMLLoader(CM_HELPER.class.getResource(fxml));
+        FXMLLoader loader = new FXMLLoader(AppConstants.class.getResource(fxml));
         Parent root = loader.load();
 
         Stage stage = new Stage();
@@ -149,8 +149,8 @@ public class ShowDialogUtility {
     // === OPEN COURSE WINDOW ===
     public static File showOpenCourse(Window owner) {
         FileChooser fc = new FileChooser();
-        if (COURSES_DIR.exists())
-            fc.setInitialDirectory(COURSES_DIR);
+        if (Files.exists(COURSES_PATH))
+            fc.setInitialDirectory(COURSES_PATH.toFile());
 
         fc.getExtensionFilters().setAll(
                 new FileChooser.ExtensionFilter("CMan course (*.cman)", "*.cman"));

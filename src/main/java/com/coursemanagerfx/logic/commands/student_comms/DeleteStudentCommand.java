@@ -19,8 +19,7 @@ public class DeleteStudentCommand implements Command {
     public void execute() {
         previousIndex = group.getStudents().indexOf(student);
         group.getStudents().remove(student);
-        Actions.getInstance().repaint().repaintStudentPanels(group);
-        Actions.getInstance().select().selectAnyOrClear(group);
+        Actions.getInstance().select().selectFirstOrClear(group);
     }
 
     @Override

@@ -1,8 +1,9 @@
 package com.coursemanagerfx.controllers.dialogs.password;
 
-import com.coursemanagerfx.CM_HELPER;
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
+import com.coursemanagerfx.controllers.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -45,7 +46,7 @@ public class GeneratedPass_controller implements StageAttachable {
     @FXML
     private void initialize() {
         password = CmanSecurityUtility.generatePassword();
-        CM_HELPER.setGeneratedPassword(password);
+        NewCourseDialog_controller.setGeneratedPassword(password);
         lblPassword.setText(password);
     }
 
@@ -53,7 +54,7 @@ public class GeneratedPass_controller implements StageAttachable {
     private void btnClose() {
         if (!copied) {
             lblCopied.setText("You haven’t copied the password yet!");
-            lblCopied.setStyle("-fx-text-fill: #BC0000FF;");
+            lblCopied.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
             lblCopied.setManaged(true);
             stage.sizeToScene();
             return;
@@ -70,7 +71,7 @@ public class GeneratedPass_controller implements StageAttachable {
 
         copied = true;
         lblCopied.setText("Successfully copied");
-        lblCopied.setStyle("-fx-text-fill: #00bc3c;");
+        lblCopied.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.SUCCESS_COLOUR) + ";");
         lblCopied.setManaged(true);
         stage.sizeToScene();
     }

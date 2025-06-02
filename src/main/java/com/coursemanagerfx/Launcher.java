@@ -3,20 +3,21 @@ package com.coursemanagerfx;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.logic.CourseInfo;
+import com.coursemanagerfx.logic.utilities.config_api.AppConfig;
+import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.show.ShowWindowUtility;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
 
-import static com.coursemanagerfx.CM_HELPER.*;
+import static com.coursemanagerfx.AppConstants.*;
 
 public class Launcher extends Application {
-
-    public static final String CUR_VERSION = "1.1.0";
 
     private static CourseInfo courseInfo;
     public static CourseInfo getCourseInfo() {
@@ -26,9 +27,9 @@ public class Launcher extends Application {
         Launcher.courseInfo = courseInfo;
     }
 
-    private static String presetPassword;
-    public static String getPresetPassword() {
-        return presetPassword;
+    private static String defaultPassword;
+    public static String getDefaultPassword() {
+        return defaultPassword;
     }
 
     @Override
@@ -58,8 +59,10 @@ public class Launcher extends Application {
         });
         /* =============================== */
 
-        if (!CONFIG_DIR.exists() && !CONFIG_DIR.mkdirs()) {
-            System.err.println("Failed to create config directory: " + CONFIG_DIR.getAbsolutePath());
+        AppConfig config = ConfigManager.loadConfig();
+
+        /*if (!ConfigManager.CONFIG_PATH.exists() && !CONFIG_PATH.mkdirs()) {
+            System.err.println("Failed to create config_api directory: " + CONFIG_DIR.getAbsolutePath());
             AlertFX.showNotification(
                     null,
                     AlertFX_type.ERROR,
@@ -68,14 +71,16 @@ public class Launcher extends Application {
                     "\n\nPlease check write permissions or run the app as administrator.",
                     true);
             return;
-        }
-        if (!COURSES_DIR.exists() && !COURSES_DIR.mkdirs()) {
-            System.err.println("Failed to create courses directory: " + COURSES_DIR.getAbsolutePath());
+        }*/
+        try {
+            Files.createDirectories(COURSES_PATH);
+        } catch (IOException e) {
+            System.err.println("Failed to create courses directory: " + COURSES_PATH.toAbsolutePath());
             AlertFX.showNotification(
                     null,
                     AlertFX_type.ERROR,
                     "Startup Error",
-                    "Failed to create courses directory:\n" + COURSES_DIR.getAbsolutePath() +
+                    "Failed to create courses directory:\n" + COURSES_PATH.toAbsolutePath() +
                             "\n\nPlease check write permissions or run the app as administrator.",
                     true
             );
@@ -83,7 +88,7 @@ public class Launcher extends Application {
         }
 
         /* when was installed the newest update then delete all old LAST_RUN_FILE */
-        File[] files = CONFIG_DIR.listFiles((dir, name) ->
+        /*File[] files = CONFIG_DIR.listFiles((dir, name) ->
                 name.startsWith(template) && !name.equals(LAST_RUN_FILE.getName())
         );
         if (files != null)
@@ -112,25 +117,26 @@ public class Launcher extends Application {
                             true
                     );
                     return;
-                }
+                }*/
         /* ---------------------------------------------------------------------- */
 
-        //CM_HELPER.setPassword("RMieg>mja%");       // Test
-        //CM_HELPER.setPassword("lm6d!_O6A3");       // Test 2
-        //presetPassword = "0Qn$rptY2*";               // 1 курс
-        LaunchCourseInfo info = existCourseFile();
+        String defPass_ = ConfigManager.getDefaultPassword();
+        if (defPass_ == null || defPass_.equals("none") || defPass_.isBlank()) defaultPassword = "magic";
+        else defaultPassword = defPass_;
+
+
+        //defaultPassword = "0Qn$rptY2*";               // 1 курс
+        //presetPassword = "3Tr_J>UrTy";               // 2 курс
+        //LaunchCourseInfo info = existCourseFile();
+
+        Pair<String, File> courseInfo = getLastOpenedCourseFromConfig();
 
         primaryStage.close();
 
-        if (info.exists()) {
-            ShowWindowUtility.showMainWindow(info.courseName(), info.courseFile());
-            return;
-        }
-
-        ShowWindowUtility.showStartWindow();    // in other case open start window
+        if (courseInfo != null) ShowWindowUtility.showMainWindow(courseInfo.getKey(), courseInfo.getValue());
+        else ShowWindowUtility.showStartWindow();
     }
-
-    private static LaunchCourseInfo existCourseFile() {
+    /*private static LaunchCourseInfo existCourseFile() {
         if (!LAST_RUN_FILE.exists()) return new LaunchCourseInfo(false, null, null);
 
         try (BufferedReader reader = new BufferedReader(new FileReader(LAST_RUN_FILE))) {
@@ -150,6 +156,15 @@ public class Launcher extends Application {
         } catch (Exception ignored) {}
 
         return new LaunchCourseInfo(false, null, null);
+    }*/
+
+    private static Pair<String, File> getLastOpenedCourseFromConfig() {
+        String courseName = ConfigManager.getOpenCourse();
+        if (courseName == null || courseName.equals("none") || courseName.isBlank())
+            return null;
+
+        File expectedFile = COURSES_PATH.resolve(courseName + ".cman").toFile();
+        return expectedFile.exists() ? new Pair<>(courseName, expectedFile) : null;
     }
 
     private static boolean printMouseOnP = false;
@@ -172,4 +187,4 @@ public class Launcher extends Application {
     }
 }
 
-record LaunchCourseInfo(boolean exists, String courseName, File courseFile) { }
+//record LaunchCourseInfo(boolean exists, String courseName, File courseFile) { }

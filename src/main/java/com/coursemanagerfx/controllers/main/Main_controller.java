@@ -13,6 +13,7 @@ import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
 import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -69,8 +70,8 @@ public class Main_controller implements StageAttachable {
     @FXML private StackPane historyInfoMaskPane;
 
     @FXML private TextArea txtAreaEventDescrp;
-    @FXML private ComboBox<String> comBoxEventType;
-    @FXML private Spinner<Integer> spinnerMark;
+    @FXML private ComboBox<String> comBoxEventCategory;
+    @FXML private Spinner<Double> spinnerMark;
     @FXML private DatePicker dtpkCreationDate;
     @FXML private DatePicker dtpkExpirationDate;
 
@@ -115,6 +116,13 @@ public class Main_controller implements StageAttachable {
     @FXML private TableColumn<StudentEvent, String> expDateColumn;
     @FXML private TableColumn<StudentEvent, EventStatus> statusColumn;
     /* --- TABLE --- */
+
+    /* --- MENU --- */
+    @FXML private MenuItem miUndo;
+    @FXML private MenuItem miRedo;
+    @FXML private Button btnUndo;
+    @FXML private Button btnRedo;
+    /* --- MENU --- */
     /* ============================================== */
 
     /* ==================== FXML GETTERS/SETTERS ==================== */
@@ -153,8 +161,8 @@ public class Main_controller implements StageAttachable {
     public Button getBtnCancelEvent() {
         return btnCancelEvent;
     }
-    public ComboBox<String> getComBoxEventType() {
-        return comBoxEventType;
+    public ComboBox<String> getComBoxEventCategory() {
+        return comBoxEventCategory;
     }
     public TextArea getTxtAreaEventDescrp() {
         return txtAreaEventDescrp;
@@ -177,7 +185,7 @@ public class Main_controller implements StageAttachable {
     public DatePicker getDtpkExpirationDate() {
         return dtpkExpirationDate;
     }
-    public Spinner<Integer> getSpinnerMark() {
+    public Spinner<Double> getSpinnerMark() {
         return spinnerMark;
     }
     public Spinner<Integer> getSpinnerExpTimeCount() {
@@ -234,6 +242,15 @@ public class Main_controller implements StageAttachable {
         new GradientBackground(rootPane, 0.005, 2); // gradient bg
         Actions.getInstance().setController(this);
 
+        Actions.UndoRedo undoManager = Actions.getInstance().undoRedo();
+
+        /* bind disable properties for undo/redo buttons and menus */
+        btnUndo.disableProperty().bind(Bindings.not(undoManager.canUndoProperty()));
+        btnRedo.disableProperty().bind(Bindings.not(undoManager.canRedoProperty()));
+        miUndo.disableProperty().bind(Bindings.not(undoManager.canUndoProperty()));
+        miRedo.disableProperty().bind(Bindings.not(undoManager.canRedoProperty()));
+        /* ------------------------------------------------------- */
+
         /* --- LISTENERS --- */
         /* listener for visibility of placeholder on the text area description */
         txtAreaEventDescrp.textProperty().addListener((obs, oldText, newText) -> placeholderLbl.setVisible(newText.isEmpty()) );
@@ -289,8 +306,8 @@ public class Main_controller implements StageAttachable {
 
         /* init types of event combobox */
         for (EventCategories type : EventCategories.values())
-            comBoxEventType.getItems().add(type.getEventCategory().name());
-        comBoxEventType.getSelectionModel().selectFirst();      // and select first type by default
+            comBoxEventCategory.getItems().add(type.getEventCategory().name());
+        comBoxEventCategory.getSelectionModel().selectFirst();      // and select first type by default
 
         initSpinners();     /* init mark and expiration time spinners */
 
@@ -334,7 +351,7 @@ public class Main_controller implements StageAttachable {
             return;
         }
 
-        int studentID = Actions.getInstance().getIdGenerator().genUniqueStudentId();
+        int studentID = Actions.getInstance().idGenerator().genGlobalStudentId();
         Student newStudent = new Student(studentName, studentID);
 
         Command cmd = new AddStudentCommand(selectedGroup, newStudent);
@@ -372,17 +389,17 @@ public class Main_controller implements StageAttachable {
     }
 
     // === SET STYLE FOR TEXT ===
-    @FXML
-    private void setBoldText()
+    @FXML private void setBoldText()
         { toggleStyleAroundSelection(BOLD_MARKER); }
 
-    @FXML
-    private void setItalicText()
+    @FXML private void setItalicText()
         { toggleStyleAroundSelection(ITALIC_MARKER); }
 
-    @FXML
-    private void setUnderlineText()
+    @FXML private void setUnderlineText()
         { toggleStyleAroundSelection(UNDERLINE_MARKER); }
+
+    @FXML private void btnClearEventInfo()
+        { Actions.getInstance().uiActions().clearAllInfoData(); }
 
     /* ==================== TITLE BAR ==================== */
     /* ========== MENU ========== */
@@ -422,22 +439,14 @@ public class Main_controller implements StageAttachable {
     /* =============== CORE =============== */
     /* init spinners */
     public void initSpinners() {
-        /* expiration time spinner */
+
+        /* ---------- expiration time spinner ---------- */
         SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryExpTime =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
         spinnerExpTimeCount.setValueFactory(valueFactoryExpTime);
 
-        /* mark spinner */
-        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryMark =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
-        spinnerMark.setValueFactory(valueFactoryMark);
-
-        /* --- set input to digits only --- */
-        UnaryOperator<TextFormatter.Change> integerFilter = change -> {
-            String newText = change.getControlNewText();
-            if (newText.matches("\\d*"))
-                return change;
-            return null;
+        UnaryOperator<TextFormatter.Change> integerFilter = ch -> {
+            return ch.getControlNewText().matches("\\d*") ? ch : null;
         };
 
         TextFormatter<Integer> formatterExp = new TextFormatter<>(
@@ -447,29 +456,70 @@ public class Main_controller implements StageAttachable {
         );
         spinnerExpTimeCount.getEditor().setTextFormatter(formatterExp);
 
-        TextFormatter<Integer> formatterMark = new TextFormatter<>(
-                new IntegerStringConverter(),
+        spinnerExpTimeCount.focusedProperty().addListener((obs, ov, nv) -> {
+            if (!nv) spinnerExpTimeCount.increment(0);        // commit on focus lost
+        });
+        formatterExp.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv == null) formatterExp.setValue(valueFactoryExpTime.getMin());
+        });
+
+        /* -------------- mark spinner (editable) -------------- */
+        SpinnerValueFactory.DoubleSpinnerValueFactory valueFactoryMark =
+                new SpinnerValueFactory.DoubleSpinnerValueFactory(-999, 999, 1.0, 0.5);
+        spinnerMark.setValueFactory(valueFactoryMark);
+        spinnerMark.setEditable(true);
+
+        /* фильтр: -?NNN или -?NNN,5  (допускаются промежуточные состояния) */
+        UnaryOperator<TextFormatter.Change> halfStepFilter = ch -> {
+            String t = ch.getControlNewText();
+            if (t.matches("-?\\d{0,3}")               // целое (в процессе ввода)
+                    || t.matches("-?\\d{0,3},?")          // уже ввели запятую, ещё без дроби
+                    || t.matches("-?\\d{0,3},5?"))        // допускаем незавершённое ",5"
+                return ch;
+            return null;
+        };
+
+        /* конвертер, понимающий запятую и пишущий запятой */
+        StringConverter<Double> commaConverter = new StringConverter<>() {
+            @Override
+            public String toString(Double v) {
+                if (v == null) return "";
+                // всегда форматируем с одной десятичной (0 или 5)
+                return String.format(Locale.US, "%.1f", v).replace('.', ',');
+            }
+            @Override
+            public Double fromString(String s) {
+                if (s == null || s.isBlank() || "-".equals(s) || ",".equals(s) || "-,".equals(s))
+                    return null;                      // промежуточные состояния
+                return Double.valueOf(s.replace(',', '.'));
+            }
+        };
+
+        TextFormatter<Double> formatterMark = new TextFormatter<>(
+                commaConverter,
                 valueFactoryMark.getValue(),
-                integerFilter
+                halfStepFilter
         );
         spinnerMark.getEditor().setTextFormatter(formatterMark);
-        /* -------------------------------- */
 
-        spinnerExpTimeCount.focusedProperty().addListener((obs, oldVal, newVal) ->
-            { if (!newVal) spinnerExpTimeCount.increment(0); });
-        spinnerMark.focusedProperty().addListener((obs, oldVal, newVal) ->
-            { if (!newVal) spinnerMark.increment(0); });
-        formatterExp.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) {
-                int minExp = valueFactoryExpTime.getMin();
-                formatterExp.setValue(minExp);
+        /* взаимная синхронизация редактора и valueFactory */
+        formatterMark.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv != null && !nv.equals(valueFactoryMark.getValue())) {
+                valueFactoryMark.setValue(nv);
             }
         });
-        formatterMark.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) {
-                int minMark = valueFactoryMark.getMin();
-                formatterMark.setValue(minMark);
+        valueFactoryMark.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv != null && !nv.equals(formatterMark.getValue())) {
+                formatterMark.setValue(nv);
             }
+        });
+
+        spinnerMark.focusedProperty().addListener((obs, ov, nv) -> {
+            if (!nv) spinnerMark.increment(0);
+        });
+
+        formatterMark.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv == null) formatterMark.setValue(valueFactoryMark.getMin());
         });
     }
 
@@ -605,6 +655,19 @@ public class Main_controller implements StageAttachable {
 
         /* ----- column MARK ----- */
         marksColumn.setCellValueFactory(new PropertyValueFactory<>("mark"));
+        marksColumn.setCellFactory(column -> new TableCell<StudentEvent, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    double value = item.doubleValue();
+                    if (value % 1 == 0) setText(String.valueOf((int) value));
+                    else setText(String.valueOf(value));
+                }
+            }
+        });
         /* ----------------------- */
 
 
