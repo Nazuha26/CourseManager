@@ -12,6 +12,7 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.controllers.dialogs.password.InputPass_controller;
 import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.Actions;
+import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.UpdateUtility;
 import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
 import com.coursemanagerfx.logic.utilities.show.exceptions.DialogLoadException;
@@ -22,6 +23,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -30,6 +32,7 @@ import javafx.stage.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
@@ -42,6 +45,7 @@ public class ShowDialogUtility {
 
         Stage stage = new Stage();
         stage.setScene(new Scene(root));
+        AppUtility.setAppIcon(stage);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.getScene().setFill(null);
 
