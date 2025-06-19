@@ -1,7 +1,6 @@
 package com.coursemanagerfx.logic.utilities.show;
 
 import com.coursemanagerfx.AppConstants;
-import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.CourseInfo;
 import com.coursemanagerfx.Launcher;
@@ -14,8 +13,6 @@ import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.Start_controller;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -28,7 +25,6 @@ import javafx.util.Duration;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Level;
 
 public class ShowWindowUtility {
     private static <T> T loadWindow(String fxmlPath, Stage stage) throws IOException {
@@ -48,6 +44,7 @@ public class ShowWindowUtility {
                 new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-7.png"))),
                 new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-8.png")))
         );
+        //stage.getIcons().add(new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/cmfx_icon.ico"))));
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setScene(scene);
 
@@ -70,6 +67,10 @@ public class ShowWindowUtility {
 
             startStage.show();
 
+            String title = "Welcome to CourseManagerFX – v" + AppConstants.APP_VERSION;
+            startStage.setTitle(title);
+            controller.getLabelTitle().setText(title);
+
             WindowInAnimation.play(
                     controller,
                     controller.getRootPane().getWidth(),
@@ -80,8 +81,7 @@ public class ShowWindowUtility {
             );
 
             /* === CHECK FOR UPDATES === */
-            Actions.getInstance().updateActions().checkAndInstallUpdate(
-                    startStage.getScene().getWindow(), true);
+            Actions.getInstance().loadingActions().updateWindow(true);
             /* ---===================--- */
 
         } catch (IOException ex) {
@@ -109,6 +109,7 @@ public class ShowWindowUtility {
 
             controller.setStage(mainStage);
 
+
             // === set full screen stage ===
             Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
             mainStage.setX(bounds.getMinX());
@@ -118,7 +119,10 @@ public class ShowWindowUtility {
             // ---=======================---
 
             mainStage.show();
-            controller.getLblAppName().setText("CourseManagerFX v" + AppConstants.CUR_VERSION + " – " + courseName);
+
+            String title = "CourseManagerFX v" + AppConstants.APP_VERSION + " – " + courseName;
+            controller.getLblAppName().setText(title);
+            mainStage.setTitle(title);
 
             WindowInAnimation.play(
                     controller,
@@ -134,8 +138,7 @@ public class ShowWindowUtility {
             Window owner = mainStage.getScene().getWindow();
 
             /* === CHECK FOR UPDATES === */
-            Actions.getInstance().updateActions().checkAndInstallUpdate(
-                    owner, false);
+            Actions.getInstance().loadingActions().updateWindow(false);
             /* ---===================--- */
 
             if (Launcher.getDefaultPassword().equals("magic")) {       // default password will never be NULL
@@ -174,53 +177,10 @@ public class ShowWindowUtility {
                 }
             }
 
-
-
             Launcher.setCourseInfo(new CourseInfo(courseName, password, course));
 
+            Actions.getInstance().loadingActions().loadingWindow();
 
-
-            Task<Void> dataLoadingTask = new Task<>() {
-                @Override
-                protected Void call() throws Exception {
-                    updateProgress(0.15, 1);
-                    Thread.sleep(1000);
-
-                    updateProgress(0.50, 1);
-                    Thread.sleep(1000);
-
-                    updateProgress(0.80, 1);
-                    Thread.sleep(1000);
-
-                    Platform.runLater(() -> Actions.getInstance().repaint().initGroupTabs());
-
-                    updateProgress(1.0, 1);
-                    return null;
-                }
-            };
-
-            ProgressSpinner psl = new ProgressSpinner(owner,
-                    ProgressSpinner.Style.BIG,
-                    ProgressSpinner.Position.CENTER,
-                    Modality.APPLICATION_MODAL,
-                    "Data loading");
-            Actions.getInstance().taskLoader().loadRealTask(
-                    psl,
-                    dataLoadingTask,
-
-                    unused -> psl.close(),
-
-                    ex -> {                               // onFailure
-                        psl.close();
-                        AlertFX.showNotification(
-                                mainStage.getScene().getWindow(),
-                                AlertFX_type.ERROR,
-                                "Data loading failed",
-                                "Something went wrong during data loading",
-                                true);
-                        Actions.TaskLoader.LOGGER.log(Level.SEVERE, "=== DATA LOADING FAILED ===", ex);
-                    }
-            );
         } catch (IOException ex) {
             AlertFX.showNotification(
                     null,

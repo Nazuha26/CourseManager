@@ -6,20 +6,32 @@ import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.StageSetupUtility;
 import com.coursemanagerfx.controllers.dialogs.InputDialog_controller;
 import com.coursemanagerfx.controllers.dialogs.NewCourseDialog_controller;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_controller;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
 import com.coursemanagerfx.controllers.dialogs.password.InputPass_controller;
+import com.coursemanagerfx.custom_ui.ProgressSpinner;
+import com.coursemanagerfx.logic.Actions;
+import com.coursemanagerfx.logic.utilities.UpdateUtility;
+import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
 import com.coursemanagerfx.logic.utilities.show.exceptions.DialogLoadException;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 import static com.coursemanagerfx.AppConstants.COURSES_PATH;
 

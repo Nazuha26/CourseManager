@@ -41,9 +41,8 @@ public class About_controller implements StageAttachable {
     }
     // ===== IMPLEMENTED =====
 
-    @FXML
-    private void initialize() {
-        lblVersion.setText("v" + AppConstants.CUR_VERSION);
+    @FXML private void initialize() {
+        lblVersion.setText("v" + AppConstants.APP_VERSION);
     }
 
     @FXML private void onLblEmailHover() {
@@ -51,8 +50,7 @@ public class About_controller implements StageAttachable {
         lblEmail.setStyle("-fx-text-fill: #005ec9;");    // hovered color
     }
 
-    @FXML
-    private void onLblEmailUnhover() {
+    @FXML private void onLblEmailUnhover() {
         lblEmail.setCursor(Cursor.DEFAULT);
         lblEmail.setStyle("-fx-text-fill: #0077ff;");    // default color
     }
@@ -79,7 +77,6 @@ public class About_controller implements StageAttachable {
 
     @FXML
     private void btnCheckForUpdates() {
-        Actions.getInstance().updateActions().checkAndInstallUpdate(
-                stage.getOwner().getScene().getWindow(), true);
+        Actions.getInstance().loadingActions().updateWindow(true);
     }
 }

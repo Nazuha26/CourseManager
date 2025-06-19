@@ -20,6 +20,7 @@ import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
 import com.coursemanagerfx.logic.utilities.HistoryUtility;
 import com.coursemanagerfx.logic.utilities.UpdateUtility;
@@ -34,17 +35,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
+import javafx.scene.text.Font;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -61,25 +64,23 @@ public final class Actions {
     public void setController(Main_controller controller) { this.ctrl = controller; }
 
     /* ========================= SUB-ACTIONS ========================= */
-    private final Repaint       repaint       = new Repaint();
-    private final Select        select        = new Select();
-    private final uiActions     uiActions     = new uiActions();
-    private final MenuActions   menuActions   = new MenuActions();
-    private final IdGenerator   idGenerator   = new IdGenerator();
-    private final FormAnims     formAnims     = new FormAnims();
-    private final UndoRedo      undoRedo      = new UndoRedo();
-    private final TaskLoader    taskLoader    = new TaskLoader();
-    private final UpdateActions updateActions = new UpdateActions();
+    private final Repaint        repaint       = new Repaint();
+    private final Select         select        = new Select();
+    private final uiActions      uiActions     = new uiActions();
+    private final MenuActions    menuActions   = new MenuActions();
+    private final IdGenerator    idGenerator   = new IdGenerator();
+    private final FormAnims      formAnims     = new FormAnims();
+    private final UndoRedo       undoRedo      = new UndoRedo();
+    private final LoadingActions loadingActions = new LoadingActions();
 
-    public Repaint       repaint()         { return repaint; }
-    public Select        select()          { return select; }
-    public uiActions     uiActions()       { return uiActions; }
-    public MenuActions   menuActions()     { return menuActions; }
-    public IdGenerator   idGenerator()     { return idGenerator; }
-    public FormAnims     formAnims()       { return formAnims; }
-    public UndoRedo      undoRedo()        { return undoRedo; }
-    public TaskLoader    taskLoader()      { return taskLoader; }
-    public UpdateActions updateActions()   { return updateActions; }
+    public Repaint        repaint()         { return repaint; }
+    public Select         select()          { return select; }
+    public uiActions      uiActions()       { return uiActions; }
+    public MenuActions    menuActions()     { return menuActions; }
+    public IdGenerator    idGenerator()     { return idGenerator; }
+    public FormAnims      formAnims()       { return formAnims; }
+    public UndoRedo       undoRedo()        { return undoRedo; }
+    public LoadingActions loadingActions()  { return loadingActions; }
 
     /* ******************************************************************
      *                          CLASS  Repaint
@@ -1166,128 +1167,13 @@ public final class Actions {
     }
 
     /* ******************************************************************
-     *                          CLASS  TaskLoader
+     *                          CLASS  LoadingActions
      * *****************************************************************/
-    public class TaskLoader {
-        public static final Logger LOGGER = Logger.getLogger(TaskLoader.class.getName());
+    public class LoadingActions {
+        public static final Logger LOGGER = Logger.getLogger(LoadingActions.class.getName());
 
-        public void loadTask(int ms,
-                             ProgressSpinner ps,
-                             Runnable onSuccess,
-                             Consumer<Throwable> onFailure) {
-            if (ctrl == null) return;
-
-            int totalSteps = 10;
-            long baseDelay = (long) ms / totalSteps;
-
-            Task<Void> loadTask = new Task<>() {
-                @Override
-                protected Void call() throws Exception {
-                    for (int i = 0; i < totalSteps; i++) {
-                        /* noise for the wait time (±25%) */
-                        long noise = (long) (Math.random() * baseDelay * 0.5 - baseDelay * 0.25);
-                        Thread.sleep(baseDelay + noise);
-
-                        /* noise for the progress (±2%) */
-                        double progress = (i + 1) / (double) totalSteps;
-                        double noisyProgress = Math.min(1.0, Math.max(0.0, progress + (Math.random() - 0.5) * 0.04));
-
-                        updateProgress(noisyProgress, 1.0);
-                    }
-                    return null;
-                }
-            };
-
-            /* === creating progress spinner === */
-            ps.progressProperty().bind(loadTask.progressProperty());
-            Platform.runLater(ps::show);
-
-            loadTask.setOnSucceeded(e -> {
-                Platform.runLater(() -> {
-                    if (onSuccess != null) onSuccess.run();
-                });
-            });
-
-            loadTask.setOnFailed(e -> {
-                Platform.runLater(() -> {
-                    if (onFailure != null) onFailure.accept(loadTask.getException());
-                });
-            });
-
-            new Thread(loadTask).start();
-        }
-
-        public <T> void loadRealTask(ProgressSpinner ps,
-                                     Task<T> realTask,
-                                     Consumer<T> onSuccess,
-                                     Consumer<Throwable> onFailure) {
-            /* if (ctrl == null) return; we do not need to check it here cause this is common method */
-
-            // === создаём спиннер ===
-            ps.progressProperty().bind(realTask.progressProperty());
-            Platform.runLater(ps::show);
-
-            realTask.setOnSucceeded(e -> {
-                Platform.runLater(() -> {
-                    if (onSuccess != null) onSuccess.accept(realTask.getValue());
-                });
-            });
-
-            realTask.setOnFailed(e -> {
-                Platform.runLater(() -> {
-                    if (onFailure != null) onFailure.accept(realTask.getException());
-                });
-            });
-
-            new Thread(realTask).start();
-        }
-    }
-
-    /* ******************************************************************
-     *                          CLASS  UpdateActions
-     * *****************************************************************/
-    public static class UpdateActions {
-        /* ===== PUBLIC API ===== */
-
-        public void checkAndInstallUpdate(Window owner, boolean showNotAvailableUpdatesNotify) {
-            checkForUpdates(
-                    owner,
-                    latest -> {
-
-                        boolean yes = AlertFX.showConfirm(
-                                owner, AlertFX_type.INFO,
-                                "New v" + latest + " update is available",
-                                "Do you want to install it now?");
-                        if (yes) installUpdate(latest, owner);
-                    },
-
-                    () -> {
-                        if (showNotAvailableUpdatesNotify)
-                            AlertFX.showNotification(owner,
-                                    AlertFX_type.INFO,
-                                    "There are no new updates",
-                                    "You have all the latest updates installed.",
-                                    true);
-                    }
-            );
-        }
-
-
-
-        /* ===== CORE ===== */
-        private void checkForUpdates(Window owner,
-                                     Consumer<String> onUpdateAvailable,
-                                     Runnable onUpToDate) {
-
-            ProgressSpinner ps = new ProgressSpinner(
-                    owner,
-                    ProgressSpinner.Style.SMALL,
-                    Color.rgb(40, 75, 220),
-                    ProgressSpinner.Position.BOTTOM,
-                    Modality.NONE,
-                    "Checking for updates");
-
-            Task<String> task = new Task<>() {
+        public void updateWindow(boolean showNotAvailableUpdatesNotify) {
+            final Task<String> checkTask = new Task<>() {
                 @Override protected String call() throws Exception {
                     updateProgress(0.15, 1); Thread.sleep(400);
                     updateProgress(0.50, 1);
@@ -1297,74 +1183,165 @@ public final class Actions {
                 }
             };
 
-            Actions.getInstance().taskLoader().loadRealTask(
-                    ps, task,
+            ProgressSpinner spinner = new ProgressSpinner(
+                    12, 30, 5, 20,
+                    Color.rgb(40, 75, 220),
+                    Font.font("Roboto", 18),
+                    500,
+                    "Checking for updates");
+            spinner.showLoadingWindow(
+                    null,
+                    false,
+                    checkTask,
                     latest -> {
-                        ps.close();
-
                         try {
-                            if (!"-1".equals(latest)
-                                    && UpdateUtility.compareVersions(latest, AppConstants.CUR_VERSION) > 0) {
-                                onUpdateAvailable.accept(latest);
-                            } else {
-                                onUpToDate.run();
+                            boolean updateAvailable = UpdateUtility.compareVersions(latest, AppConstants.APP_VERSION) > 0;
+
+                            if (updateAvailable) {
+                                boolean yes = AlertFX.showConfirm(
+                                        null,  AlertFX_type.INFO,
+                                        "New v" + latest + " update is available",
+                                        "Do you want to install it now?");
+
+                                if (yes) {
+
+                                    /* install task */
+                                    final Task<Void> installTask = new Task<>() {
+                                        @Override protected Void call() throws Exception {
+                                            updateProgress(0.25, 1); Thread.sleep(300);
+                                            updateProgress(0.70, 1);
+                                            UpdateUtility.installUpdate(latest, p -> updateProgress(p, 1));
+                                            updateProgress(0.80, 1); Thread.sleep(200);
+                                            updateProgress(1.0, 1);
+                                            return null;
+                                        }
+                                    };
+
+                                    ProgressSpinner installSpinner = new ProgressSpinner(
+                                            12, 30, 5, 20,
+                                            Color.rgb(45, 215, 75),
+                                            Font.font("Roboto", 16),
+                                            500,
+                                            "Downloading update v" + latest
+                                    );
+
+                                    installSpinner.showLoadingWindow(
+                                            null,
+                                            true,
+                                            installTask,
+                                            evt -> {
+                                                ConfigManager.setOpenCourse("none");     // reset currently opened course
+                                                try {
+                                                    Path appDir = AppUtility.getAppPath().getParentFile().toPath();
+                                                    Path scriptPath = appDir.resolve("cman_updater.vbs");
+
+                                                    if (!Files.exists(scriptPath)) {
+                                                        AlertFX.showNotification(
+                                                                null,
+                                                                AlertFX_type.ERROR,
+                                                                "Failed to install update",
+                                                                "Boot script not found in package",
+                                                                true);
+                                                        throw new IOException("Script not found: " + scriptPath);
+                                                    }
+
+                                                    /* launch "cman_updater.vbs" with administrator rights */
+                                                    ProcessBuilder pb = new ProcessBuilder(
+                                                            "cmd.exe", "/c", "powershell",
+                                                            "-Command", "Start-Process", "\"wscript.exe\"",
+                                                            "-ArgumentList", "\"" + scriptPath.toAbsolutePath() + "\" \"" + appDir.toAbsolutePath() + "\"",
+                                                            "-Verb", "runAs"
+                                                    );
+
+                                                    pb.inheritIO();
+                                                    pb.start();
+
+                                                    System.exit(0);
+                                                } catch (Exception e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                            },
+                                            evt -> {
+                                                AlertFX.showNotification(
+                                                        null, AlertFX_type.ERROR,
+                                                        "Installation failed",
+                                                        installTask.getException().getMessage(), true);
+                                                Actions.LoadingActions.LOGGER.log(
+                                                        Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", installTask.getException());
+                                            },
+                                            "update-install-thread",
+                                            0.0,
+                                            0.3,
+                                            new Image(Objects.requireNonNull(Actions.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_i_icon_256x256.png")))
+                                            );
+                                }
+
+                            } else if (showNotAvailableUpdatesNotify) {
+                                AlertFX.showNotification(
+                                        null, AlertFX_type.INFO,
+                                        "There are no new updates",
+                                        "You have all the latest updates installed.",
+                                        true);
                             }
-                        } catch (NoInternetConnection e) {
+                        } catch (NoInternetConnection ex) {
                             AlertFX.showNotification(
-                                    owner, AlertFX_type.ERROR,
+                                    null, AlertFX_type.ERROR,
                                     "No internet connection",
                                     "Could not check for updates. Please connect to the Internet.",
                                     true);
                         }
                     },
                     ex -> {
-                        ps.close();
                         AlertFX.showNotification(
-                                owner, AlertFX_type.ERROR,
+                                null, AlertFX_type.ERROR,
                                 "Update check failed",
                                 ex.getMessage(), true);
-                        Actions.TaskLoader.LOGGER.log(
+                        Actions.LoadingActions.LOGGER.log(
                                 Level.SEVERE, "=== UPDATE CHECK FAILED ===", ex);
-                    });
+                    },
+                    "update-check-thread",
+                    0.0,
+                    0.3,
+                    new Image(Objects.requireNonNull(Actions.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_u_icon_256x256.png")))
+            );
         }
 
-        private void installUpdate(String version, Window owner) {
-            ProgressSpinner psd = new ProgressSpinner(
-                    owner,
-                    ProgressSpinner.Style.SMALL,
-                    Color.rgb(45, 215, 75),
-                    ProgressSpinner.Position.BOTTOM,
-                    Modality.NONE,
-                    "Downloading update v" + version);
+        public void loadingWindow() {
+            if (ctrl == null) return;
 
-            Task<Void> task = new Task<>() {
+            final Task<Void> loadingTask = new Task<>() {
                 @Override protected Void call() throws Exception {
-                    updateProgress(0.25, 1); Thread.sleep(300);
-                    updateProgress(0.70, 1);
-                    UpdateUtility.installUpdate(version, p -> updateProgress(p, 1));
-                    updateProgress(0.80, 1); Thread.sleep(200);
-                    updateProgress(1.0, 1);
+                    updateProgress(0.14, 1); Thread.sleep(500);
+                    updateProgress(0.61, 1); Thread.sleep(400);
+
+                    Platform.runLater(repaint::initGroupTabs);
+
+                    updateProgress(0.91, 1); Thread.sleep(500);
                     return null;
                 }
             };
 
-            Actions.getInstance().taskLoader().loadRealTask(
-                    psd, task,
-                    unused -> {
-                        psd.close();
-                        ConfigManager.setOpenCourse("none");    // when installed new update reset the opened course
-                        try { UpdateUtility.restartApp(); }
-                        catch (Exception e) { throw new RuntimeException(e); }
-                    },
-                    ex -> {
-                        psd.close();
+            ProgressSpinner spinner = new ProgressSpinner(
+                    12, 40, 8, 30,
+                    Color.rgb(140, 140, 140),
+                    Font.font("Roboto", 18),
+                    800,
+                    "Course data loading");
+            spinner.showLoadingWindow(
+                    ctrl.getStage().getScene().getWindow(),
+                    true,
+                    loadingTask,
+                    unused -> {},
+                    ex -> {                               // onFailure
                         AlertFX.showNotification(
-                                owner, AlertFX_type.ERROR,
-                                "Installation failed",
-                                ex.getMessage(), true);
-                        Actions.TaskLoader.LOGGER.log(
-                                Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", ex);
-                    });
+                                ctrl.getStage().getScene().getWindow(),
+                                AlertFX_type.ERROR,
+                                "Data loading failed",
+                                "Something went wrong during data loading",
+                                true);
+                        LOGGER.log(Level.SEVERE, "=== DATA LOADING FAILED ===", ex);
+                    },
+                    "course-data-loading-thread");
         }
     }
 }

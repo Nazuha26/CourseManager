@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jlink" name="CourseManagerFX_jlink">
-    <output-path>$PROJECT_DIR$/out/artifacts/CourseManagerFX_jlink</output-path>
-    <root id="root">
-      <element id="artifact" artifact-name="CourseManagerFX:jar" />
-    </root>
-  </artifact>
-</component>

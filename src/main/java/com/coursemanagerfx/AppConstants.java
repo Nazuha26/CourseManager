@@ -2,13 +2,12 @@ package com.coursemanagerfx;
 
 import javafx.scene.paint.Color;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class AppConstants {
 
-    public static final String CUR_VERSION = "1.1.1";
+    public static final String APP_VERSION = "1.1.2";
 
     //public static final File CONFIG_DIR = new File(System.getProperty("user.home"), "AppData/Local/CManFX");
     public static final Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), ".cmanfx/config", "config.json");

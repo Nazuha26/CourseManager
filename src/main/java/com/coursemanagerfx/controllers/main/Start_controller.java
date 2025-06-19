@@ -51,10 +51,14 @@ public class Start_controller implements StageAttachable {
     }
     // ===== IMPLEMENTED =====
 
+
+    public Label getLabelTitle() {
+        return labelTitle;
+    }
+
     @FXML
     private void initialize() {
         new GradientBackground(rootPane);
-        labelTitle.setText("Welcome to CourseManagerFX – v" + AppConstants.CUR_VERSION);
     }
 
     @FXML
