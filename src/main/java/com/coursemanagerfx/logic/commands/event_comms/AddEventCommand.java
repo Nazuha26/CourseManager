@@ -36,6 +36,6 @@ public class AddEventCommand implements Command {
         String shortDesc = event.getDescription().length() > 10
                 ? event.getDescription().substring(0, 10) + "..."
                 : event.getDescription();
-        return "added event \"" + shortDesc + "\"";
+        return "added event \"" + event.getDescription() + "\"";
     }
 }

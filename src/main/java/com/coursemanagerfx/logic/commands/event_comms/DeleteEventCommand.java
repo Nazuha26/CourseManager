@@ -34,6 +34,6 @@ public class DeleteEventCommand implements Command {
         String shortDesc = event.getDescription().length() > 10
                 ? event.getDescription().substring(0, 10) + "..."
                 : event.getDescription();
-        return "deleted event \"" + shortDesc + "\"";
+        return "deleted event \"" + event.getDescription() + "\"";
     }
 }

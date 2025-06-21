@@ -160,9 +160,31 @@ public class ExcelExportUtility {
                 XSSFCell c17 = studentRow.createCell(17);
                 c17.setCellValue(sr.total());
                 c17.setCellStyle(centerStyle);
+
+
+                /*  === COLOR FILL from column " № " (0) to " total mark " (17) ===  */
+                double total = sr.total();
+                java.awt.Color fillColor;
+
+                if (total <= 30)        fillColor = new java.awt.Color(255,0,0);
+                else if (total <= 50)   fillColor = new java.awt.Color(255,255,0);
+                else                    fillColor = new java.awt.Color(112,173,71);
+
+                Cell topLeft = sheet.getRow(startRow + i).getCell(0);       // column "№"
+                Cell bottomRight = sheet.getRow(startRow + i).getCell(17);  // column "Заг. к-ть. балів"
+
+                fillColorArea(wb, sheet, topLeft, bottomRight, fillColor);
             }
 
             /* ========================= */
+
+
+
+            /* apply all borders for cells */
+            Cell topLeft = sheet.getRow(1).getCell(0);
+            Cell bottomRight = sheet.getRow(startRow + studentRows.size() - 1).getCell(17);
+            applyAllBorders(wb, sheet, topLeft, bottomRight);
+            /* --------------------------- */
 
 
 
@@ -190,14 +212,6 @@ public class ExcelExportUtility {
             nameCell.setCellValue("Віктор ФЕСЕНКО");
             nameCell.setCellStyle(headOfCourseStyle);
             /* ================================ */
-
-
-
-            /* apply all borders for cells */
-            Cell topLeft = sheet.getRow(1).getCell(0);
-            Cell bottomRight = sheet.getRow(startRow + studentRows.size() - 1).getCell(17);
-            applyAllBorders(wb, sheet, topLeft, bottomRight);
-            /* --------------------------- */
 
 
 
@@ -247,6 +261,46 @@ public class ExcelExportUtility {
         comment.setVisible(false); // hide by default
 
         cell.setCellComment(comment);
+    }
+
+    private static void fillColorArea(XSSFWorkbook wb, XSSFSheet sheet,
+                                      Cell topLeft, Cell bottomRight,
+                                      java.awt.Color color) {
+
+        Map<CellStyle, CellStyle> styleCache = new HashMap<>();
+
+        /*  convert java.awt.Color to XSSFColor  */
+        byte[] rgb = new byte[]{
+                (byte) color.getRed(),
+                (byte) color.getGreen(),
+                (byte) color.getBlue()
+        };
+        XSSFColor xssfColor = new XSSFColor(rgb, null);
+
+        int firstRow = topLeft.getRowIndex();
+        int lastRow  = bottomRight.getRowIndex();
+        int firstCol = topLeft.getColumnIndex();
+        int lastCol  = bottomRight.getColumnIndex();
+
+        for (int r = firstRow; r <= lastRow; r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) row = sheet.createRow(r);
+
+            for (int c = firstCol; c <= lastCol; c++) {
+                Cell cell = row.getCell(c, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                CellStyle baseStyle = cell.getCellStyle();
+
+                CellStyle filledStyle = styleCache.computeIfAbsent(baseStyle, s -> {
+                    XSSFCellStyle st = wb.createCellStyle();
+                    st.cloneStyleFrom(s);
+                    st.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                    st.setFillForegroundColor(xssfColor);
+                    return st;
+                });
+
+                cell.setCellStyle(filledStyle);
+            }
+        }
     }
 
     private static void applyAllBorders(XSSFWorkbook wb, XSSFSheet sheet, Cell topLeft, Cell bottomRight) {

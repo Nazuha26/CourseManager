@@ -22,7 +22,7 @@ import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
-import com.coursemanagerfx.logic.utilities.HistoryUtility;
+import com.coursemanagerfx.logic.deprecated.HistoryUtility;
 import com.coursemanagerfx.logic.utilities.UpdateUtility;
 import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
@@ -41,11 +41,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Window;
 import javafx.util.Duration;
+import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
@@ -64,13 +66,14 @@ public final class Actions {
     public void setController(Main_controller controller) { this.ctrl = controller; }
 
     /* ========================= SUB-ACTIONS ========================= */
-    private final Repaint        repaint       = new Repaint();
-    private final Select         select        = new Select();
-    private final uiActions      uiActions     = new uiActions();
-    private final MenuActions    menuActions   = new MenuActions();
-    private final IdGenerator    idGenerator   = new IdGenerator();
-    private final FormAnims      formAnims     = new FormAnims();
-    private final UndoRedo       undoRedo      = new UndoRedo();
+    private final Repaint        repaint        = new Repaint();
+    private final Select         select         = new Select();
+    private final uiActions      uiActions      = new uiActions();
+    private final MenuActions    menuActions    = new MenuActions();
+    private final IdGenerator    idGenerator    = new IdGenerator();
+    private final FormAnims      formAnims      = new FormAnims();
+    private final UndoRedo       undoRedo       = new UndoRedo();
+    private final HistoryActions historyActions = new HistoryActions();
     private final LoadingActions loadingActions = new LoadingActions();
 
     public Repaint        repaint()         { return repaint; }
@@ -80,6 +83,7 @@ public final class Actions {
     public IdGenerator    idGenerator()     { return idGenerator; }
     public FormAnims      formAnims()       { return formAnims; }
     public UndoRedo       undoRedo()        { return undoRedo; }
+    public HistoryActions historyActions()  { return historyActions; }
     public LoadingActions loadingActions()  { return loadingActions; }
 
     /* ******************************************************************
@@ -450,6 +454,11 @@ public final class Actions {
             Command cmd = new AddEventCommand(select.getSelectedGroup(), select.getSelectedStudent(), newEvent);
             cmd.execute();
             undoRedo.addCommand(cmd);
+
+            historyActions.setHistory(
+                    Actions.HistoryActions.HistoryType.SUCCESS,
+                    "Successfully created event with description: \"" + description + "\""
+            );
         }
 
         public void toggleExpInputAction() {
@@ -759,10 +768,8 @@ public final class Actions {
                         "",
                         true);*/
 
-                HistoryUtility.setHistory(
-                        ctrl.getRichTxtPaneHistory(),
-                        ctrl.getLblCurHistory(),
-                        HistoryUtility.Types.SUCCESS,
+                historyActions.setHistory(
+                        HistoryActions.HistoryType.SUCCESS,
                         "Saved successfully"
                 );
             } catch (Exception e) {
@@ -779,6 +786,10 @@ public final class Actions {
             Window owner = ctrl.getStage().getScene().getWindow();
 
             if (Launcher.getCourseInfo().isEmpty()) {
+                historyActions.setHistory(
+                        HistoryActions.HistoryType.WARNING,
+                        "There is nothing to export"
+                );
                 AlertFX.showNotification(
                         owner,
                         AlertFX_type.WARNING,
@@ -789,18 +800,44 @@ public final class Actions {
                 return;
             }
 
-            boolean successExport = ExcelExportUtility.exportToExcel(
-                    Launcher.getCourseInfo().getCourse(),
-                    Launcher.getCourseInfo().getCourseName(),
-                    new File(System.getProperty("user.home") + File.separator + "Desktop"));
-            if (successExport) {
-                AlertFX.showNotification(
-                        owner,
-                        AlertFX_type.INFO,
-                        "Export completed successfully",
-                        "The Excel file has been saved to your Desktop.",
-                        true
-                );
+            try {
+                boolean successExport = ExcelExportUtility.exportToExcel(
+                        Launcher.getCourseInfo().getCourse(),
+                        Launcher.getCourseInfo().getCourseName(),
+                        new File(System.getProperty("user.home") + File.separator + "Desktop"));
+                if (successExport) {
+                    historyActions.setHistory(
+                            Actions.HistoryActions.HistoryType.SUCCESS,
+                            "Export completed successfully"
+                    );
+                    AlertFX.showNotification(
+                            owner,
+                            AlertFX_type.INFO,
+                            "Export completed successfully",
+                            "The Excel file has been saved to your Desktop.",
+                            true
+                    );
+                }
+            } catch (RuntimeException e) {
+                Throwable cause = e.getCause();
+
+                if (cause instanceof IOException) {
+                    AlertFX.showNotification(
+                            owner,
+                            AlertFX_type.ERROR,
+                            "Excel Export Error",
+                            "It looks like the Excel file is open. Please close it and try again.",
+                            true
+                    );
+                } else {
+                    AlertFX.showNotification(
+                            owner,
+                            AlertFX_type.ERROR,
+                            "Unexpected Error",
+                            "An unexpected error occurred: " + e.getMessage(),
+                            true
+                    );
+                }
             }
         }
 
@@ -1128,8 +1165,10 @@ public final class Actions {
 
             Command cmd = undoStack.removeLast();
             cmd.undo();
-            HistoryUtility.setHistory(ctrl.getRichTxtPaneHistory(), ctrl.getLblCurHistory(),
-                    HistoryUtility.Types.INFO, "Undo: " + cmd.getHistoryDescription());
+            historyActions.setHistory(
+                    HistoryActions.HistoryType.INFO,
+                    "Undo: " + cmd.getHistoryDescription()
+            );
             redoStack.addLast(cmd);
             updateState();
         }
@@ -1139,10 +1178,79 @@ public final class Actions {
 
             Command cmd = redoStack.removeLast();
             cmd.execute();
-            HistoryUtility.setHistory(ctrl.getRichTxtPaneHistory(), ctrl.getLblCurHistory(),
-                    HistoryUtility.Types.INFO, "Redo: " + cmd.getHistoryDescription());
+            historyActions.setHistory(
+                    HistoryActions.HistoryType.INFO,
+                    "Redo: " + cmd.getHistoryDescription()
+            );
             undoStack.addLast(cmd);
             updateState();
+        }
+    }
+
+    /* ******************************************************************
+     *                          CLASS  HistoryActions
+     * *****************************************************************/
+    public class HistoryActions {
+
+        /* ======  PUBLIC API  ====== */
+
+        public enum HistoryType { SUCCESS, WARNING, ERROR, INFO }
+
+        public void setHistory(HistoryType type, String historyText) {
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));      // get cur time
+
+            InlineCssTextArea area = ctrl.getHistoryTxtArea();
+            Label curHistoryLbl = ctrl.getLblCurHistory();
+
+            /*  create string like: [TYPE] message [HH:mm:ss]\n  */
+            String prefix = "[" + type.name() + "] ";
+            String suffix = " [" + time + "]\n";
+            String fullMessage = prefix + historyText + suffix;
+
+            /* position */
+            int start = area.getLength();
+            area.appendText(fullMessage);
+            int end = area.getLength();
+
+            /* set color */
+            Color color = switch (type) {
+                case SUCCESS -> Color.rgb(7, 213, 0);
+                case WARNING -> Color.rgb(213, 202, 0);
+                case ERROR   -> Color.rgb(213, 0, 0);
+                case INFO    -> Color.rgb(0, 149, 213);
+            };
+
+            /* css style for each segment */
+            String prefixStyle = String.format("-fx-fill: %s; -fx-font-weight: bold;", toWebColor(color));
+            String mainStyle = "-fx-fill: white;";
+            String suffixStyle = "-fx-fill: gray;";
+
+            area.setStyle(start, start + prefix.length(), prefixStyle);
+            area.setStyle(start + prefix.length(), start + prefix.length() + historyText.length(), mainStyle);
+            area.setStyle(start + prefix.length() + historyText.length(), end, suffixStyle);
+
+            /*  in Label print only: [TYPE] short history text  */
+            byte mnocihl = 20;     // max_number_of_chars_in_history_label
+            String shortHistoryText = historyText.length() > mnocihl
+                    ? historyText.substring(0, mnocihl) + "..."
+                    : historyText;
+
+            curHistoryLbl.setText("[" + type.name() + "] " + shortHistoryText);
+
+            curHistoryLbl.setTextFill(color);
+        }
+        /* ========================== */
+
+
+
+        /* ======  CORE  ====== */
+
+        // convert Color to string like: "#RRGGBB"
+        private static String toWebColor(Color color) {
+            return String.format("#%02X%02X%02X",
+                    (int) (color.getRed() * 255),
+                    (int) (color.getGreen() * 255),
+                    (int) (color.getBlue() * 255));
         }
     }
 

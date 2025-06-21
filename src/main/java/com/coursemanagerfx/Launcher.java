@@ -14,7 +14,6 @@ import javafx.util.Pair;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.LocalDate;
 import java.util.Locale;
 
 import static com.coursemanagerfx.AppConstants.*;
@@ -65,7 +64,7 @@ public class Launcher extends Application {
         });
         /* =============================== */
 
-        AppConfig config = ConfigManager.loadConfig();
+        AppConfig config = ConfigManager.safeLoadingConfig();
 
         /*if (!ConfigManager.CONFIG_PATH.exists() && !CONFIG_PATH.mkdirs()) {
             System.err.println("Failed to create config_api directory: " + CONFIG_DIR.getAbsolutePath());

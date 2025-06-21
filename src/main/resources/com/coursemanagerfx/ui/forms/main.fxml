@@ -331,7 +331,7 @@
                                     <center>
                                        <org.fxmisc.flowless.VirtualizedScrollPane prefHeight="200" prefWidth="400" xmlns:fx="http://javafx.com/fxml">
                                           <content>
-                                             <org.fxmisc.richtext.InlineCssTextArea fx:id="richTxtPaneHistory" editable="false" styleClass="inline-css-text-area" wrapText="true" />
+                                             <org.fxmisc.richtext.InlineCssTextArea fx:id="historyTxtArea" editable="false" styleClass="inline-css-text-area" wrapText="true" />
                                           </content>
                                        </org.fxmisc.flowless.VirtualizedScrollPane>
                                     </center>

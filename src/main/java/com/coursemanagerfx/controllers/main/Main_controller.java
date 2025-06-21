@@ -12,6 +12,7 @@ import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
+import com.coursemanagerfx.logic.deprecated.HistoryUtility;
 import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
 import javafx.animation.Animation;
@@ -93,7 +94,7 @@ public class Main_controller implements StageAttachable {
     @FXML private Button btnCancelEvent;
     @FXML private Button btnDeleteEvent;
 
-    @FXML private InlineCssTextArea richTxtPaneHistory;
+    @FXML private InlineCssTextArea historyTxtArea;
     @FXML private Button btnClearHistory;
     @FXML private Button btnBackFromHistory;
 
@@ -140,8 +141,8 @@ public class Main_controller implements StageAttachable {
         return rootPane;
     }
 
-    public InlineCssTextArea getRichTxtPaneHistory() {
-        return richTxtPaneHistory;
+    public InlineCssTextArea getHistoryTxtArea() {
+        return historyTxtArea;
     }
     public Label getLblCurHistory() {
         return lblCurHistory;
@@ -248,7 +249,15 @@ public class Main_controller implements StageAttachable {
         new GradientBackground(rootPane, 0.005, 2); // gradient bg
         Actions.getInstance().setController(this);
 
-        initAutoSaveAction();
+        initAutoSaveAction();       // init auto saving
+
+        Actions.getInstance().historyActions().setHistory(
+                Actions.HistoryActions.HistoryType.INFO,
+                ConfigManager.isAutoSaveEnabled() ?
+                        "Autosave is enabled, saving will occur every " + ConfigManager.getAutoSaveSecInterval()
+                                + " seconds, you can change these parameters in the program config file (config.json)"
+                        : "Autosave disabled"
+        );
 
         Actions.UndoRedo undoManager = Actions.getInstance().undoRedo();
 
@@ -365,6 +374,11 @@ public class Main_controller implements StageAttachable {
         Command cmd = new AddStudentCommand(selectedGroup, newStudent);
         cmd.execute();
         Actions.getInstance().undoRedo().addCommand(cmd);
+
+        Actions.getInstance().historyActions().setHistory(
+                Actions.HistoryActions.HistoryType.SUCCESS,
+                "Successfully added student: \"" + studentName + "\""
+        );
     }
 
     @FXML private void btnAddEvent() {
@@ -387,7 +401,7 @@ public class Main_controller implements StageAttachable {
         { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
 
     @FXML private void btnClearHistory() {
-        richTxtPaneHistory.clear();
+        historyTxtArea.clear();
         lblCurHistory.setText("");
     }
 

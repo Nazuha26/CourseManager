@@ -48,6 +48,6 @@ public class EditEventCommand implements Command {
         String shortDesc = event.getDescription().length() > 10
                 ? event.getDescription().substring(0, 10) + "..."
                 : event.getDescription();
-        return "Edited event \"" + shortDesc + "\"";
+        return "Edited event \"" + event.getDescription() + "\"";
     }
 }

@@ -26,6 +26,8 @@ End If
 ' ====== STEP 3: close all running coursemanagerfx processes ======
 KillCourseManagerProcesses
 
+WScript.Sleep 1500 ' delay 1.5 sec
+
 ' ====== STEP 4: copy files from current dir to target path ======
 Dim updateFolder
 updateFolder = fso.BuildPath(fso.GetParentFolderName(WScript.ScriptFullName), "update")
@@ -65,6 +67,10 @@ On Error Resume Next
 Dim tmpDir: tmpDir = fso.GetParentFolderName(WScript.ScriptFullName)
 fso.DeleteFolder tmpDir, True
 On Error GoTo 0
+
+'Dim cmd
+'cmd = "cmd.exe /c rmdir /s /q """ & tmpDir & """"
+'shell.Run cmd, 0, True
 
 ' ====== FUNCTIONS ======
 
@@ -118,14 +124,37 @@ End Sub
 
 
 Sub CopyFolderRecursive(fromFolder, toFolder)
+    If LCase(fso.GetFileName(fromFolder)) = "bin" Then Exit Sub
+
     If Not fso.FolderExists(toFolder) Then
         fso.CreateFolder toFolder
     End If
 
     Dim file
+    'For Each file In fso.GetFolder(fromFolder).Files
+    '    fso.CopyFile file.Path, fso.BuildPath(toFolder, fso.GetFileName(file)), True
+    'Next
+
     For Each file In fso.GetFolder(fromFolder).Files
-        fso.CopyFile file.Path, fso.BuildPath(toFolder, fso.GetFileName(file)), True
+        On Error Resume Next
+
+        Dim targetFile
+        targetFile = fso.BuildPath(toFolder, fso.GetFileName(file))
+
+        ' try to delete exist file
+        If fso.FileExists(targetFile) Then
+            fso.DeleteFile targetFile, True
+        End If
+
+        fso.CopyFile file.Path, targetFile, True
+
+        If Err.Number <> 0 Then
+            MsgBox "Failed to copy: " & file.Path & vbCrLf & "Error: " & Err.Description, vbExclamation, "Updater Step: COPYING"
+            Err.Clear
+        End If
+        On Error GoTo 0
     Next
+
 
     Dim subfolder
     For Each subfolder In fso.GetFolder(fromFolder).SubFolders
