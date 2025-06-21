@@ -81,7 +81,7 @@ public class ExcelExportUtility {
             /* === HEADING CELLS === */
 
             /* create HEADING cells */
-            sheet.setColumnWidth(1, 19000);                                          // set wight for column "ПІБ"
+            sheet.setColumnWidth(1, 19000);                // set wight for column "ПІБ"
 
             /* set rotated heading style for cells which come after "ПІБ" */
             XSSFRow headerRow = sheet.createRow(1);
@@ -231,6 +231,7 @@ public class ExcelExportUtility {
             Map.entry(EventCategories.CUSTOM, 16)
     );
 
+    // WARNING не корректно подгоняет размеры примечания под количество текста
     private static void addHiddenCommentToCell(XSSFWorkbook workbook, XSSFSheet sheet, XSSFCell cell, String text) {
         CreationHelper factory = workbook.getCreationHelper();
         Drawing<?> drawing = sheet.createDrawingPatriarch();
@@ -300,35 +301,6 @@ public class ExcelExportUtility {
         return style;
     }
 }
-
-/*
-class StudentRow {
-    String name;
-    String description;
-
-    double sessiya;
-    double sfp;
-    double skKgKv;
-    double zaohochennya;
-    double styagnennya;
-    double sekretniki;
-    double redkolegiya;
-    double jurnalisty;
-    double sportorgi;
-    double naukova_diyalnist;
-    double sertifikaty;
-    double prizery_zmagan;
-    double volonterska_diyalnist;
-    double gromadske_jittya;
-    double dodatkovi_baly;
-
-    double total() {
-        return  sessiya               + sfp               + skKgKv         + zaohochennya   +
-                styagnennya           + sekretniki        + redkolegiya    + jurnalisty     +
-                sportorgi             + naukova_diyalnist + sertifikaty    + prizery_zmagan +
-                volonterska_diyalnist + gromadske_jittya  + dodatkovi_baly;
-    }
-}*/
 
 // === class StudentRow ===
 class StudentRow {

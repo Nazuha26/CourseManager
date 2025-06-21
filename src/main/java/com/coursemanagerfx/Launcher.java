@@ -14,6 +14,8 @@ import javafx.util.Pair;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDate;
+import java.util.Locale;
 
 import static com.coursemanagerfx.AppConstants.*;
 
@@ -34,6 +36,10 @@ public class Launcher extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        Locale.setDefault(Locale.US);                                   // === US - LOCALE
+        //Locale.setDefault(Locale.of("uk", "UA"));       // === UA - LOCALE
+
         /* === handling all exceptions === */
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             Platform.runLater(() -> {
@@ -136,27 +142,6 @@ public class Launcher extends Application {
         if (courseInfo != null) ShowWindowUtility.showMainWindow(courseInfo.getKey(), courseInfo.getValue());
         else ShowWindowUtility.showStartWindow();
     }
-    /*private static LaunchCourseInfo existCourseFile() {
-        if (!LAST_RUN_FILE.exists()) return new LaunchCourseInfo(false, null, null);
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(LAST_RUN_FILE))) {
-            String line = reader.readLine();
-            if (line == null || line.isEmpty()) return new LaunchCourseInfo(false, null, null);
-
-            char firstChar = line.trim().charAt(0);
-            if (!Character.isDigit(firstChar)) return new LaunchCourseInfo(false, null, null);
-
-            int courseNum = Character.getNumericValue(firstChar);
-            String courseName = courseNameTemplate.replace("X", String.valueOf(courseNum));
-            File expectedFile = new File(COURSES_DIR, courseName + ".cman");
-
-            if (expectedFile.exists()) {
-                return new LaunchCourseInfo(true, courseName, expectedFile);
-            }
-        } catch (Exception ignored) {}
-
-        return new LaunchCourseInfo(false, null, null);
-    }*/
 
     private static Pair<String, File> getLastOpenedCourseFromConfig() {
         String courseName = ConfigManager.getOpenCourse();

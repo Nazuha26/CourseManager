@@ -714,39 +714,19 @@ public final class Actions {
                     "Are you sure you want to leave the current course and return to the home screen?");
             if (!yes) return;
 
-            /*try {
-                if (!LAST_RUN_FILE.delete()) {
-                    System.err.println("Failed to delete file: " + LAST_RUN_FILE.getAbsolutePath());
-                    AlertFX.showNotification(
-                            null,
-                            AlertFX_type.ERROR,
-                            "Startup Error",
-                            "Failed to delete cache file:\n" + LAST_RUN_FILE.getAbsolutePath() +
-                                    "\n\nPlease try restarting the app or delete it manually.",
-                            true
-                    );
-                    return;
-                }
-            } catch (Exception ex) {
-                System.err.println("Error deleting file: " + LAST_RUN_FILE.getAbsolutePath());
-                AlertFX.showNotification(
-                        null,
-                        AlertFX_type.ERROR,
-                        "Startup Error",
-                        "An unexpected error occurred while deleting file:\n" + LAST_RUN_FILE.getAbsolutePath() +
-                                "\n\nDetails: " + ex.getMessage(),
-                        true
-                );
-                return;
-            }*/
-
             ConfigManager.setOpenCourse("none");        // set opened course as none for backing home
 
-            AlertFX.showNotification(owner,
+            /*AlertFX.showNotification(owner,
                     AlertFX_type.INFO,
                     "Restart Required",
                     "To apply the changes, please restart the application.",
-                    true);
+                    true);*/
+
+            try {
+                AppUtility.startRestartAppScript();
+            } catch (Exception e) {
+                throw new RuntimeException("Restarting application failed.", e);
+            }
 
             WindowOutAnimation.play(
                     ctrl,
@@ -1198,8 +1178,8 @@ public final class Actions {
                             boolean updateAvailable = UpdateUtility.compareVersions(latest, AppConstants.APP_VERSION) > 0;
 
                             if (updateAvailable) {
-                                boolean yes = AlertFX.showConfirm(
-                                        null,  AlertFX_type.INFO,
+                                boolean yes = ConfigManager.isAutoUpdateEnabled() || AlertFX.showConfirm(
+                                        null, AlertFX_type.INFO,
                                         "New v" + latest + " update is available",
                                         "Do you want to install it now?");
 
@@ -1229,45 +1209,19 @@ public final class Actions {
                                             null,
                                             true,
                                             installTask,
-                                            evt -> {
+                                            e -> {
                                                 ConfigManager.setOpenCourse("none");     // reset currently opened course
-                                                try {
-                                                    Path appDir = AppUtility.getAppPath().getParentFile().toPath();
-                                                    Path scriptPath = appDir.resolve("cman_updater.vbs");
-
-                                                    if (!Files.exists(scriptPath)) {
-                                                        AlertFX.showNotification(
-                                                                null,
-                                                                AlertFX_type.ERROR,
-                                                                "Failed to install update",
-                                                                "Boot script not found in package",
-                                                                true);
-                                                        throw new IOException("Script not found: " + scriptPath);
-                                                    }
-
-                                                    /* launch "cman_updater.vbs" with administrator rights */
-                                                    ProcessBuilder pb = new ProcessBuilder(
-                                                            "cmd.exe", "/c", "powershell",
-                                                            "-Command", "Start-Process", "\"wscript.exe\"",
-                                                            "-ArgumentList", "\"" + scriptPath.toAbsolutePath() + "\" \"" + appDir.toAbsolutePath() + "\"",
-                                                            "-Verb", "runAs"
-                                                    );
-
-                                                    pb.inheritIO();
-                                                    pb.start();
-
-                                                    System.exit(0);
-                                                } catch (Exception e) {
-                                                    throw new RuntimeException(e);
-                                                }
+                                                Platform.runLater(() -> System.exit(0));
                                             },
-                                            evt -> {
-                                                AlertFX.showNotification(
-                                                        null, AlertFX_type.ERROR,
-                                                        "Installation failed",
-                                                        installTask.getException().getMessage(), true);
-                                                Actions.LoadingActions.LOGGER.log(
-                                                        Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", installTask.getException());
+                                            e -> {
+                                                Platform.runLater(() -> {
+                                                    AlertFX.showNotification(
+                                                            null, AlertFX_type.ERROR,
+                                                            "Installation failed",
+                                                            installTask.getException().getMessage(), true);
+                                                    Actions.LoadingActions.LOGGER.log(
+                                                            Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", installTask.getException());
+                                                });
                                             },
                                             "update-install-thread",
                                             0.0,

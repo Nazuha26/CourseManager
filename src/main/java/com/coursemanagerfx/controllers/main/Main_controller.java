@@ -12,7 +12,11 @@ import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
+import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
@@ -33,10 +37,12 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.*;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import org.fxmisc.richtext.InlineCssTextArea;
 
+import java.text.DecimalFormatSymbols;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -242,6 +248,8 @@ public class Main_controller implements StageAttachable {
         new GradientBackground(rootPane, 0.005, 2); // gradient bg
         Actions.getInstance().setController(this);
 
+        initAutoSaveAction();
+
         Actions.UndoRedo undoManager = Actions.getInstance().undoRedo();
 
         /* bind disable properties for undo/redo buttons and menus */
@@ -438,7 +446,7 @@ public class Main_controller implements StageAttachable {
 
     /* =============== CORE =============== */
     /* init spinners */
-    public void initSpinners() {
+    private void initSpinners() {
 
         /* ---------- expiration time spinner ---------- */
         SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryExpTime =
@@ -464,67 +472,69 @@ public class Main_controller implements StageAttachable {
         });
 
         /* -------------- mark spinner (editable) -------------- */
-        SpinnerValueFactory.DoubleSpinnerValueFactory valueFactoryMark =
+        Locale locale = Locale.getDefault();
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
+        char sep = symbols.getDecimalSeparator();
+
+        SpinnerValueFactory.DoubleSpinnerValueFactory valueFactory =
                 new SpinnerValueFactory.DoubleSpinnerValueFactory(-999, 999, 1.0, 0.5);
-        spinnerMark.setValueFactory(valueFactoryMark);
+        spinnerMark.setValueFactory(valueFactory);
         spinnerMark.setEditable(true);
 
-        /* фильтр: -?NNN или -?NNN,5  (допускаются промежуточные состояния) */
-        UnaryOperator<TextFormatter.Change> halfStepFilter = ch -> {
-            String t = ch.getControlNewText();
-            if (t.matches("-?\\d{0,3}")               // целое (в процессе ввода)
-                    || t.matches("-?\\d{0,3},?")          // уже ввели запятую, ещё без дроби
-                    || t.matches("-?\\d{0,3},5?"))        // допускаем незавершённое ",5"
-                return ch;
-            return null;
+        // фильтр ввода с учётом локали и допустимыми только 0 или 5 после запятой/точки
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String t = change.getControlNewText();
+            String sepStr = Pattern.quote(String.valueOf(sep));
+            return t.matches("-?\\d{0,3}(" + sepStr + "[05]?)?") || t.isEmpty() ? change : null;
         };
 
-        /* конвертер, понимающий запятую и пишущий запятой */
-        StringConverter<Double> commaConverter = new StringConverter<>() {
+        // Конвертер строки в Double и обратно, с учетом текущей локали
+        StringConverter<Double> converter = new StringConverter<>() {
             @Override
-            public String toString(Double v) {
-                if (v == null) return "";
-                // всегда форматируем с одной десятичной (0 или 5)
-                return String.format(Locale.US, "%.1f", v).replace('.', ',');
+            public String toString(Double value) {
+                if (value == null) return "";
+                return String.format(locale, "%.1f", value);
             }
+
             @Override
             public Double fromString(String s) {
-                if (s == null || s.isBlank() || "-".equals(s) || ",".equals(s) || "-,".equals(s))
-                    return null;                      // промежуточные состояния
-                return Double.valueOf(s.replace(',', '.'));
+                if (s == null || s.isBlank() || "-".equals(s) || String.valueOf(sep).equals(s))
+                    return null;
+                try {
+                    return Double.parseDouble(s.replace(sep, '.')); // преобразуем в формат parseDouble
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
         };
 
-        TextFormatter<Double> formatterMark = new TextFormatter<>(
-                commaConverter,
-                valueFactoryMark.getValue(),
-                halfStepFilter
-        );
-        spinnerMark.getEditor().setTextFormatter(formatterMark);
+        TextFormatter<Double> formatter = new TextFormatter<>(converter, valueFactory.getValue(), filter);
+        spinnerMark.getEditor().setTextFormatter(formatter);
 
-        /* взаимная синхронизация редактора и valueFactory */
-        formatterMark.valueProperty().addListener((obs, ov, nv) -> {
-            if (nv != null && !nv.equals(valueFactoryMark.getValue())) {
-                valueFactoryMark.setValue(nv);
-            }
-        });
-        valueFactoryMark.valueProperty().addListener((obs, ov, nv) -> {
-            if (nv != null && !nv.equals(formatterMark.getValue())) {
-                formatterMark.setValue(nv);
+        // Синхронизация
+        formatter.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals(valueFactory.getValue())) {
+                valueFactory.setValue(newVal);
             }
         });
 
-        spinnerMark.focusedProperty().addListener((obs, ov, nv) -> {
-            if (!nv) spinnerMark.increment(0);
+        valueFactory.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals(formatter.getValue())) {
+                formatter.setValue(newVal);
+            }
         });
 
-        formatterMark.valueProperty().addListener((obs, ov, nv) -> {
-            if (nv == null) formatterMark.setValue(valueFactoryMark.getMin());
+        // Если ушли с фокуса и значение пустое — ставим 1.0
+        spinnerMark.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) {
+                if (formatter.getValue() == null) formatter.setValue(1.0);
+                spinnerMark.increment(0);
+            }
         });
     }
 
     /* init table of events */
-    public void initTable() {
+    private void initTable() {
         eventsTable.getColumns().forEach(col -> col.setReorderable(false));     /* remove drag of all columns */
 
         /* ----- column NUMBER ----- */
@@ -737,8 +747,23 @@ public class Main_controller implements StageAttachable {
         });
     }
 
+    /* init autosave action */
+    private void initAutoSaveAction() {
+        if (ConfigManager.isAutoSaveEnabled()) {
+            int interval = ConfigManager.getAutoSaveSecInterval();
+
+            Timeline autoSaveTimeline = new Timeline(
+                    new KeyFrame(Duration.seconds(interval), event -> {
+                        Actions.getInstance().menuActions().saveAction();
+                    })
+            );
+            autoSaveTimeline.setCycleCount(Animation.INDEFINITE);
+            autoSaveTimeline.play();
+        }
+    }
+
     /* init data picker custom style */
-    public Callback<DatePicker, DateCell> addDatePickerCSS() {
+    private Callback<DatePicker, DateCell> addDatePickerCSS() {
         return picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate item, boolean empty) {
@@ -760,7 +785,7 @@ public class Main_controller implements StageAttachable {
     }
 
     /* init data picker custom format */
-    public void applyDateFormat(DatePicker datePicker, String format) {
+    private void applyDateFormat(DatePicker datePicker, String format) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 
         datePicker.setConverter(new StringConverter<>() {

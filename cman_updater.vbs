@@ -2,7 +2,7 @@
 ' cman_updater.vbs
 Option Explicit
 
-Dim shell, fso, args, targetPath, thisPath
+Dim shell, fso, args, targetPath
 Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set args = WScript.Arguments
@@ -18,6 +18,7 @@ targetPath = args(0)
 ' ====== STEP 2: check for admin rights ======
 If Not IsAdmin() Then
 ' Relaunch self with admin rights
+    shell.Popup "There is no admin rights. Restarting...", 3, "Updater Warning", 48 + 4096
     shell.ShellExecute "wscript.exe", """" & WScript.ScriptFullName & """ """ & targetPath & """", "", "runas", 1
     WScript.Quit
 End If
@@ -34,16 +35,36 @@ If Not fso.FolderExists(updateFolder) Then
     WScript.Quit 1
 End If
 
-CopyAllFiles updateFolder, targetPath
+CopyUpdateContent updateFolder, targetPath
 
-MsgBox "Update installed successfully.", vbInformation, "Updater"
+shell.Popup "Update installed successfully, CourseManagerFX will start automatically.", 5, "Updater Success", 64 + 4096
 
 ' === run automatically
-Dim exePath
-exePath = fso.BuildPath(targetPath, "CourseManagerFX.exe")
-If fso.FileExists(exePath) Then
+Dim exePath, fileFound
+fileFound = False
+
+Dim file
+For Each file In fso.GetFolder(targetPath).Files
+    If LCase(fso.GetExtensionName(file.Name)) = "exe" Then
+        If InStr(LCase(file.Name), "coursemanagerfx") > 0 Then
+            exePath = file.Path
+            fileFound = True
+            Exit For
+        End If
+    End If
+Next
+
+If fileFound Then
     shell.Run """" & exePath & """", 1, False
+Else
+    MsgBox "Executable file not found. Please start CourseManagerFX manually.", vbCritical, "Updater Error"
 End If
+
+' delete temporary update folder
+On Error Resume Next
+Dim tmpDir: tmpDir = fso.GetParentFolderName(WScript.ScriptFullName)
+fso.DeleteFolder tmpDir, True
+On Error GoTo 0
 
 ' ====== FUNCTIONS ======
 
@@ -76,23 +97,25 @@ Sub KillCourseManagerProcesses()
     Next
 End Sub
 
-Sub CopyAllFiles(fromPath, toPath)
-    If Not fso.FolderExists(toPath) Then
-        fso.CreateFolder toPath
+
+
+Sub CopyUpdateContent(fromFolder, toFolder)
+    If Not fso.FolderExists(toFolder) Then
+        MsgBox "Target path not found: " & toFolder, vbCritical, "Updater Error"
+        Exit Sub
     End If
 
     Dim file
-    For Each file In fso.GetFolder(fromPath).Files
-        If LCase(fso.GetFileName(file)) <> "cman_updater.vbs" Then
-            fso.CopyFile file.Path, fso.BuildPath(toPath, fso.GetFileName(file)), True
-        End If
+    For Each file In fso.GetFolder(fromFolder).Files
+        fso.CopyFile file.Path, fso.BuildPath(toFolder, fso.GetFileName(file)), True
     Next
 
     Dim subfolder
-    For Each subfolder In fso.GetFolder(fromPath).SubFolders
-        CopyFolderRecursive subfolder.Path, fso.BuildPath(toPath, fso.GetFileName(subfolder))
+    For Each subfolder In fso.GetFolder(fromFolder).SubFolders
+        CopyFolderRecursive subfolder.Path, fso.BuildPath(toFolder, fso.GetFileName(subfolder))
     Next
 End Sub
+
 
 Sub CopyFolderRecursive(fromFolder, toFolder)
     If Not fso.FolderExists(toFolder) Then
