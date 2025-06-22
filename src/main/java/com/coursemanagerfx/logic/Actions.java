@@ -1273,7 +1273,7 @@ public final class Actions {
 
             ProgressSpinner spinner = new ProgressSpinner(
                     12, 30, 5, 20,
-                    Color.rgb(40, 75, 220),
+                    Color.rgb(37, 171, 228),
                     Font.font("Roboto", 18),
                     500,
                     "Checking for updates");

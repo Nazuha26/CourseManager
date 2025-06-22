@@ -25,9 +25,22 @@ public class AppUtility {
         Path scriptPath = Paths.get(AppUtility.getAppPath().getParent(), "relauncher.vbs");
         //Path scriptPath = Paths.get("C:\\Program Files\\CourseManagerFX", "relauncher.vbs");
 
-        ProcessBuilder pb = new ProcessBuilder(
+        /*ProcessBuilder pb = new ProcessBuilder(
                 "wscript.exe",
                 scriptPath.toString()
+        );*/
+
+        /*ProcessBuilder pb = new ProcessBuilder(
+                "wscript.exe",
+                scriptPath.toString(),
+                AppUtility.getAppPath().getAbsolutePath()
+        );*/
+
+        Path exeRelauncherPath = Paths.get(AppUtility.getAppPath().getParent(), "relauncher.exe");
+
+        ProcessBuilder pb = new ProcessBuilder(
+                exeRelauncherPath.toString(),
+                AppUtility.getAppPath().getAbsolutePath()
         );
 
         pb.inheritIO();
