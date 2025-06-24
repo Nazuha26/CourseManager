@@ -12,6 +12,7 @@ import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.EventCategories;
+import com.coursemanagerfx.logic.basic.event.EventStatus;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
@@ -43,6 +44,7 @@ import javafx.util.Duration;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -138,7 +140,11 @@ public final class Actions {
                         .collect(Collectors.toList());
             }
 
-            list.sort(Comparator.comparing(Student::getName, String.CASE_INSENSITIVE_ORDER));   // always sort by alphabet
+            //list.sort(Comparator.comparing(Student::getName, String.CASE_INSENSITIVE_ORDER));   // always sort by alphabet
+
+            /* --- sort by ukrainian alphabet --- */
+            list.sort(Comparator.comparing(Student::getName, AppConstants.UA_COLLATOR));
+            /* ---------------------------------- */
 
             if (list.isEmpty()) {
                 showEmptyLabel(studentsBox,
@@ -169,14 +175,17 @@ public final class Actions {
         /* repaint event table of student */
         public void repaintEventTable(Student student, Group group) {
             if (ctrl == null || group == null) return;
-            if (student != null) {
+            if (student != null && !student.getEvents().isEmpty()) {
                 ctrl.getEventsTable().getItems().setAll(student.getEvents());
-                ctrl.getStatusColumn().setSortType(TableColumn.SortType.ASCENDING);
+                ctrl.getEventsTable().getSortOrder().setAll(List.of(ctrl.getStatusColumn()));  // add sort for status column
+                ctrl.getStatusColumn().setSortType(TableColumn.SortType.ASCENDING);            // set sort type for status column
                 ctrl.getEventsTable().sort();
             } else {
                 ctrl.getEventsTable().getItems().clear();
+                ctrl.getEventsTable().getSortOrder().clear();       // remove sort from status column
                 ctrl.getEventsTable().refresh();
             }
+            repaintStudentInfoLbl();
         }
 
         /* repaint group and select student */
@@ -197,6 +206,30 @@ public final class Actions {
             }
         }
 
+
+
+        /* ========== CORE ========== */
+
+        private void repaintStudentInfoLbl() {
+            if (ctrl == null) return;
+
+            int activeEventsCount = (int) ctrl.getEventsTable().getItems().stream()
+                    .filter(event -> event.getStatus() == EventStatus.ACTIVE)
+                    .count();
+
+            double totalMark = ctrl.getEventsTable().getItems().stream()
+                    .filter(event -> event.getStatus() == EventStatus.ACTIVE)
+                    .mapToDouble(StudentEvent::getMark)
+                    .sum();
+
+            String text = String.format(
+                    "Active events: %d | Total mark: %s",
+                    activeEventsCount,
+                    (totalMark % 1 == 0) ? String.valueOf((int) totalMark) : String.valueOf(totalMark)
+            );
+
+            ctrl.getLblStudentInfo().setText(text);
+        }
 
         /* ========== helpers ========== */
         private void showEmptyLabel(VBox box, String text) { box.getChildren().addAll(spacer(), emptyLabel(text), spacer()); }
@@ -288,6 +321,10 @@ public final class Actions {
         /* ========== getters ========== */
         public Group   getSelectedGroup()   { return selectedGroup; }
         public Student getSelectedStudent() { return selectedStudent; }
+
+
+
+        /* ========== CORE ========== */
 
         /* ========== helper ========== */
         private int indexOfGroup(Group g) {
@@ -391,7 +428,7 @@ public final class Actions {
             ctrl.getBtnCreateEvent().setText("Create");
             ctrl.getBtnCreateEvent().setOnAction(evt -> createEventAction());
 
-            clearAllInfoData();
+            clearAllEventInfo();
         }
 
         public void createEventAction() {
@@ -456,6 +493,7 @@ public final class Actions {
                     Actions.HistoryActions.HistoryType.SUCCESS,
                     "Successfully created event with description: \"" + description + "\""
             );
+            clearAllEventInfo();
         }
 
         public void toggleExpInputAction() {
@@ -491,7 +529,7 @@ public final class Actions {
             isShowingDataPickerFlag = !formAnims.showingDatePicker;
         }
 
-        public void clearAllInfoData() {
+        public void clearAllEventInfo() {
             if (ctrl == null) return;
 
             ctrl.getTxtAreaEventDescrp().setText("");
@@ -537,6 +575,8 @@ public final class Actions {
         }
 
         /* ========================== */
+
+
 
         /* ======  CORE  ====== */
         private boolean isShowingDataPickerFlag = false;

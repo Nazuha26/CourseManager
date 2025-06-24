@@ -19,6 +19,6 @@ public enum EventCategories {
     CUSTOM    (new EventCategory(CategoryTag.DODAT_BAL, "Додаткові бали"));
 
     private final EventCategory eventCategory;
-    EventCategories(EventCategory type) { this.eventCategory = type; }
+    EventCategories(EventCategory category) { this.eventCategory = category; }
     public EventCategory getEventCategory() { return eventCategory; }
 }

@@ -9,7 +9,6 @@ import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,8 +33,8 @@ public class Launcher extends Application {
 
         /* set locale for language */
         String language = ConfigManager.getLanguage();
-        if (language.equals("ua")) Locale.setDefault(Locale.of("uk", "UA"));    // === UA - LOCALE
-        else Locale.setDefault(Locale.US);                                                      // === US - LOCALE in all other cases
+        if (language.equals("ua")) Locale.setDefault(UA);    // === UA - LOCALE
+        else Locale.setDefault(Locale.US);                   // === US - LOCALE in all other cases
         /* ----------------------- */
 
         /* === handling all exceptions === */
@@ -79,7 +78,7 @@ public class Launcher extends Application {
         else defaultPassword = defPass_;
 
 
-        //presetPassword = "0Qn$rptY2*";               // 1 курс
+        //presetPassword = "AKs#Ku!H@K";               // 1 курс
         //presetPassword = "3Tr_J>UrTy";               // 2 курс
         //presetPassword = "T#6JJd>cm@";               // 3 курс
 

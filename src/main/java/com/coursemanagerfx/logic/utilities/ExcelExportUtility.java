@@ -73,7 +73,7 @@ public class ExcelExportUtility {
 
             /* create first main caption row */
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 17));   // merge cols A-R
-            XSSFRow row = sheet.createRow(0);
+            XSSFRow row = sheet.createRow(0);//может динамически сделать в зависимости от количества категорий на случай если будет больше категорий
             row.setHeightInPoints(30);
             XSSFCell cell = row.createCell(0);
             cell.setCellValue(caption);

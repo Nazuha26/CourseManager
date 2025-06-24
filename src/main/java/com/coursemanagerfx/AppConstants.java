@@ -4,18 +4,22 @@ import javafx.scene.paint.Color;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Collator;
+import java.util.Locale;
 
 public final class AppConstants {
 
-    public static final String APP_VERSION = "1.1.7";
+    public static final String APP_VERSION = "1.1.8";
 
-    //public static final File CONFIG_DIR = new File(System.getProperty("user.home"), "AppData/Local/CManFX");
     public static final Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), ".cmanfx/config", "config.json");
     public static final Path COURSES_PATH = Paths.get(System.getProperty("user.home"), ".cmanfx/courses/");
-    //public static final String template = "LastRun";
-    //public static final File LAST_RUN_FILE = new File(CONFIG_DIR, template + "_" + CUR_VERSION);
-    //public static final File CONFIG_FILE = new File(CONFIG_DIR, "config.json");
-    //public static final String courseNameTemplate = "Рейтинг X-го курсу";
+
+    public static final Locale UA = Locale.of("uk", "UA");
+    public static final Collator UA_COLLATOR;
+    static {
+        UA_COLLATOR = Collator.getInstance(UA);
+        UA_COLLATOR.setStrength(Collator.PRIMARY);
+    }
 
     public static final class ColorConstants {
 

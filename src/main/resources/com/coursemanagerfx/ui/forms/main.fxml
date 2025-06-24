@@ -173,7 +173,7 @@
                                        </BorderPane.margin>
                                        <StackPane>
                                           <TextArea fx:id="txtAreaEventDescrp" wrapText="true" />
-                                          <Label fx:id="placeholderLbl" mouseTransparent="true" styleClass="label-placeholder" text="Type your event description here...&#10;You can make text bold, italic or underlined&#10;by pressing the buttons below." wrapText="true" />
+                                          <Label fx:id="lblTextAreaPlaceholder" mouseTransparent="true" styleClass="label-placeholder" text="Type your event description here...&#10;You can make text bold, italic or underlined&#10;by pressing the buttons below" wrapText="true" />
                                        </StackPane>
                                        <Button fx:id="btnCancelEvent" maxHeight="48.0" maxWidth="48.0" mnemonicParsing="false" onAction="#btnCancelEvent" styleClass="animated-back-button" StackPane.alignment="BOTTOM_LEFT">
                                           <StackPane.margin>
@@ -190,40 +190,32 @@
                                        </Label>
                                        <HBox alignment="BOTTOM_RIGHT" pickOnBounds="false" spacing="5.0">
                                           <StackPane.margin>
-                                             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                                             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                           </StackPane.margin>
-                                          <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
-                                                minHeight="-Infinity" minWidth="-Infinity">
-                                             <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0"
-                                                     prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
+                                          <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+                                             <Button mnemonicParsing="false" onAction="#setBoldText" prefHeight="32.0" prefWidth="32.0" styleClass="first-styled-button-bold" text="B">
                                                 <font>
-                                                   <Font name="System Bold" size="12.0"/>
+                                                   <Font name="System Bold" size="12.0" />
                                                 </font>
                                                 <tooltip>
                                                    <Tooltip text="Makes the selected text bold" />
                                                 </tooltip>
                                              </Button>
-                                             <Button mnemonicParsing="false" onAction="#setItalicText" prefHeight="32.0"
-                                                     prefWidth="32.0" styleClass="middle-styled-button-italic" text="I">
+                                             <Button mnemonicParsing="false" onAction="#setItalicText" prefHeight="32.0" prefWidth="32.0" styleClass="middle-styled-button-italic" text="I">
                                                 <font>
-                                                   <Font name="System Italic" size="12.0"/>
+                                                   <Font name="System Italic" size="12.0" />
                                                 </font>
                                                 <tooltip>
                                                    <Tooltip text="Makes the selected text italic" />
                                                 </tooltip>
                                              </Button>
-                                             <Button mnemonicParsing="false" onAction="#setUnderlineText"
-                                                     prefHeight="32.0" prefWidth="32.0"
-                                                     styleClass="last-styled-button-underline" text="U"
-                                                     underline="true">
+                                             <Button mnemonicParsing="false" onAction="#setUnderlineText" prefHeight="32.0" prefWidth="32.0" styleClass="last-styled-button-underline" text="U" underline="true">
                                                 <tooltip>
                                                    <Tooltip text="Underlines the selected text" />
                                                 </tooltip>
                                              </Button>
                                           </HBox>
-                                          <Button mnemonicParsing="false" onAction="#btnClearEventInfo"
-                                                  prefHeight="32.0" prefWidth="64.0" styleClass="clear-all-button"
-                                                  text="clear">
+                                          <Button mnemonicParsing="false" onAction="#btnClearEventInfo" prefHeight="32.0" prefWidth="64.0" styleClass="clear-all-button" text="clear">
                                              <tooltip>
                                                 <Tooltip text="Clears all entered information in this panel" />
                                              </tooltip>
@@ -368,7 +360,7 @@
                                     <center>
                                        <BorderPane BorderPane.alignment="CENTER">
                                           <left>
-                                             <Label text="SOME INFO TEXT" textFill="WHITE" BorderPane.alignment="CENTER">
+                                             <Label fx:id="lblStudentInfo" text="Student Info Text here..." textFill="WHITE" BorderPane.alignment="CENTER">
                                                 <font>
                                                    <Font size="16.0" />
                                                 </font>
@@ -401,6 +393,7 @@
                            <columns>
                               <TableColumn fx:id="numberColumn" editable="false" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="№" />
                               <TableColumn fx:id="crtDateColumn" editable="false" maxWidth="110.0" minWidth="110.0" prefWidth="110.0" resizable="false" text="Date" />
+                              <TableColumn fx:id="categoryColumn" editable="false" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" text="Category" />
                               <TableColumn fx:id="descriptionColumn" editable="false" prefWidth="-1.0" text="Description" />
                               <TableColumn fx:id="marksColumn" editable="false" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" resizable="false" text="Mark" />
                               <TableColumn fx:id="expDateColumn" editable="false" maxWidth="160.0" minWidth="160.0" prefWidth="160.0" resizable="false" text="Exp. Date" />

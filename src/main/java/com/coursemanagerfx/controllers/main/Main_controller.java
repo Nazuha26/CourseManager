@@ -1,5 +1,6 @@
 package com.coursemanagerfx.controllers.main;
 
+import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
@@ -19,6 +20,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -87,7 +89,7 @@ public class Main_controller implements StageAttachable {
 
     @FXML private Button btnToSchedule;
     @FXML private Label lblEditing;
-    @FXML private Label placeholderLbl;
+    @FXML private Label lblTextAreaPlaceholder;
 
     @FXML private Button btnCreateEvent;
     @FXML private Button btnCancelEvent;
@@ -101,6 +103,7 @@ public class Main_controller implements StageAttachable {
     @FXML private HBox infoBotPane;
 
     @FXML private Label lblCurHistory;
+    @FXML private Label lblStudentInfo;
     @FXML private Button btnAddEvent;
     @FXML private Button btnOpenHistory;
 
@@ -116,7 +119,8 @@ public class Main_controller implements StageAttachable {
 
     @FXML private TableView<StudentEvent> eventsTable;
     @FXML private TableColumn<StudentEvent, Number> numberColumn;
-    @FXML private TableColumn<StudentEvent, String> crtDateColumn;
+    @FXML private TableColumn<StudentEvent, LocalDate> crtDateColumn;
+    @FXML private TableColumn<StudentEvent, String> categoryColumn;
     @FXML private TableColumn<StudentEvent, String> descriptionColumn;
     @FXML private TableColumn<StudentEvent, Number> marksColumn;
     @FXML private TableColumn<StudentEvent, String> expDateColumn;
@@ -145,6 +149,9 @@ public class Main_controller implements StageAttachable {
     }
     public Label getLblCurHistory() {
         return lblCurHistory;
+    }
+    public Label getLblStudentInfo() {
+        return lblStudentInfo;
     }
     public Label getLblAppName() {
         return lblAppName;
@@ -269,7 +276,7 @@ public class Main_controller implements StageAttachable {
 
         /* --- LISTENERS --- */
         /* listener for visibility of placeholder on the text area description */
-        txtAreaEventDescrp.textProperty().addListener((obs, oldText, newText) -> placeholderLbl.setVisible(newText.isEmpty()) );
+        txtAreaEventDescrp.textProperty().addListener((obs, oldText, newText) -> lblTextAreaPlaceholder.setVisible(newText.isEmpty()) );
 
         /* listener for search text field */
         txtFieldSearch.textProperty().addListener((observable, oldText, newText) -> {
@@ -320,7 +327,8 @@ public class Main_controller implements StageAttachable {
         ));
         comBoxExpTimeType.getSelectionModel().selectFirst();    // and select DAYS by default
 
-        /* init types of event combobox */
+        /* init event categories combobox */
+        comBoxEventCategory.setVisibleRowCount(15);
         for (EventCategories type : EventCategories.values())
             comBoxEventCategory.getItems().add(type.getEventCategory().name());
         comBoxEventCategory.getSelectionModel().selectFirst();      // and select first type by default
@@ -419,7 +427,7 @@ public class Main_controller implements StageAttachable {
         { toggleStyleAroundSelection(UNDERLINE_MARKER); }
 
     @FXML private void btnClearEventInfo()
-        { Actions.getInstance().uiActions().clearAllInfoData(); }
+        { Actions.getInstance().uiActions().clearAllEventInfo(); }
 
     /* ==================== TITLE BAR ==================== */
     /* ========== MENU ========== */
@@ -457,6 +465,7 @@ public class Main_controller implements StageAttachable {
     /* ====================== */
 
     /* =============== CORE =============== */
+
     /* init spinners */
     private void initSpinners() {
 
@@ -547,6 +556,13 @@ public class Main_controller implements StageAttachable {
 
     /* init table of events */
     private void initTable() {
+
+        /* add placeholder label */
+        Label emptyLabel = new Label("You have not added any events yet...");
+        emptyLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 32px;");
+        eventsTable.setPlaceholder(emptyLabel);
+        /* --------------------- */
+
         eventsTable.getColumns().forEach(col -> col.setReorderable(false));     /* remove drag of all columns */
 
         /* ----- column NUMBER ----- */
@@ -569,11 +585,46 @@ public class Main_controller implements StageAttachable {
 
 
 
-        /* ----- column CREATION DATA ----- */
+        /* ----- column CREATION DATE ----- */
         /* sort by date */
+        //crtDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCrtDate().toString()));
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
         crtDateColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getCrtDate().toString()));
+                new ReadOnlyObjectWrapper<>(
+                        LocalDate.of(
+                                cellData.getValue().getCrtDate().getYear(),
+                                cellData.getValue().getCrtDate().getMonth(),
+                                cellData.getValue().getCrtDate().getDay()
+                        )
+                )
+        );
+
+        crtDateColumn.setCellFactory(column -> new TableCell<StudentEvent, LocalDate>() {
+            @Override
+            protected void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                setText((empty || item == null) ? null : item.format(dateFormatter));
+            }
+        });
+
         /* -------------------------------- */
+
+
+
+        /* ----- column CATEGORY ----- */
+        categoryColumn.setCellValueFactory(cellData ->
+                new ReadOnlyStringWrapper(
+                        cellData.getValue()
+                                .getCategory()
+                                .getEventCategory()
+                                .name())
+        );
+
+        /* sort by ukrainian alphabet */
+        categoryColumn.setComparator(AppConstants.UA_COLLATOR::compare);
+        /* --------------------------- */
 
 
 
@@ -671,6 +722,9 @@ public class Main_controller implements StageAttachable {
                 return flow;
             }
         });
+
+        /* sort by ukrainian alphabet */
+        descriptionColumn.setComparator(AppConstants.UA_COLLATOR::compare);
         /* ------------------------------ */
 
 
@@ -685,8 +739,8 @@ public class Main_controller implements StageAttachable {
                     setText(null);
                 } else {
                     double value = item.doubleValue();
-                    if (value % 1 == 0) setText(String.valueOf((int) value));
-                    else setText(String.valueOf(value));
+                    if (value % 1 == 0) setText(String.valueOf((int) value));       // do this for "25.0"  = "25"
+                    else setText(String.valueOf(value));                            // do this for "27.78" = "27.78"
                 }
             }
         });
@@ -703,30 +757,21 @@ public class Main_controller implements StageAttachable {
         });
 
         /* sort by date */
-        expDateColumn.setComparator(Comparator.comparing(s -> {
+        /*expDateColumn.setComparator(Comparator.comparing(s -> {
             String[] parts = s.split(" ")[0].split("\\.");
             return LocalDate.of(
                     Integer.parseInt(parts[2]),
                     Integer.parseInt(parts[1]),
                     Integer.parseInt(parts[0])
             );
-        }));
-
-        /* sort by value parenthesis */
-        /*expDateColumn.setComparator(Comparator.comparingInt(s -> {
-            try {
-                // Извлекаем число из строки: "dd.MM.yyyy (XX days)"
-                int start = s.indexOf('(');
-                int end = s.indexOf(" days");
-                if (start != -1 && end != -1 && start < end) {
-                    String num = s.substring(start + 1, end).trim();
-                    return Integer.parseInt(num);
-                }
-            } catch (Exception e) {
-                return -1;
-            }
-            return -1;
         }));*/
+
+        /* sort by expire day value */
+        expDateColumn.setComparator((s1, s2) -> {
+            int d1 = extractDays(s1);
+            int d2 = extractDays(s2);
+            return Integer.compare(d1, d2);
+        });
         /* ---------------------------------- */
 
 
@@ -759,6 +804,17 @@ public class Main_controller implements StageAttachable {
         });
     }
 
+    private int extractDays(String s) {
+        if (s == null) return -1;
+        int start = s.indexOf('(');
+        int end = s.indexOf(" days");
+        if (start != -1 && end != -1 && start < end) {
+            try { return Integer.parseInt(s.substring(start + 1, end).trim()); }
+            catch (NumberFormatException ignored) {}
+        }
+        return -1;
+    }
+
     /* init autosave action */
     private void initAutoSaveAction() {
         if (ConfigManager.isAutoSaveEnabled()) {
@@ -788,9 +844,8 @@ public class Main_controller implements StageAttachable {
                     if (item.equals(LocalDate.now())) {
                         getStyleClass().add("today");
                     }
-                    if (item.getMonthValue() % 2 == 1) {
-                        getStyleClass().add("odd-month");
-                    }
+                    if (item.getMonthValue() % 2 == 1)   getStyleClass().add("odd-month");
+                    else                                 getStyleClass().add("even-month");
                 }
             }
         };
