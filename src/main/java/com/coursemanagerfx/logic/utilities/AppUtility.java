@@ -1,46 +1,32 @@
 package com.coursemanagerfx.logic.utilities;
 
 import com.coursemanagerfx.Launcher;
-import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
-import com.coursemanagerfx.logic.utilities.show.ShowWindowUtility;
+import com.coursemanagerfx.logic.utilities.update.exceptions.NoInternetConnection;
+import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class AppUtility {
     /* ========== PUBLIC API ========== */
 
     public static void startRestartAppScript() throws Exception {
-        //File exe =
-        //new ProcessBuilder("cmd", "/c", "start", "\"\"", "\"" + exe.getAbsolutePath() + "\"").start();
-        //String exe = "C:\\Program Files\\CourseManagerFX\\CourseManagerFX.exe";
-        //new ProcessBuilder("cmd", "/c", "start", "\"\"", "\"" + exe + "\"").start();
+        File appFile = AppUtility.getAppPath();
+        Path exeRelauncherPath = appFile.toPath().getParent().resolve("relauncher.exe");
 
-        Path scriptPath = Paths.get(AppUtility.getAppPath().getParent(), "relauncher.vbs");
-        //Path scriptPath = Paths.get("C:\\Program Files\\CourseManagerFX", "relauncher.vbs");
-
-        /*ProcessBuilder pb = new ProcessBuilder(
-                "wscript.exe",
-                scriptPath.toString()
-        );*/
-
-        /*ProcessBuilder pb = new ProcessBuilder(
-                "wscript.exe",
-                scriptPath.toString(),
-                AppUtility.getAppPath().getAbsolutePath()
-        );*/
-
-        Path exeRelauncherPath = Paths.get(AppUtility.getAppPath().getParent(), "relauncher.exe");
+        if (!Files.exists(exeRelauncherPath))
+            throw new FileNotFoundException( "Restart failed: relauncher.exe not found at path:\n" + exeRelauncherPath );
 
         ProcessBuilder pb = new ProcessBuilder(
                 exeRelauncherPath.toString(),
-                AppUtility.getAppPath().getAbsolutePath()
+                appFile.getAbsolutePath()
         );
 
         pb.inheritIO();

@@ -4,7 +4,7 @@ import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.Actions;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
@@ -62,11 +62,9 @@ public class About_controller implements StageAttachable {
         clipboard.setContent(content);
 
         AlertFX.showNotification(
-                stage.getScene().getWindow(),
-                AlertFX_type.INFO,
+                AlertMessageType.INFO,
                 "Copied",
-                "Email successfully copied to clipboard",
-                true
+                "Email successfully copied to clipboard"
         );
     }
 
@@ -77,6 +75,6 @@ public class About_controller implements StageAttachable {
 
     @FXML
     private void btnCheckForUpdates() {
-        Actions.getInstance().loadingActions().updateWindow(true);
+        Actions.getInstance().uiFlowActions().runUpdateFlow(true);
     }
 }

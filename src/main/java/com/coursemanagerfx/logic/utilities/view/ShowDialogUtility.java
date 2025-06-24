@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.utilities.show;
+package com.coursemanagerfx.logic.utilities.view;
 
 import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.ShowAnimation;
@@ -6,40 +6,34 @@ import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.StageSetupUtility;
 import com.coursemanagerfx.controllers.dialogs.InputDialog_controller;
 import com.coursemanagerfx.controllers.dialogs.NewCourseDialog_controller;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_controller;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertType;
 import com.coursemanagerfx.controllers.dialogs.password.InputPass_controller;
-import com.coursemanagerfx.custom_ui.ProgressSpinner;
-import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.utilities.AppUtility;
-import com.coursemanagerfx.logic.utilities.UpdateUtility;
-import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
-import com.coursemanagerfx.logic.utilities.show.exceptions.DialogLoadException;
+import com.coursemanagerfx.logic.utilities.view.exceptions.DialogLoadException;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.*;
 
+import javax.xml.transform.Source;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 import static com.coursemanagerfx.AppConstants.COURSES_PATH;
 
 public class ShowDialogUtility {
-    private static <T> T showDialog(String fxml, Window owner, boolean modal, Consumer<T> controllerConfigurator) throws IOException {
+
+    /* show APPLICATION MODAL dialog */
+    private static <T> T showDialog(String fxml, Consumer<T> controllerConfigurator) throws IOException
+        { return showDialog(fxml, controllerConfigurator, null); }
+
+    /* show WINDOW MODAL dialog relative to the owner */
+    private static <T> T showDialog(String fxml, Consumer<T> controllerConfigurator, Window owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(AppConstants.class.getResource(fxml));
         Parent root = loader.load();
 
@@ -49,11 +43,13 @@ public class ShowDialogUtility {
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.getScene().setFill(null);
 
-        if (modal) {
+        if (owner != null ) {
+            stage.initOwner(owner);
             stage.initModality(Modality.WINDOW_MODAL);
-            if (owner != null) stage.initOwner(owner);
+            System.out.println("WINDOW-MODAL dialog is shown");
         } else {
-            stage.initModality(Modality.NONE);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            System.out.println("APP-MODAL    dialog is shown");
         }
 
         T controller = loader.getController();
@@ -72,30 +68,48 @@ public class ShowDialogUtility {
             Platform.runLater(stage::sizeToScene);
         });
 
-        if (modal) stage.showAndWait();
-        else stage.show();
+        //if (modal) stage.showAndWait();
+        //else stage.show();
+
+        stage.showAndWait();
 
         return controller;
     }
 
-    public static AlertFX_controller showAlertDialog( Window owner,
-                                                      boolean modal,
-                                                      AlertFX_type type,
-                                                      String main,
-                                                      String prompt,
-                                                      boolean showCancel) throws IOException {
-        return showDialog(
-                "/com/coursemanagerfx/ui/dialogs/alert_dialog.fxml",
-                owner,
-                modal,
-                c -> {
-                    c.getLabelMain().setText(main);
-                    c.getLabelPrompt().setText(prompt);
-                    c.getBtnCancel().setVisible(showCancel);
-                    c.getBtnCancel().setManaged(showCancel);
-                    c.getIconType().setImage(type.getIcon());
-                }
-        );
+    public static boolean showAlertDialog( AlertType alertType,
+                                           AlertMessageType messageType,
+                                           String header,
+                                           String content
+                                         ) throws IOException {
+
+        String titleText = switch (alertType) {
+            case QUESTION -> "Question";
+            case NOTIFICATION -> switch (messageType) {
+                case ERROR -> "Error";
+                case WARNING -> "Warning";
+                case INFO -> "Info";
+            };
+        };
+
+        boolean isQuestion = alertType == AlertType.QUESTION;
+
+        try {
+            AlertFX_controller controller = showDialog(
+                    "/com/coursemanagerfx/ui/dialogs/alert_dialog.fxml",
+                    c -> {
+                        c.getLabelTitle().setText(titleText);
+                        c.getLabelMain().setText(header);
+                        c.getLabelPrompt().setText(content);
+                        c.getBtnCancel().setVisible(isQuestion);
+                        c.getBtnCancel().setManaged(isQuestion);
+                        c.getIconType().setImage(messageType.getIcon());
+                    }
+            );
+
+            return controller.isConfirmed();
+        } catch (IOException ex) {
+            throw new DialogLoadException("Failed to load AlertFX dialog", ex);
+        }
     }
 
     // === INPUT DIALOG ===
@@ -103,13 +117,12 @@ public class ShowDialogUtility {
         try {
             InputDialog_controller controller = showDialog(
                     "/com/coursemanagerfx/ui/dialogs/input_dialog.fxml",
-                    owner,
-                    true,
                     c -> {
                         c.getLabelTitle().setText(dialogTitle);
                         c.getLabelPrompt().setText(dialogPrompt);
                         c.getTextField().setText(defTextInField);
-                    }
+                    },
+                    owner
             );
 
             return controller.getInputText();
@@ -123,9 +136,9 @@ public class ShowDialogUtility {
         try {
             InputPass_controller c = showDialog(
                     "/com/coursemanagerfx/ui/dialogs/password/input_password_dialog.fxml",
-                    owner,
-                    true,
-                    null);
+                    null,
+                    owner
+            );
 
             return c.getInputPassword();
         } catch (IOException ex) {
@@ -134,13 +147,12 @@ public class ShowDialogUtility {
     }
 
     // === NEW COURSE DIALOG ===
-    public static boolean showNewCourseDialog(Window owner) {
+    public static boolean showNewCourseDialog() {
         try {
             NewCourseDialog_controller c = showDialog(
                     "/com/coursemanagerfx/ui/dialogs/new_course_dialog.fxml",
-                    owner,
-                    true,
-                    null);
+                    null
+            );
 
             return c.wasCourseCreated();
         } catch (IOException ex) {
@@ -149,12 +161,10 @@ public class ShowDialogUtility {
     }
 
     // === GENERATED PASSWORD DIALOG ===
-    public static void showGeneratedPasswordDialog(Window owner) {
+    public static void showGeneratedPasswordDialog() {
         try {
             showDialog(
                     "/com/coursemanagerfx/ui/dialogs/password/generated_dialog.fxml",
-                    owner,
-                    true,
                     null
             );
         } catch (IOException ex) {
@@ -180,9 +190,8 @@ public class ShowDialogUtility {
         try {
             showDialog(
                     "/com/coursemanagerfx/ui/dialogs/about_dialog.fxml",
-                    owner,
-                    true,
-                    null
+                    null,
+                    owner
             );
         } catch (IOException ex) {
             throw new DialogLoadException("Failed to load about window", ex);

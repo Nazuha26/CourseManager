@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.utilities;
+package com.coursemanagerfx.logic.deprecated;
 
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;

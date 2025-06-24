@@ -4,7 +4,7 @@ import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.Launcher;
 import com.coursemanagerfx.animations.WindowOutAnimation;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.exceptions.SaveException;
 import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.StudentPanel_controller;
@@ -22,10 +22,9 @@ import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
-import com.coursemanagerfx.logic.deprecated.HistoryUtility;
-import com.coursemanagerfx.logic.utilities.UpdateUtility;
-import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
-import com.coursemanagerfx.logic.utilities.exceptions.NoInternetConnection;
+import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
+import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.utilities.update.exceptions.NoInternetConnection;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -44,7 +43,6 @@ import javafx.util.Duration;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -68,23 +66,23 @@ public final class Actions {
     /* ========================= SUB-ACTIONS ========================= */
     private final Repaint        repaint        = new Repaint();
     private final Select         select         = new Select();
-    private final uiActions      uiActions      = new uiActions();
+    private final UiActions      uiActions      = new UiActions();
     private final MenuActions    menuActions    = new MenuActions();
     private final IdGenerator    idGenerator    = new IdGenerator();
     private final FormAnims      formAnims      = new FormAnims();
     private final UndoRedo       undoRedo       = new UndoRedo();
     private final HistoryActions historyActions = new HistoryActions();
-    private final LoadingActions loadingActions = new LoadingActions();
+    private final UiFlowActions  uiFlowActions  = new UiFlowActions();
 
     public Repaint        repaint()         { return repaint; }
     public Select         select()          { return select; }
-    public uiActions      uiActions()       { return uiActions; }
+    public UiActions      uiActions()       { return uiActions; }
     public MenuActions    menuActions()     { return menuActions; }
     public IdGenerator    idGenerator()     { return idGenerator; }
     public FormAnims      formAnims()       { return formAnims; }
     public UndoRedo       undoRedo()        { return undoRedo; }
     public HistoryActions historyActions()  { return historyActions; }
-    public LoadingActions loadingActions()  { return loadingActions; }
+    public UiFlowActions  uiFlowActions()   { return uiFlowActions; }
 
     /* ******************************************************************
      *                          CLASS  Repaint
@@ -128,12 +126,12 @@ public final class Actions {
             List<Student> original = group.getStudents();
             List<Student> list;
 
-            /* show everyone */
+            /* view everyone */
             if (searchField.isDisable() || searchText.isEmpty()) {
                 list = new ArrayList<>(original);
                 searchField.setDisable(original.isEmpty());
             }
-            /* show student by filter by searched text */
+            /* view student by filter by searched text */
             else {
                 list = original.stream()
                         .filter(s -> s.getName().toLowerCase().contains(searchText))
@@ -300,9 +298,9 @@ public final class Actions {
     }
 
     /* ******************************************************************
-     *                          CLASS  uiActions
+     *                          CLASS  UiActions
      * *****************************************************************/
-    public class uiActions {
+    public class UiActions {
         private StudentEvent editingEvent;
         public StudentEvent getEditingEvent() {
             return editingEvent;
@@ -358,7 +356,7 @@ public final class Actions {
             ctrl.getBtnCreateEvent().setText("Save");
             ctrl.getBtnCreateEvent().setOnAction(ae -> saveEventAction());
 
-            /* show "Delete event" button */
+            /* view "Delete event" button */
             ctrl.getBtnDeleteEvent().setVisible(true);
             ctrl.getBtnDeleteEvent().setManaged(true);
             ctrl.getBtnDeleteEvent().setOnAction(ae -> deleteEventAction());
@@ -417,19 +415,18 @@ public final class Actions {
             /* expiration date */
             LocalDate expirationDateRaw = calculateExpirationDate(creationDateRaw);
             if (expirationDateRaw == null) {
-                AlertFX.showNotification(ctrl.getStage().getScene().getWindow(),
-                        AlertFX_type.ERROR,
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
                         "Expiration date error",
-                        "Failed to calculate expiration date. Please check the form.",
-                        true);
+                        "Failed to calculate expiration date. Please check the form."
+                );
                 return;
             }
             if (isInvalidExpirationDate(creationDateRaw, expirationDateRaw)) {
-                AlertFX.showNotification(ctrl.getStage().getScene().getWindow(),
-                        AlertFX_type.ERROR,
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
                         "Expiration date error",
-                        "Expiration date cannot be less than or equal to creation date",
-                        true
+                        "Expiration date cannot be less than or equal to creation date"
                 );
                 return;
             }
@@ -523,8 +520,7 @@ public final class Actions {
                 return;
             }
 
-            boolean confirmed = AlertFX.showConfirm(ctrl.getStage().getScene().getWindow(),
-                    AlertFX_type.WARNING,
+            boolean confirmed = AlertFX.showQuestion(
                     "You have unsaved changes.",
                     "Do you want to exit without saving?"
             );
@@ -570,19 +566,18 @@ public final class Actions {
             /* expiration date */
             LocalDate newExpirationDateRaw = calculateExpirationDate(creationDateRaw);
             if (newExpirationDateRaw == null) {
-                AlertFX.showNotification(ctrl.getStage().getScene().getWindow(),
-                        AlertFX_type.ERROR,
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
                         "Expiration date error",
-                        "Failed to calculate expiration date. Please check the form.",
-                        true);
+                        "Failed to calculate expiration date. Please check the form."
+                );
                 return;
             }
             if (isInvalidExpirationDate(creationDateRaw, newExpirationDateRaw)) {
-                AlertFX.showNotification(ctrl.getStage().getScene().getWindow(),
-                        AlertFX_type.ERROR,
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
                         "Expiration date error",
-                        "Expiration date cannot be less than or equal to creation date",
-                        true
+                        "Expiration date cannot be less than or equal to creation date"
                 );
                 return;
             }
@@ -623,8 +618,7 @@ public final class Actions {
             String shortDesc = editingEvent.getDescription().length() > 10
                     ? editingEvent.getDescription().substring(0, 10) + "..."
                     : editingEvent.getDescription();
-            boolean isDelete = AlertFX.showConfirm(owner,
-                    AlertFX_type.INFO,
+            boolean isDelete = AlertFX.showQuestion(
                     "Event deleting",
                     "Do you want to delete \"" + shortDesc + "\" event?");
 
@@ -684,9 +678,9 @@ public final class Actions {
         private boolean isInvalidExpirationDate(LocalDate creationDate, LocalDate expDate)
             { return expDate == null || creationDate == null || !expDate.isAfter(creationDate); }
 
-        /* private method for show notification */
+        /* private method for view notification */
         private static void show(Window owner, String header, String msg)
-            { AlertFX.showNotification(owner, AlertFX_type.WARNING, header, msg, true); }
+            { AlertFX.showNotification( AlertMessageType.WARNING, header, msg ); }
 
         /* calculate expiration date depending on creation date */
         private LocalDate calculateExpirationDate(LocalDate creationDateRaw) {
@@ -717,8 +711,7 @@ public final class Actions {
         public void toHomeAction() {
             Window owner = ctrl.getStage().getScene().getWindow();
 
-            boolean yes = AlertFX.showConfirm(owner,
-                    AlertFX_type.INFO,
+            boolean yes = AlertFX.showQuestion(
                     "Return to Home",
                     "Are you sure you want to leave the current course and return to the home screen?");
             if (!yes) return;
@@ -733,8 +726,18 @@ public final class Actions {
 
             try {
                 AppUtility.startRestartAppScript();
+            } catch (FileNotFoundException e) {
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
+                        "Restart Error",
+                        "File \"relauncher.exe\" not found.\nPlease reopen CourseManagerFX manually."
+                );
             } catch (Exception e) {
-                throw new RuntimeException("Restarting application failed.", e);
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
+                        "Restart Error",
+                        "Unexpected error while restarting.\n" + e.getMessage()
+                );
             }
 
             WindowOutAnimation.play(
@@ -773,11 +776,11 @@ public final class Actions {
                         "Saved successfully"
                 );
             } catch (Exception e) {
-                AlertFX.showNotification(owner,
-                        AlertFX_type.ERROR,
-                        "SAVING ERROR",
-                        "Message: " + e.getMessage(),
-                        true);
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
+                        "Saving Error",
+                        "Message: " + e.getMessage()
+                );
                 throw new SaveException("=== FATAL SAVING ERROR ===", e);
             }
         }
@@ -791,31 +794,28 @@ public final class Actions {
                         "There is nothing to export"
                 );
                 AlertFX.showNotification(
-                        owner,
-                        AlertFX_type.WARNING,
+                        AlertMessageType.WARNING,
                         "There is nothing to export",
-                        "The whole course is empty, there is nothing to export to Excel.",
-                        true
+                        "The whole course is empty, there is nothing to export to Excel."
                 );
                 return;
             }
 
             try {
+                File exportedPath = ConfigManager.getExportPath();
                 boolean successExport = ExcelExportUtility.exportToExcel(
                         Launcher.getCourseInfo().getCourse(),
                         Launcher.getCourseInfo().getCourseName(),
-                        new File(System.getProperty("user.home") + File.separator + "Desktop"));
+                        exportedPath);
                 if (successExport) {
                     historyActions.setHistory(
                             Actions.HistoryActions.HistoryType.SUCCESS,
-                            "Export completed successfully"
+                            "Export completed successfully. The Excel file has been saved to: \"" + exportedPath + "\""
                     );
                     AlertFX.showNotification(
-                            owner,
-                            AlertFX_type.INFO,
+                            AlertMessageType.INFO,
                             "Export completed successfully",
-                            "The Excel file has been saved to your Desktop.",
-                            true
+                            "The Excel file has been saved to:\n\"" + exportedPath + "\""
                     );
                 }
             } catch (RuntimeException e) {
@@ -823,19 +823,15 @@ public final class Actions {
 
                 if (cause instanceof IOException) {
                     AlertFX.showNotification(
-                            owner,
-                            AlertFX_type.ERROR,
+                            AlertMessageType.ERROR,
                             "Excel Export Error",
-                            "It looks like the Excel file is open. Please close it and try again.",
-                            true
+                            "It looks like the Excel file is open. Please close it and try again."
                     );
                 } else {
                     AlertFX.showNotification(
-                            owner,
-                            AlertFX_type.ERROR,
+                            AlertMessageType.ERROR,
                             "Unexpected Error",
-                            "An unexpected error occurred: " + e.getMessage(),
-                            true
+                            "An unexpected exporting error occurred: " + e.getMessage()
                     );
                 }
             }
@@ -846,11 +842,10 @@ public final class Actions {
         public void optionsAction() {
             // TODO OPTIONS
             Window owner = ctrl.getStage().getScene().getWindow();
-            AlertFX.showNotification(owner,
-                    AlertFX_type.INFO,
+            AlertFX.showNotification(
+                    AlertMessageType.INFO,
                     "Options soon...",
-                    "Soon...",
-                    true
+                    "Soon..."
             );
         }
 
@@ -953,7 +948,7 @@ public final class Actions {
                     half
             );
 
-            /* --- show top info panel (starts after bottom hidden) --- */
+            /* --- view top info panel (starts after bottom hidden) --- */
             ParallelTransition showTop = buildSlideFadeX(
                     ctrl.getInfoTopPane(),
                     50, 0,
@@ -984,7 +979,7 @@ public final class Actions {
                     half
             );
 
-            /* --- show bottom info panel (starts after top hidden) --- */
+            /* --- view bottom info panel (starts after top hidden) --- */
             ParallelTransition showBottom = buildSlideFadeY(
                     ctrl.getInfoBotPane(),
                     30, 0,
@@ -1014,7 +1009,7 @@ public final class Actions {
                     half
                     );
 
-            /* ----- show expiration data picker ----- */
+            /* ----- view expiration data picker ----- */
             ParallelTransition showExpDtpk = buildSlideFadeX(
                     ctrl.getDtpkExpirationDate(),
                     30, 0,
@@ -1046,7 +1041,7 @@ public final class Actions {
                     half
             );
 
-            /* ----- show expiration hbox ----- */
+            /* ----- view expiration hbox ----- */
             ParallelTransition showExpHBox = buildSlideFadeX(
                     ctrl.getHboxExpiredTime(),
                     -30, 0,
@@ -1255,12 +1250,12 @@ public final class Actions {
     }
 
     /* ******************************************************************
-     *                          CLASS  LoadingActions
+     *                          CLASS  UiFlowActions
      * *****************************************************************/
-    public class LoadingActions {
-        public static final Logger LOGGER = Logger.getLogger(LoadingActions.class.getName());
+    public class UiFlowActions {
+        public static final Logger LOGGER = Logger.getLogger(UiFlowActions.class.getName());
 
-        public void updateWindow(boolean showNotAvailableUpdatesNotify) {
+        public void runUpdateFlow(boolean showNotAvailableUpdatesNotify) {
             final Task<String> checkTask = new Task<>() {
                 @Override protected String call() throws Exception {
                     updateProgress(0.15, 1); Thread.sleep(400);
@@ -1286,8 +1281,7 @@ public final class Actions {
                             boolean updateAvailable = UpdateUtility.compareVersions(latest, AppConstants.APP_VERSION) > 0;
 
                             if (updateAvailable) {
-                                boolean yes = ConfigManager.isAutoUpdateEnabled() || AlertFX.showConfirm(
-                                        null, AlertFX_type.INFO,
+                                boolean yes = ConfigManager.isAutoUpdateEnabled() || AlertFX.showQuestion(
                                         "New v" + latest + " update is available",
                                         "Do you want to install it now?");
 
@@ -1324,10 +1318,10 @@ public final class Actions {
                                             e -> {
                                                 Platform.runLater(() -> {
                                                     AlertFX.showNotification(
-                                                            null, AlertFX_type.ERROR,
+                                                            AlertMessageType.ERROR,
                                                             "Installation failed",
-                                                            installTask.getException().getMessage(), true);
-                                                    Actions.LoadingActions.LOGGER.log(
+                                                            "Message: " + installTask.getException().getMessage());
+                                                    UiFlowActions.LOGGER.log(
                                                             Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", installTask.getException());
                                                 });
                                             },
@@ -1340,25 +1334,26 @@ public final class Actions {
 
                             } else if (showNotAvailableUpdatesNotify) {
                                 AlertFX.showNotification(
-                                        null, AlertFX_type.INFO,
+                                        AlertMessageType.INFO,
                                         "There are no new updates",
-                                        "You have all the latest updates installed.",
-                                        true);
+                                        "You have all the latest updates installed."
+                                );
                             }
                         } catch (NoInternetConnection ex) {
                             AlertFX.showNotification(
-                                    null, AlertFX_type.ERROR,
+                                    AlertMessageType.ERROR,
                                     "No internet connection",
-                                    "Could not check for updates. Please connect to the Internet.",
-                                    true);
+                                    "Could not check for updates. Please connect to the Internet and try again."
+                            );
                         }
                     },
                     ex -> {
                         AlertFX.showNotification(
-                                null, AlertFX_type.ERROR,
+                                AlertMessageType.ERROR,
                                 "Update check failed",
-                                ex.getMessage(), true);
-                        Actions.LoadingActions.LOGGER.log(
+                                "Message: " + ex.getMessage()
+                        );
+                        UiFlowActions.LOGGER.log(
                                 Level.SEVERE, "=== UPDATE CHECK FAILED ===", ex);
                     },
                     "update-check-thread",
@@ -1368,7 +1363,7 @@ public final class Actions {
             );
         }
 
-        public void loadingWindow() {
+        public void runCourseDataLoadingFlow() {
             if (ctrl == null) return;
 
             final Task<Void> loadingTask = new Task<>() {
@@ -1396,11 +1391,10 @@ public final class Actions {
                     unused -> {},
                     ex -> {                               // onFailure
                         AlertFX.showNotification(
-                                ctrl.getStage().getScene().getWindow(),
-                                AlertFX_type.ERROR,
+                                AlertMessageType.ERROR,
                                 "Data loading failed",
-                                "Something went wrong during data loading",
-                                true);
+                                "Something went wrong during data loading"
+                        );
                         LOGGER.log(Level.SEVERE, "=== DATA LOADING FAILED ===", ex);
                     },
                     "course-data-loading-thread");

@@ -1,8 +1,7 @@
-package com.coursemanagerfx.controllers.dialogs;
+package com.coursemanagerfx.logic.deprecated;
 
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
-import com.coursemanagerfx.logic.utilities.UpdateUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;

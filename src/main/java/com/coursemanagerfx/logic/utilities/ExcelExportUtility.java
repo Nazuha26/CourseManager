@@ -29,6 +29,9 @@ public class ExcelExportUtility {
     /* =============== */
 
     public static boolean exportToExcel(Group[] course, String courseName, File path) {
+        Locale locale_before = Locale.getDefault();                     // === remember current locale
+        Locale.setDefault(Locale.of("uk", "UA"));       // === ALWAYS SET UKR LOCALE
+
         DateTimeFormatter monthFormatter =
                 DateTimeFormatter.ofPattern("LLLL", Locale.forLanguageTag("uk"));
 
@@ -220,6 +223,7 @@ public class ExcelExportUtility {
             if (Desktop.isDesktopSupported())
                 Desktop.getDesktop().open(outFile);     // open up exported file
 
+            Locale.setDefault(locale_before);           // === set remembered default locale
             return true;
         } catch (IOException e) {
             throw new RuntimeException("=== FATAL ERROR EXPORTING TO EXCEL ===", e);

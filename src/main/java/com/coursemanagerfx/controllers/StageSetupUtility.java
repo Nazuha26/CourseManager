@@ -9,6 +9,9 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class StageSetupUtility {
+
+    /* === OPEN API === */
+
     public static void setup(StageAttachable controller, Stage stage) {
         setup(controller, stage, 20);
     }
@@ -36,6 +39,8 @@ public class StageSetupUtility {
             onDragged(e, stage, offset[0], offset[1]);
         });
     }
+
+    /* === CORE === */
 
     // helper dragged method
     private static void onDragged(MouseEvent event, Stage stage, double xOffset, double yOffset) {

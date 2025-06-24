@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.utilities.show;
+package com.coursemanagerfx.logic.utilities.view;
 
 import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.logic.Actions;
@@ -8,7 +8,7 @@ import com.coursemanagerfx.animations.WindowInAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.StageSetupUtility;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.Start_controller;
 import com.coursemanagerfx.logic.basic.Group;
@@ -18,14 +18,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
 import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 
 public class ShowWindowUtility {
     private static <T> T loadWindow(String fxmlPath, Stage stage) throws IOException {
@@ -73,23 +71,21 @@ public class ShowWindowUtility {
             );
 
             /* === CHECK FOR UPDATES === */
-            Actions.getInstance().loadingActions().updateWindow(true);
+            Actions.getInstance().uiFlowActions().runUpdateFlow(true);
             /* ---===================--- */
 
         } catch (IOException ex) {
             AlertFX.showNotification(
-                    null,
-                    AlertFX_type.ERROR,
+                    AlertMessageType.ERROR,
                     "Startup Error",
-                    "Failed to load the start window:\n" + ex.getMessage(),
-                    true
+                    "Failed to load the start window:\n" + ex.getMessage()
             );
             //throw new WindowLoadException("Failed to open start window", ex);
         }
     }
 
     // === МЕТОД ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ ===
-    public static void showMainWindow(String courseName, File file) {
+    public static void showMainWindow(File file) {
         try {
             Stage mainStage = new Stage();
             Main_controller controller = loadWindow(
@@ -112,6 +108,11 @@ public class ShowWindowUtility {
 
             mainStage.show();
 
+            String fileName = file.getName();
+            String courseName = fileName.endsWith(".cman")
+                    ? fileName.substring(0, fileName.length() - 5)
+                    : fileName;
+
             String title = "CourseManagerFX v" + AppConstants.APP_VERSION + " – " + courseName;
             controller.getLblAppName().setText(title);
             mainStage.setTitle(title);
@@ -130,11 +131,11 @@ public class ShowWindowUtility {
             Window owner = mainStage.getScene().getWindow();
 
             /* === CHECK FOR UPDATES === */
-            Actions.getInstance().loadingActions().updateWindow(false);
+            Actions.getInstance().uiFlowActions().runUpdateFlow(false);
             /* ---===================--- */
 
             if (Launcher.getDefaultPassword().equals("magic")) {       // default password will never be NULL
-                // === password checking ===
+                // === PASSWORD CHECKING ===
                 do {
                     password = ShowDialogUtility.showCheckPasswordDialog(owner);
                     if (password == null) {
@@ -145,11 +146,11 @@ public class ShowWindowUtility {
                     try {
                         course = CmanSecurityUtility.readSecureFile(file, password);
                     } catch (Exception e) {
-                        AlertFX.showNotification(owner,
-                                AlertFX_type.ERROR,
-                                "Invalid password",
-                                "Please try again.",
-                                true);
+                        AlertFX.showNotification(
+                                AlertMessageType.ERROR,
+                                "Unable to open the course file",
+                                "The password is incorrect or the file is corrupted. Please try again."
+                        );
                     }
 
                 } while (course == null);
@@ -159,11 +160,11 @@ public class ShowWindowUtility {
                 try {
                     course = CmanSecurityUtility.readSecureFile(file, password);
                 } catch (Exception e) {
-                    AlertFX.showNotification(owner,
-                            AlertFX_type.ERROR,
+                    AlertFX.showNotification(
+                            AlertMessageType.ERROR,
                             "Failed to load course",
-                            "Preset password appears to be incorrect.",
-                            true);
+                            "The preset password is incorrect."
+                    );
                     Actions.getInstance().uiActions().mainExitAction();
                     return;
                 }
@@ -171,15 +172,13 @@ public class ShowWindowUtility {
 
             Launcher.setCourseInfo(new CourseInfo(courseName, password, course));
 
-            Actions.getInstance().loadingActions().loadingWindow();
+            Actions.getInstance().uiFlowActions().runCourseDataLoadingFlow();
 
         } catch (IOException ex) {
             AlertFX.showNotification(
-                    null,
-                    AlertFX_type.ERROR,
+                    AlertMessageType.ERROR,
                     "Startup Error",
-                    "Failed to load the main window:\n" + ex.getMessage(),
-                    true
+                    "Failed to load the main window:\n" + ex.getMessage()
             );
             //throw new WindowLoadException("Failed to open main window", ex);
         }

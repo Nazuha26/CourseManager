@@ -1,8 +1,8 @@
-package com.coursemanagerfx.logic.utilities.config_api;
+package com.coursemanagerfx.logic.config_api;
 
 import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.google.gson.*;
 
 import java.io.*;
@@ -18,17 +18,19 @@ public class ConfigManager {
 
     /* ===== CONFIG GETTERS ===== */
 
-    public static String getOpenCourse() { return safeLoadingConfig().open_course; }
+    public static String getOpenCourse()         { return safeLoadingConfig().open_course; }
 
-    public static String getLanguage() { return safeLoadingConfig().language; }
+    public static String getLanguage()           { return safeLoadingConfig().language; }
 
-    public static String getDefaultPassword() { return safeLoadingConfig().default_password; }
+    public static String getDefaultPassword()    { return safeLoadingConfig().default_password; }
 
-    public static boolean isAutoUpdateEnabled() { return safeLoadingConfig().auto_update; }
+    public static boolean isAutoUpdateEnabled()  { return safeLoadingConfig().auto_update; }
 
-    public static boolean isAutoSaveEnabled() { return safeLoadingConfig().auto_save; }
+    public static boolean isAutoSaveEnabled()    { return safeLoadingConfig().auto_save; }
 
-    public static int getAutoSaveSecInterval() { return safeLoadingConfig().auto_save_sec_interval; }
+    public static int getAutoSaveSecInterval()   { return safeLoadingConfig().auto_save_sec_interval; }
+
+    public static File getExportPath()           { return new File(safeLoadingConfig().export_path); }
 
 
 
@@ -67,6 +69,12 @@ public class ConfigManager {
     public static void setAutoSaveSecInterval(int sec) {
         AppConfig config = safeLoadingConfig();
         config.auto_save_sec_interval = sec;
+        saveConfig(config);
+    }
+
+    public static void setExportPath(String path) {
+        AppConfig config = safeLoadingConfig();
+        config.export_path = path;
         saveConfig(config);
     }
 
@@ -110,7 +118,12 @@ public class ConfigManager {
                     /* --- STRING --- */
                     if (field.getType() == String.class) {
                         if (val.isJsonPrimitive() && val.getAsJsonPrimitive().isString()) {
-                            field.set(config, val.getAsString());
+                            String strVal = val.getAsString();
+                            if (strVal.isBlank()) {
+                                changed = true;
+                                continue;
+                            }
+                            field.set(config, strVal);
                         } else {
                             changed = true;
                         }
@@ -148,8 +161,11 @@ public class ConfigManager {
             }
 
         } catch (Exception ex) {
-            AlertFX.showNotification(null, AlertFX_type.ERROR, "Configuration Error",
-                    "Failed to load config:\n" + ex.getMessage(), true);
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
+                    "Configuration Error",
+                    "Failed to load config:\n" + ex.getMessage()
+            );
             changed = true;
         }
 
@@ -174,11 +190,9 @@ public class ConfigManager {
             writer.close();
         } catch (IOException ex) {
             AlertFX.showNotification(
-                    null,
-                    AlertFX_type.ERROR,
+                    AlertMessageType.ERROR,
                     "Configuration Error",
-                    "Failed to save configuration:\n" + ex.getMessage(),
-                    true
+                    "Failed to save configuration:\n" + ex.getMessage()
             );
         }
     }

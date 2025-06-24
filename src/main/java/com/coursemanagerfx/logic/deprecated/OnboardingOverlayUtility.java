@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.utilities;
+package com.coursemanagerfx.logic.deprecated;
 
 import javafx.application.Platform;
 import javafx.geometry.Bounds;

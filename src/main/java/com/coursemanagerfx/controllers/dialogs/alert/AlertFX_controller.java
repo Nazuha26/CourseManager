@@ -31,21 +31,19 @@ public class AlertFX_controller implements StageAttachable {
     private Stage stage;
 
     // ===== IMPLEMENTED =====
-    @Override
-    public BorderPane getRootPane() {
+    @Override public BorderPane getRootPane() {
         return rootPane;
     }
-    @Override
-    public HBox getTitleBar() {
+    @Override public HBox getTitleBar() {
         return titleBar;
     }
-    @Override
-    public void setStage(Stage stage) {
+    @Override public void setStage(Stage stage) {
         this.stage = stage;
     }
     // ===== IMPLEMENTED =====
 
 
+    public Label getLabelTitle() { return labelTitle; }
     public ImageView getIconType() {
         return iconType;
     }

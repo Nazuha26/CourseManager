@@ -1,38 +1,44 @@
 package com.coursemanagerfx.controllers.dialogs.alert;
 
-import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
-import com.coursemanagerfx.logic.utilities.show.exceptions.DialogLoadException;
+import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
+import com.coursemanagerfx.logic.utilities.view.exceptions.DialogLoadException;
 import javafx.stage.Window;
 
 import java.io.IOException;
 
 public final class AlertFX {
 
-    /** Show CONFIRM-dialog
+    /** Show QUESTION-dialog
      *  @return true if pressed OK
      */
-    public static boolean showConfirm(Window owner,
-                                      AlertFX_type type,
-                                      String     main,
-                                      String     prompt) {
+    public static boolean showQuestion(String    header,
+                                       String    content) {
 
         try {
-            AlertFX_controller c = ShowDialogUtility.showAlertDialog(owner, true, type, main, prompt, true);
-            return c.isConfirmed();
+            return ShowDialogUtility.showAlertDialog(
+                    AlertType.QUESTION,
+                    AlertMessageType.WARNING,
+                    header,
+                    content
+            );
         } catch (IOException ex) {
-            throw new DialogLoadException("Failed to load confirm dialog", ex);
+            throw new DialogLoadException("Failed to load Question dialog", ex);
         }
     }
 
-    /** Show Notification */
-    public static void showNotification(Window owner,
-                                        AlertFX_type type,
-                                        String    main,
-                                        String    prompt,
-                                        boolean modal) {
+    /** Show NOTIFICATION-dialog */
+    public static void showNotification(AlertMessageType    messageType,
+                                        String              header,
+                                        String              content
+                                       ) {
 
         try {
-            ShowDialogUtility.showAlertDialog(owner, modal, type, main, prompt, false);
+            ShowDialogUtility.showAlertDialog(
+                    AlertType.NOTIFICATION,
+                    messageType,
+                    header,
+                    content
+            );
         } catch (IOException ex) {
             throw new DialogLoadException("Failed to load notification dialog", ex);
         }

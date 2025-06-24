@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.utilities;
+package com.coursemanagerfx.logic.deprecated;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;

@@ -1,20 +1,18 @@
 package com.coursemanagerfx.controllers.main;
 
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.commands.student_comms.DeleteStudentCommand;
 import com.coursemanagerfx.logic.commands.student_comms.RenameStudentCommand;
-import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
+import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Window;
@@ -53,7 +51,7 @@ public class StudentPanel_controller {
     private void onStudent()
         { Actions.getInstance().select().selectStudentPanel(student); }
 
-    /* show context menu */
+    /* view context menu */
     @FXML private void handleContextMenu(MouseEvent e) {
         if (e.isSecondaryButtonDown()) {
             Actions.getInstance().select().selectStudentPanel(student);
@@ -77,11 +75,9 @@ public class StudentPanel_controller {
         String newName = raw.trim().replaceAll("\\s+", " ");
         if (newName.split(" ").length != 3) {
             AlertFX.showNotification(
-                    owner,
-                    AlertFX_type.WARNING,
+                    AlertMessageType.WARNING,
                     "Invalid input",
-                    "Enter full name in format:\nFirstname Lastname Patronymic",
-                    true
+                    "Enter full name in format:\nFirstname Lastname Patronymic"
             );
             return;
         }
@@ -100,9 +96,7 @@ public class StudentPanel_controller {
     /* student DELETING */
     @FXML private void miDelete() {
 
-        boolean confirmed = AlertFX.showConfirm(
-                ctrl.getStage().getScene().getWindow(),
-                AlertFX_type.INFO,
+        boolean confirmed = AlertFX.showQuestion(
                 "Deleting the student.",
                 "Are you sure you want to remove \"" + student.getName() + "\"?"
         );

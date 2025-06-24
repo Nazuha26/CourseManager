@@ -3,12 +3,12 @@ package com.coursemanagerfx.controllers.main;
 import com.coursemanagerfx.animations.WindowOutAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.custom_ui.GradientBackground;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
-import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
-import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
+import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -18,6 +18,8 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 
 public class Start_controller implements StageAttachable {
 
@@ -91,23 +93,52 @@ public class Start_controller implements StageAttachable {
                 courseName = courseName.substring(0, courseName.length() - 5);
         } catch (Exception e) {
             ConfigManager.setOpenCourse("none");
-            AlertFX.showNotification(owner,
-                    AlertFX_type.ERROR,
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
                     "Unable to open the course file",
-                    "The password is incorrect or the file is corrupted. Please try again.",
-                    true);
+                    "The password is incorrect or the file is corrupted. Please try again."
+            );
             return;
         }
 
         // ======= SAVE COURSE NAME TO CONFIG FILE ========
         ConfigManager.setOpenCourse(courseName);
 
+        tryRestartApp();
+    }
+
+    @FXML
+    private void btnNewCourse() {
+        Window owner = stage.getScene().getWindow();
+        boolean success = ShowDialogUtility.showNewCourseDialog();
+
+        if (success) {
+            /*AlertFX.showNotification(owner, AlertFX_type.INFO,
+                    "Course created successfully",
+                    "To apply the changes, please restart the application.",
+                    true);*/
+            tryRestartApp();
+        }
+    }
+
+    /* === CORE === */
+
+    private void tryRestartApp() {
         try {
             AppUtility.startRestartAppScript();
+        } catch (FileNotFoundException e) {
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
+                    "Restart Error",
+                    "File \"relauncher.exe\" not found.\nPlease reopen CourseManagerFX manually."
+            );
         } catch (Exception e) {
-            throw new RuntimeException("Restarting application failed.", e);
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
+                    "Restart Error",
+                    "Unexpected error while restarting.\n" + e.getMessage()
+            );
         }
-
         WindowOutAnimation.play(
                 this,
                 rootPane.getWidth(),
@@ -116,31 +147,5 @@ public class Start_controller implements StageAttachable {
                 Duration.seconds(1),
                 stage::close
         );
-    }
-
-    @FXML
-    private void btnNewCourse() {
-        Window owner = stage.getScene().getWindow();
-        boolean success = ShowDialogUtility.showNewCourseDialog(owner);
-
-        if (success) {
-            /*AlertFX.showNotification(owner, AlertFX_type.INFO,
-                    "Course created successfully",
-                    "To apply the changes, please restart the application.",
-                    true);*/
-            try {
-                AppUtility.startRestartAppScript();
-            } catch (Exception e) {
-                throw new RuntimeException("Restarting application failed.", e);
-            }
-            WindowOutAnimation.play(
-                    this,
-                    rootPane.getWidth(),
-                    rootPane.getHeight(),
-                    SW_ANIM_STRIPE_COUNT,
-                    Duration.seconds(1),
-                    stage::close
-            );
-        }
     }
 }

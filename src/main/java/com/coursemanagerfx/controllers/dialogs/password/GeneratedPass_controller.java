@@ -46,7 +46,6 @@ public class GeneratedPass_controller implements StageAttachable {
     @FXML
     private void initialize() {
         password = CmanSecurityUtility.generatePassword();
-        NewCourseDialog_controller.setGeneratedPassword(password);
         lblPassword.setText(password);
     }
 
@@ -70,6 +69,8 @@ public class GeneratedPass_controller implements StageAttachable {
         clipboard.setContent(content);
 
         copied = true;
+
+        NewCourseDialog_controller.setGeneratedPassword(password);
         lblCopied.setText("Successfully copied");
         lblCopied.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.SUCCESS_COLOUR) + ";");
         lblCopied.setManaged(true);

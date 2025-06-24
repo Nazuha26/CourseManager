@@ -2,7 +2,7 @@ package com.coursemanagerfx.controllers.main;
 
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.*;
 import com.coursemanagerfx.custom_ui.GradientBackground;
@@ -12,9 +12,8 @@ import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
-import com.coursemanagerfx.logic.deprecated.HistoryUtility;
-import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
-import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
+import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -254,7 +253,7 @@ public class Main_controller implements StageAttachable {
         Actions.getInstance().historyActions().setHistory(
                 Actions.HistoryActions.HistoryType.INFO,
                 ConfigManager.isAutoSaveEnabled() ?
-                        "Autosave is enabled, saving will occur every " + ConfigManager.getAutoSaveSecInterval()
+                        "Autosave is enabled. Saving will occur every " + ConfigManager.getAutoSaveSecInterval()
                                 + " seconds, you can change these parameters in the program config file (config.json)"
                         : "Autosave disabled"
         );
@@ -342,10 +341,11 @@ public class Main_controller implements StageAttachable {
         Group selectedGroup = Actions.getInstance().select().getSelectedGroup();
 
         if (selectedGroup == null) {
-            AlertFX.showConfirm(owner,
-                    AlertFX_type.WARNING,
+            AlertFX.showNotification(
+                    AlertMessageType.WARNING,
                     "Group not selected",
-                    "Choose the group please.");
+                    "Choose the group please."
+            );
             return;
         }
 
@@ -359,11 +359,9 @@ public class Main_controller implements StageAttachable {
         String studentName = rawStudentName.trim().replaceAll("\\s+", " ");
         if (studentName.split(" ").length != 3) {
             AlertFX.showNotification(
-                    owner,
-                    AlertFX_type.WARNING,
+                    AlertMessageType.WARNING,
                     "Invalid input",
-                    "Enter full name in format:\nFirstname Lastname Patronymic",
-                    true
+                    "Enter full name in format:\nFirstname Lastname Patronymic"
             );
             return;
         }

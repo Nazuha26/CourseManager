@@ -4,12 +4,12 @@ import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_type;
+import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.exceptions.CourseCreationException;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.security.CmanSecurityUtility;
-import com.coursemanagerfx.logic.utilities.config_api.ConfigManager;
-import com.coursemanagerfx.logic.utilities.show.ShowDialogUtility;
+import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -87,43 +87,39 @@ public class NewCourseDialog_controller implements StageAttachable {
             Group[] groups = new Group[groupsCount];
             for (int i = 0; i < groupsCount; i++)
                 groups[i] = new Group();
-            ShowDialogUtility.showGeneratedPasswordDialog(stage.getScene().getWindow());
+            ShowDialogUtility.showGeneratedPasswordDialog();
             try {
                 CmanSecurityUtility.createSecureFile(groups, newCourseFile, generatedPassword);
-            } catch (Exception ex) {
+            } catch (Exception e) {
                 errorLabel.setText("Could not create course. Please try again.");
                 errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
                 errorLabel.setManaged(true);
                 Platform.runLater(stage::sizeToScene);
+
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
+                        "Error Creating Course",
+                        "Message: " + e
+                );
                 return;
                 //throw new CourseFileCreateException("Failed to create encrypted course file", ex);
             }
             // remember the created course
             ConfigManager.setOpenCourse(courseName);
-            /*try (FileWriter w = new FileWriter(AppConstants.LAST_RUN_FILE)) {
-                w.write(String.valueOf(courseNumber));
-            } catch (IOException ex) {
-                errorLabel.setText("Failed to save last run course info. Please try again.");
-                errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
-                errorLabel.setManaged(true);
-                Platform.runLater(stage::sizeToScene);
-                return;
-                //throw new LastRunFileWriteException("Failed to save last run course info", ex);
-            }*/
             courseCreated = true;
             HideAnimation.play(stage, stage::close);
-        } catch (Exception ex) {
-            AlertFX.showNotification(
-                    stage.getScene().getWindow(),
-                    AlertFX_type.ERROR,
-                    "Unexpected error",
-                    "Message: " + ex,
-                    true);
+        } catch (Exception e) {
             errorLabel.setText("Unexpected error");
             errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
             errorLabel.setManaged(true);
             Platform.runLater(stage::sizeToScene);
-            throw new CourseCreationException("Unexpected error in NewCourseDialog", ex);
+
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
+                    "Unexpected Error Creating Course",
+                    "Message: " + e
+            );
+            throw new CourseCreationException("Unexpected error in NewCourseDialog", e);
         }
     }
 
