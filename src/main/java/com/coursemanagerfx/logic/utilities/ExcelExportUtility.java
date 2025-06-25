@@ -2,7 +2,8 @@ package com.coursemanagerfx.logic.utilities;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.EventCategories;
+import com.coursemanagerfx.logic.basic.event.EventStatus;
+import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -112,7 +113,8 @@ public class ExcelExportUtility {
                 studentRow.name = student.getName();
 
                 for (StudentEvent ev : student.getEvents())
-                    { studentRow.add(ev.getCategory(), ev.getMark(), ev.getDescription()); }
+                    if (ev.getStatus() == EventStatus.ACTIVE)
+                        studentRow.add(ev.getCategory(), ev.getMark(), ev.getDescription());
 
                 studentRows.add(studentRow);
             }

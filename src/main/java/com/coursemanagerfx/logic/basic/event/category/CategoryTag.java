@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.basic.event;
+package com.coursemanagerfx.logic.basic.event.category;
 
 public enum CategoryTag {
     SESSIYA,        SFP,             SK_KG_KV,

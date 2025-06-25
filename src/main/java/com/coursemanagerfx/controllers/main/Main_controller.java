@@ -7,9 +7,10 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.*;
 import com.coursemanagerfx.custom_ui.GradientBackground;
-import com.coursemanagerfx.logic.basic.event.EventCategories;
+import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.EventStatus;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
+import com.coursemanagerfx.logic.basic.event.category.EventCategory;
 import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
@@ -102,8 +103,9 @@ public class Main_controller implements StageAttachable {
     /* --- info bottom panel --- */
     @FXML private HBox infoBotPane;
 
+    @FXML private Label lblActiveEvents;
+    @FXML private Label lblTotalMark;
     @FXML private Label lblCurHistory;
-    @FXML private Label lblStudentInfo;
     @FXML private Button btnAddEvent;
     @FXML private Button btnOpenHistory;
 
@@ -132,6 +134,9 @@ public class Main_controller implements StageAttachable {
     @FXML private MenuItem miRedo;
     @FXML private Button btnUndo;
     @FXML private Button btnRedo;
+
+    @FXML private Menu menuFile;
+    @FXML private Button btnExport;
     /* --- MENU --- */
     /* ============================================== */
 
@@ -147,11 +152,14 @@ public class Main_controller implements StageAttachable {
     public InlineCssTextArea getHistoryTxtArea() {
         return historyTxtArea;
     }
+    public Label getLblActiveEvents() {
+        return lblActiveEvents;
+    }
+    public Label getLblTotalMark() {
+        return lblTotalMark;
+    }
     public Label getLblCurHistory() {
         return lblCurHistory;
-    }
-    public Label getLblStudentInfo() {
-        return lblStudentInfo;
     }
     public Label getLblAppName() {
         return lblAppName;
@@ -225,9 +233,14 @@ public class Main_controller implements StageAttachable {
     public BorderPane getEventInfoMaskPane() {
         return eventInfoMaskPane;
     }
-
     public Label getLblGroupNumber() {
         return lblGroupNumber;
+    }
+    public Menu getMenuFile() {
+        return menuFile;
+    }
+    public Button getBtnExport() {
+        return btnExport;
     }
     /* --- GETTERS --- */
     /* ============================================================== */
@@ -559,7 +572,7 @@ public class Main_controller implements StageAttachable {
 
         /* add placeholder label */
         Label emptyLabel = new Label("You have not added any events yet...");
-        emptyLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 32px;");
+        emptyLabel.setStyle("-fx-text-fill: rgba(195,195,195,0.5); -fx-font-size: 32px;");
         eventsTable.setPlaceholder(emptyLabel);
         /* --------------------- */
 
@@ -624,6 +637,43 @@ public class Main_controller implements StageAttachable {
 
         /* sort by ukrainian alphabet */
         categoryColumn.setComparator(AppConstants.UA_COLLATOR::compare);
+
+        /* ----- style ----- */
+        categoryColumn.setCellFactory(column -> new TableCell<StudentEvent, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+
+                StudentEvent event = getTableRow() != null ? getTableRow().getItem() : null;
+                if (event == null) {
+                    setText(item);
+                    setStyle("");
+                    return;
+                }
+
+                EventCategory category = event.getCategory().getEventCategory();
+                Color fxColor = category.color();
+
+                /* to css rgba */
+                String rgba = String.format(
+                        "rgba(%d,%d,%d,%.3f)",
+                        (int) (fxColor.getRed() * 255),
+                        (int) (fxColor.getGreen() * 255),
+                        (int) (fxColor.getBlue() * 255),
+                        fxColor.getOpacity()
+                );
+
+                setText(category.name());
+                setStyle("-fx-background-color: " + rgba + ";");
+            }
+        });
+
         /* --------------------------- */
 
 
@@ -789,12 +839,12 @@ public class Main_controller implements StageAttachable {
                     setText(item.name());
 
                     if (item == EventStatus.ACTIVE) {
-                        setStyle("-fx-background-color: rgba(0,255,0,0.3);" +
-                                "-fx-text-fill: #00d800;" +
+                        setStyle("-fx-background-color: rgba(0,255,0,0.15);" +
+                                "-fx-text-fill: #00b100;" +
                                 "-fx-font-weight: bold");
                     } else if (item == EventStatus.COMPLETED) {
-                        setStyle("-fx-background-color: rgba(255,0,0,0.3);" +
-                                "-fx-text-fill: #da0000;" +
+                        setStyle("-fx-background-color: rgba(255,0,0,0.15);" +
+                                "-fx-text-fill: #b10000;" +
                                 "-fx-font-weight: bold");
                     } else {
                         setStyle(""); // fallback

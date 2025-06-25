@@ -11,7 +11,7 @@ import com.coursemanagerfx.controllers.main.StudentPanel_controller;
 import com.coursemanagerfx.custom_ui.ProgressSpinner;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.EventCategories;
+import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.EventStatus;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
@@ -44,7 +44,6 @@ import javafx.util.Duration;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.*;
-import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -222,13 +221,10 @@ public final class Actions {
                     .mapToDouble(StudentEvent::getMark)
                     .sum();
 
-            String text = String.format(
-                    "Active events: %d | Total mark: %s",
-                    activeEventsCount,
-                    (totalMark % 1 == 0) ? String.valueOf((int) totalMark) : String.valueOf(totalMark)
-            );
+            ctrl.getLblActiveEvents().setText("Active events: " + activeEventsCount);
 
-            ctrl.getLblStudentInfo().setText(text);
+            ctrl.getLblTotalMark().setText("Total mark: " + ((totalMark % 1 == 0) ?
+                    String.valueOf((int) totalMark) : String.valueOf(totalMark)));
         }
 
         /* ========== helpers ========== */
@@ -357,6 +353,10 @@ public final class Actions {
             for (Node node : ctrl.getTabHBox().getChildren()) node.setDisable(true);      // disable group tab buttons
             for (Node node : ctrl.getStudentVBox().getChildren()) node.setDisable(true);  // disable student panels
 
+            undoRedo.setUndoRedoDisabled(true);       // block undo/redo actions
+            ctrl.getMenuFile().setDisable(true);    // block menu "File"
+            ctrl.getBtnExport().setDisable(true);   // block button "Export"
+
             ctrl.getTxtFieldSearch().setDisable(true);  // disable search field
             ctrl.getBtnAddStudent().setDisable(true);
 
@@ -408,8 +408,12 @@ public final class Actions {
 
             for (Node node : ctrl.getTabHBox().getChildren()) node.setDisable(false);       // enable group tab buttons
             for (Node node : ctrl.getStudentVBox().getChildren()) node.setDisable(false);   // enable student panels
-            ctrl.getTxtFieldSearch().setDisable(false);     // enable search field
 
+            undoRedo.setUndoRedoDisabled(false);       // unblock undo/redo actions
+            ctrl.getMenuFile().setDisable(false);        // unblock menu "File"
+            ctrl.getBtnExport().setDisable(false);       // unblock button "Export"
+
+            ctrl.getTxtFieldSearch().setDisable(false);     // enable search field
             ctrl.getBtnAddStudent().setDisable(false);
 
             ctrl.getBtnCancelEvent().setVisible(true);
@@ -1164,8 +1168,7 @@ public final class Actions {
      * *****************************************************************/
     public class UndoRedo {
 
-        private final Deque<Command> undoStack = new ArrayDeque<>();
-        private final Deque<Command> redoStack = new ArrayDeque<>();
+        /* ===== PUBLIC API ===== */
 
         public Deque<Command> getUndoStack() {
             return undoStack;
@@ -1174,29 +1177,26 @@ public final class Actions {
             return redoStack;
         }
 
-        private final BooleanProperty canUndo = new SimpleBooleanProperty(false);
-        private final BooleanProperty canRedo = new SimpleBooleanProperty(false);
-
         public BooleanProperty canUndoProperty() { return canUndo; }
         public BooleanProperty canRedoProperty() { return canRedo; }
-
-        private void updateState() {
-            canUndo.set(!undoStack.isEmpty());
-            canRedo.set(!redoStack.isEmpty());
-        }
 
         public UndoRedo()
             { updateState(); }
 
+        public void setUndoRedoDisabled(boolean value) {
+            this.undoredoDisabled = value;
+            updateState();
+        }
+
         public void addCommand(Command cmd) {
-            if (ctrl == null || cmd == null) return;
+            if (ctrl == null || cmd == null || undoredoDisabled) return;
             undoStack.addLast(cmd);
             redoStack.clear();
             updateState();
         }
 
         public void undo() {
-            if (ctrl == null || undoStack.isEmpty()) return;
+            if (ctrl == null || undoStack.isEmpty() || undoredoDisabled) return;
 
             Command cmd = undoStack.removeLast();
             cmd.undo();
@@ -1209,7 +1209,7 @@ public final class Actions {
         }
 
         public void redo() {
-            if (ctrl == null || redoStack.isEmpty()) return;
+            if (ctrl == null || redoStack.isEmpty() || undoredoDisabled) return;
 
             Command cmd = redoStack.removeLast();
             cmd.execute();
@@ -1219,6 +1219,23 @@ public final class Actions {
             );
             undoStack.addLast(cmd);
             updateState();
+        }
+
+
+
+        /* ===== CORE ===== */
+
+        private boolean undoredoDisabled = false;     // flag
+
+        private final Deque<Command> undoStack = new ArrayDeque<>();
+        private final Deque<Command> redoStack = new ArrayDeque<>();
+
+        private final BooleanProperty canUndo = new SimpleBooleanProperty(false);
+        private final BooleanProperty canRedo = new SimpleBooleanProperty(false);
+
+        private void updateState() {
+            canUndo.set(!undoredoDisabled && !undoStack.isEmpty());
+            canRedo.set(!undoredoDisabled && !redoStack.isEmpty());
         }
     }
 
@@ -1265,7 +1282,7 @@ public final class Actions {
             area.setStyle(start + prefix.length() + historyText.length(), end, suffixStyle);
 
             /*  in Label print only: [TYPE] short history text  */
-            byte mnocihl = 20;     // max_number_of_chars_in_history_label
+            byte mnocihl = 40;     // max_number_of_chars_in_history_label
             String shortHistoryText = historyText.length() > mnocihl
                     ? historyText.substring(0, mnocihl) + "..."
                     : historyText;

@@ -1,5 +1,6 @@
 package com.coursemanagerfx.logic.basic.event;
 
+import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 
 import java.time.LocalDate;

@@ -9,7 +9,7 @@ echo [INFO] Building custom Java runtime...
 
 jlink ^
   --module-path "C:\Program Files\BellSoft\LibericaJDK-24-Full\jmods;C:\javafx-sdk-21.0.2\jmods" ^
-  --add-modules java.base,java.logging,java.desktop,javafx.controls,javafx.graphics,javafx.fxml ^
+  --add-modules java.base,java.logging,java.desktop,jdk.localedata,javafx.controls,javafx.graphics,javafx.fxml ^
   --output "%OUTPUT_DIR%" ^
   --strip-debug ^
   --no-header-files ^

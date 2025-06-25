@@ -2,7 +2,7 @@ package com.coursemanagerfx.logic.security;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
-import com.coursemanagerfx.logic.basic.event.EventCategories;
+import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.date.EventDate;
 

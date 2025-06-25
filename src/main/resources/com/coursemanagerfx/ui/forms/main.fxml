@@ -23,18 +23,14 @@
             <left>
                <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
                   <MenuBar styleClass="menu-bar-root" stylesheets="@../styles/menu_bar.css">
-                     <Menu mnemonicParsing="false" text="File">
+                     <Menu fx:id="menuFile" mnemonicParsing="false" text="File">
                         <MenuItem fx:id="miHome" mnemonicParsing="false" onAction="#miHome" styleClass="menu-bar-item" text="Home" />
                         <MenuItem fx:id="miSave" mnemonicParsing="false" onAction="#miSave" styleClass="menu-bar-item" text="Save">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
-                        <MenuItem fx:id="miExport" mnemonicParsing="false" onAction="#miExport" styleClass="menu-bar-item" text="Export">
-                           <accelerator>
-                              <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                           </accelerator>
-                        </MenuItem>
+                        <MenuItem fx:id="miExport" mnemonicParsing="false" onAction="#miExport" styleClass="menu-bar-item" text="Export" />
                         <SeparatorMenuItem mnemonicParsing="false" styleClass="menu-bar-separator" />
                         <MenuItem fx:id="miQuit" mnemonicParsing="false" onAction="#miQuit" styleClass="menu-bar-item-quit" text="Quit">
                            <accelerator>
@@ -69,7 +65,7 @@
                      </Menu>
                   </MenuBar>
 
-                  <Button contentDisplay="RIGHT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#miExport" prefWidth="100.0" styleClass="export-button" text="Export">
+                  <Button fx:id="btnExport" contentDisplay="RIGHT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#miExport" prefWidth="100.0" styleClass="export-button" text="Export">
                      <tooltip>
                         <Tooltip text="Export data to excel file" />
                      </tooltip>
@@ -180,7 +176,7 @@
                                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                           </StackPane.margin>
                                        </Button>
-                                       <Label fx:id="lblEditing" managed="false" opacity="0.4" text="Editing..." textFill="#dddddd" visible="false" StackPane.alignment="BOTTOM_CENTER">
+                                       <Label fx:id="lblEditing" managed="false" opacity="0.4" text="Event editing..." textFill="#dddddd" visible="false" StackPane.alignment="BOTTOM_CENTER">
                                           <font>
                                              <Font size="18.0" />
                                           </font>
@@ -353,32 +349,47 @@
                               <Button fx:id="btnAddEvent" maxHeight="Infinity" onAction="#btnAddEvent" styleClass="animated-button" text="➕ Event" />
 
                               <StackPane styleClass="fancy-pane" HBox.hgrow="ALWAYS">
-                                 <BorderPane>
-                                    <right>
-                                       <Button fx:id="btnOpenHistory" onAction="#btnHistory" styleClass="animated-button" text="History" />
-                                    </right>
-                                    <center>
-                                       <BorderPane BorderPane.alignment="CENTER">
-                                          <left>
-                                             <Label fx:id="lblStudentInfo" text="Student Info Text here..." textFill="WHITE" BorderPane.alignment="CENTER">
-                                                <font>
-                                                   <Font size="16.0" />
-                                                </font>
+                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                       <HBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
+                                          <children>
+                                             <Label fx:id="lblActiveEvents" maxHeight="1.7976931348623157E308" styleClass="active-events-label" text="Active events: X">
+                                                <HBox.margin>
+                                                   <Insets />
+                                                </HBox.margin>
+                                                <padding>
+                                                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </padding>
                                              </Label>
-                                          </left>
-                                          <right>
-                                             <Label fx:id="lblCurHistory" alignment="CENTER" text="History info" textAlignment="RIGHT" textFill="WHITE" BorderPane.alignment="CENTER">
-                                                <font>
-                                                   <Font size="16.0" />
-                                                </font>
-                                             </Label>
-                                          </right>
+                                             <Label fx:id="lblTotalMark" maxHeight="1.7976931348623157E308" styleClass="total-mark-label" text="Total mark: X">
+                                                <HBox.margin>
+                                                   <Insets />
+                                                </HBox.margin>
+                                                <padding>
+                                                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </padding></Label>
+                                          </children>
                                           <padding>
-                                             <Insets left="10.0" right="10.0" />
-                                          </padding>
-                                       </BorderPane>
-                                    </center>
-                                 </BorderPane>
+                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                          </padding></HBox>
+                                       <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                                          <children>
+                                             <Label fx:id="lblCurHistory" alignment="CENTER" maxHeight="1.7976931348623157E308" styleClass="current-history-label" text="History info" textAlignment="RIGHT" textFill="#dddddd">
+                                                <font>
+                                                   <Font size="16.0" />
+                                                </font>
+                                                <padding>
+                                                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </padding>
+                                                <HBox.margin>
+                                                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </HBox.margin>
+                                             </Label>
+                                             <Button fx:id="btnOpenHistory" onAction="#btnHistory" styleClass="animated-button" text="History" />
+                                          </children>
+                                       </HBox>
+                                    </children>
+                                 </HBox>
                               </StackPane>
                            </HBox>
                         </bottom>
