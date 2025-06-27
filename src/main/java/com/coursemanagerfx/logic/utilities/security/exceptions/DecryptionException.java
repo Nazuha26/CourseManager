@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.security.exceptions;
+package com.coursemanagerfx.logic.utilities.security.exceptions;
 
 import java.io.IOException;
 

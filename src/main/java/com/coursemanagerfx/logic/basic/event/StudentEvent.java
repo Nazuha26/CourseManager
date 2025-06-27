@@ -81,6 +81,25 @@ public class StudentEvent {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StudentEvent that = (StudentEvent) o;
+
+        return  eventID == that.eventID &&
+                Double.compare(that.mark, mark) == 0 &&
+                crtEventDate.equals(that.crtEventDate) &&
+                description.equals(that.description) &&
+                expEventDate.equals(that.expEventDate) &&
+                category.equals(that.category);
+    }
+
+    @Override
+    public int hashCode()
+        { return java.util.Objects.hash(eventID, category, crtEventDate, description, mark, expEventDate); }
+
+    @Override
     public String toString() {
         String formattedCategory = category.getEventCategory().toString().replace("\n", "\n  ");
         return "Event {\n" +

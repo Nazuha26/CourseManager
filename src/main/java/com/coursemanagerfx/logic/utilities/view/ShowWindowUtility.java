@@ -4,7 +4,7 @@ import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.CourseInfo;
 import com.coursemanagerfx.Launcher;
-import com.coursemanagerfx.animations.WindowInAnimation;
+import com.coursemanagerfx.animations.WindowBlindsInAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.StageSetupUtility;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
@@ -12,7 +12,7 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.Start_controller;
 import com.coursemanagerfx.logic.basic.Group;
-import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -61,7 +61,7 @@ public class ShowWindowUtility {
             startStage.setTitle(title);
             controller.getLabelTitle().setText(title);
 
-            WindowInAnimation.play(
+            WindowBlindsInAnimation.play(
                     controller,
                     controller.getRootPane().getWidth(),
                     controller.getRootPane().getHeight(),
@@ -117,7 +117,7 @@ public class ShowWindowUtility {
             controller.getLblAppName().setText(title);
             mainStage.setTitle(title);
 
-            WindowInAnimation.play(
+            WindowBlindsInAnimation.play(
                     controller,
                     controller.getRootPane().getWidth(),
                     controller.getRootPane().getHeight(),
@@ -125,6 +125,8 @@ public class ShowWindowUtility {
                     Duration.seconds(1),
                     () -> StageSetupUtility.setup(controller, mainStage, 0)
             );
+
+
 
             String password;
             Group[] course = null;

@@ -2,7 +2,7 @@ package com.coursemanagerfx.logic;
 
 import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.Launcher;
-import com.coursemanagerfx.animations.WindowOutAnimation;
+import com.coursemanagerfx.animations.WindowBlindsOutAnimation;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.exceptions.SaveException;
@@ -20,7 +20,7 @@ import com.coursemanagerfx.logic.commands.Command;
 import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
-import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
 import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
@@ -29,7 +29,9 @@ import com.coursemanagerfx.logic.utilities.update.exceptions.NoInternetConnectio
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -334,12 +336,20 @@ public final class Actions {
      *                          CLASS  UiActions
      * *****************************************************************/
     public class UiActions {
-        private StudentEvent editingEvent;
+        /*private StudentEvent editingEvent;
         public StudentEvent getEditingEvent() {
             return editingEvent;
-        }
+        }*/
 
         /* ======  PUBLIC API  ====== */
+
+        private final ObjectProperty<StudentEvent> editingEvent = new SimpleObjectProperty<>(null);
+        public ObjectProperty<StudentEvent> editingEventProperty() { return editingEvent; }
+
+        public StudentEvent getEditingEvent() { return editingEvent.get(); }
+        public void setEditingEvent(StudentEvent event) { editingEvent.set(event); }
+
+
         public void startEditing(StudentEvent event) {
             if (ctrl == null) return;
 
@@ -348,7 +358,8 @@ public final class Actions {
                 formAnims.mainTopPanelInOut(FormAnims.State.SHOW);
             }
 
-            editingEvent = event;
+            setEditingEvent(event);
+            //editingEvent = event;
 
             for (Node node : ctrl.getTabHBox().getChildren()) node.setDisable(true);      // disable group tab buttons
             for (Node node : ctrl.getStudentVBox().getChildren()) node.setDisable(true);  // disable student panels
@@ -404,7 +415,8 @@ public final class Actions {
 
             formAnims.mainTopPanelInOut(FormAnims.State.HIDE);
 
-            editingEvent = null;
+            setEditingEvent(null);
+            //editingEvent = null;
 
             for (Node node : ctrl.getTabHBox().getChildren()) node.setDisable(false);       // enable group tab buttons
             for (Node node : ctrl.getStudentVBox().getChildren()) node.setDisable(false);   // enable student panels
@@ -491,7 +503,7 @@ public final class Actions {
 
             Command cmd = new AddEventCommand(select.getSelectedGroup(), select.getSelectedStudent(), newEvent);
             cmd.execute();
-            undoRedo.addCommand(cmd);
+            undoRedo.addCommandToStack(cmd);
 
             historyActions.setHistory(
                     Actions.HistoryActions.HistoryType.SUCCESS,
@@ -552,7 +564,7 @@ public final class Actions {
             if (ctrl == null) return;
 
             if (undoRedo.undoStack.isEmpty()) {
-                WindowOutAnimation.play(
+                WindowBlindsOutAnimation.play(
                         ctrl,
                         ctrl.getStage().getWidth(),
                         ctrl.getStage().getHeight(),
@@ -568,7 +580,7 @@ public final class Actions {
             );
 
             if (confirmed) {
-                WindowOutAnimation.play(
+                WindowBlindsOutAnimation.play(
                         ctrl,
                         ctrl.getStage().getWidth(),
                         ctrl.getStage().getHeight(),
@@ -586,7 +598,7 @@ public final class Actions {
         private boolean isShowingDataPickerFlag = false;
 
         private void saveEventAction() {
-            if (ctrl == null || editingEvent == null) return;
+            if (ctrl == null || getEditingEvent() == null) return;
             if (isInvalidEventForm()) return;
 
             /* === collect all new data === */
@@ -633,7 +645,7 @@ public final class Actions {
             /* --------------- */
 
             StudentEvent editedCopy = new StudentEvent(
-                    editingEvent.getID(),
+                    getEditingEvent().getID(),
                     newCrt,
                     newDesc,
                     newMark,
@@ -641,43 +653,57 @@ public final class Actions {
                     newType
             );
 
+            // === Check if anything has changed ===
+            if (editedCopy.equals(getEditingEvent())) {
+                System.out.println("No changes detected - skipping save.");
+                stopEditing();
+                return;
+            }
+
+            // === Save ===
             EditEventCommand cmd = new EditEventCommand(
                     select.getSelectedGroup(),
                     select.getSelectedStudent(),
-                    editingEvent,
+                    getEditingEvent(),
                     editedCopy
             );
             cmd.execute();
-            undoRedo.addCommand(cmd);
+            undoRedo.addCommandToStack(cmd);
+
+            historyActions.setHistory(
+                    HistoryActions.HistoryType.INFO,
+                    "Edited event with description: \"" + newDesc + "\""
+            );
 
             stopEditing();
-            formAnims.mainTopPanelInOut(FormAnims.State.HIDE);
         }
 
         private void deleteEventAction() {
-            if (ctrl == null || editingEvent == null) return;
+            if (ctrl == null || getEditingEvent() == null) return;
 
-            Window owner = ctrl.getStage().getScene().getWindow();
-
-            String shortDesc = editingEvent.getDescription().length() > 10
-                    ? editingEvent.getDescription().substring(0, 10) + "..."
-                    : editingEvent.getDescription();
+            String shortDesc = getEditingEvent().getDescription().length() > 10
+                    ? getEditingEvent().getDescription().substring(0, 10) + "..."
+                    : getEditingEvent().getDescription();
             boolean isDelete = AlertFX.showQuestion(
                     "Event deleting",
                     "Do you want to delete \"" + shortDesc + "\" event?");
 
             if (isDelete) {
-                StudentEvent currentEvent = editingEvent;
+                StudentEvent currentEvent = getEditingEvent();
                 DeleteEventCommand cmd = new DeleteEventCommand(
                         select.getSelectedGroup(),
                         select.getSelectedStudent(),
                         currentEvent
                 );
                 cmd.execute();
-                undoRedo.addCommand(cmd);
+                undoRedo.addCommandToStack(cmd);
+
+                historyActions.setHistory(
+                        HistoryActions.HistoryType.INFO,
+                        "Deleted event with description: \"" + currentEvent.getDescription() + "\""
+                );
 
                 stopEditing();
-                formAnims.mainTopPanelInOut(FormAnims.State.HIDE);
             }
         }
 
@@ -784,7 +810,7 @@ public final class Actions {
                 );
             }
 
-            WindowOutAnimation.play(
+            WindowBlindsOutAnimation.play(
                     ctrl,
                     ctrl.getStage().getWidth(),
                     ctrl.getStage().getHeight(),
@@ -1188,8 +1214,8 @@ public final class Actions {
             updateState();
         }
 
-        public void addCommand(Command cmd) {
-            if (ctrl == null || cmd == null || undoredoDisabled) return;
+        public void addCommandToStack(Command cmd) {
+            if (ctrl == null || cmd == null) return;
             undoStack.addLast(cmd);
             redoStack.clear();
             updateState();
@@ -1274,7 +1300,7 @@ public final class Actions {
 
             /* css style for each segment */
             String prefixStyle = String.format("-fx-fill: %s; -fx-font-weight: bold;", toWebColor(color));
-            String mainStyle = "-fx-fill: white;";
+            String mainStyle = "-fx-fill: #dddddd;";
             String suffixStyle = "-fx-fill: gray;";
 
             area.setStyle(start, start + prefix.length(), prefixStyle);

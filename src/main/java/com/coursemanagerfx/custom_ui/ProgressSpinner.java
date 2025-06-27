@@ -39,7 +39,7 @@ public class ProgressSpinner extends Region {
                                        Consumer<Throwable> onFail,
                                        String task_name ) {
 
-        showLoadingWindow(owner, modal, task, onSuccess, onFail, task_name, 0, 0, new Image(Objects.requireNonNull(ProgressSpinner.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/cmfx_icon-1.png"))));
+        showLoadingWindow(owner, modal, task, onSuccess, onFail, task_name, 0, 0, new Image(Objects.requireNonNull(ProgressSpinner.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/old/cmfx_icon-1.png"))));
     }
 
     public <V> void showLoadingWindow( Window owner,

@@ -7,7 +7,7 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.exceptions.CourseCreationException;
 import com.coursemanagerfx.logic.basic.Group;
-import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
 import javafx.application.Platform;

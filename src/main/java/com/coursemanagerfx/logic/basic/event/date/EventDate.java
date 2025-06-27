@@ -51,6 +51,20 @@ public class EventDate {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EventDate that = (EventDate) o;
+
+        return day == that.day && month == that.month && year == that.year;
+    }
+
+    @Override
+    public int hashCode()
+        { return java.util.Objects.hash(day, month, year); }
+
+    @Override
     public String toString() {
         return String.format("%02d.%02d.%04d", day, month, year);
     }

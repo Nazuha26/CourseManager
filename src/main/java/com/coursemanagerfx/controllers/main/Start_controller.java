@@ -1,11 +1,11 @@
 package com.coursemanagerfx.controllers.main;
 
-import com.coursemanagerfx.animations.WindowOutAnimation;
+import com.coursemanagerfx.animations.WindowBlindsOutAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.custom_ui.GradientBackground;
-import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
@@ -19,7 +19,6 @@ import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.InvocationTargetException;
 
 public class Start_controller implements StageAttachable {
 
@@ -60,7 +59,7 @@ public class Start_controller implements StageAttachable {
 
     @FXML
     private void btnClose() {
-        WindowOutAnimation.play(
+        WindowBlindsOutAnimation.play(
                 this,
                 rootPane.getWidth(),
                 rootPane.getHeight(),
@@ -139,7 +138,7 @@ public class Start_controller implements StageAttachable {
                     "Unexpected error while restarting.\n" + e.getMessage()
             );
         }
-        WindowOutAnimation.play(
+        WindowBlindsOutAnimation.play(
                 this,
                 rootPane.getWidth(),
                 rootPane.getHeight(),

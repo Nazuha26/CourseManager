@@ -392,7 +392,7 @@ public class Main_controller implements StageAttachable {
 
         Command cmd = new AddStudentCommand(selectedGroup, newStudent);
         cmd.execute();
-        Actions.getInstance().undoRedo().addCommand(cmd);
+        Actions.getInstance().undoRedo().addCommandToStack(cmd);
 
         Actions.getInstance().historyActions().setHistory(
                 Actions.HistoryActions.HistoryType.SUCCESS,
@@ -676,68 +676,62 @@ public class Main_controller implements StageAttachable {
 
         /* --------------------------- */
 
-
-
         /* ----- column DESCRIPTION ----- */
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         descriptionColumn.setCellFactory(column -> new TableCell<StudentEvent, String>() {
+            private final Button btnEdit = createEditButton();
+            private final VBox vbox = new VBox(4);
+            private final StackPane stackPane = new StackPane(vbox, btnEdit);
+
+            /* instance initialization (once for each line-event) */
+            {
+                StackPane.setAlignment(btnEdit, Pos.TOP_RIGHT);
+                Actions.getInstance().uiActions().editingEventProperty().addListener((obs, oldVal, newVal) -> refreshStyle());
+            }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+
                 if (empty || item == null) {
                     setGraphic(null);
                 } else {
-                    VBox vbox = new VBox(4);
-
                     TextFlow textFlow = applyTextStyleForTextFlow(item);
                     textFlow.maxWidthProperty().bind(getTableColumn().widthProperty().subtract(6));
-                    vbox.getChildren().add(new javafx.scene.Group(textFlow));
-
-                    /* edit event button */
-                    Button btnEdit = new Button();
-                    btnEdit.setPrefWidth(32);
-                    btnEdit.setPrefHeight(32);
-                    btnEdit.getStyleClass().add("edit-button");
-                    StackPane.setAlignment(btnEdit, Pos.TOP_RIGHT);
-
-                    btnEdit.setOnAction(e -> {
-                        StudentEvent event = getTableRow().getItem();
-                        if (event == null) return;
-                        if (Actions.getInstance().formAnims().isAnimPlaysFlag()) return;
-
-                        ObservableList<String> styleClass = btnEdit.getStyleClass();
-
-                        if (Actions.getInstance().uiActions().getEditingEvent() == event) {
-                            Actions.getInstance().uiActions().stopEditing();
-
-                            styleClass.removeAll("edit-button", "edit-button-selected");
-                            styleClass.add("edit-button");
-
-                            activeEditButton = null;
-                        } else {
-                            if (activeEditButton != null) {
-                                activeEditButton.getStyleClass().removeAll("edit-button", "edit-button-selected");
-                                activeEditButton.getStyleClass().add("edit-button");
-                            }
-
-                            Actions.getInstance().uiActions().startEditing(event);
-
-                            styleClass.removeAll("edit-button", "edit-button-selected");
-                            styleClass.add("edit-button-selected");
-
-                            activeEditButton = btnEdit;
-                        }
-                    });
-
-                    StackPane stackPane = new StackPane(vbox, btnEdit);
+                    vbox.getChildren().setAll(new javafx.scene.Group(textFlow));
                     setGraphic(stackPane);
+                    refreshStyle();
                 }
+            }
+
+            private Button createEditButton() {
+                Button b = new Button();
+                b.setPrefSize(32, 32);
+                b.getStyleClass().add("edit-button");
+                b.setOnAction(e -> {
+                    StudentEvent event = getTableRow().getItem();
+                    if (event == null || Actions.getInstance().formAnims().isAnimPlaysFlag()) return;
+
+                    if (Actions.getInstance().uiActions().getEditingEvent() == event)
+                        Actions.getInstance().uiActions().stopEditing();
+                    else
+                        Actions.getInstance().uiActions().startEditing(event);
+                });
+                return b;
+            }
+
+            private void refreshStyle() {
+                StudentEvent current = getTableRow().getItem();
+                boolean isEditing = current != null && current == Actions.getInstance().uiActions().getEditingEvent();
+
+                ObservableList<String> style = btnEdit.getStyleClass();
+                style.removeAll("edit-button", "edit-button-selected");
+                style.add(isEditing ? "edit-button-selected" : "edit-button");
             }
 
             private TextFlow applyTextStyleForTextFlow(String textStr) {
                 final TextFlow flow = new TextFlow();
 
-                // Используем маркеры из констант
                 String regex = String.format("(%1$s[^%1$s]+%1$s)|(%2$s[^%2$s]+%2$s)|(%3$s[^%3$s]+%3$s)|([^%1$s%2$s%3$s]+)",
                         Pattern.quote(BOLD_MARKER),
                         Pattern.quote(ITALIC_MARKER),

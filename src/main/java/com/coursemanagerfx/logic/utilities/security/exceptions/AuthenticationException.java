@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.security.exceptions;
+package com.coursemanagerfx.logic.utilities.security.exceptions;
 
 public class AuthenticationException extends SecurityException {
     public AuthenticationException(String message) {

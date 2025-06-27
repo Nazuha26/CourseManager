@@ -1,4 +1,4 @@
-package com.coursemanagerfx.logic.security;
+package com.coursemanagerfx.logic.utilities.security;
 
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;

@@ -1,7 +1,6 @@
 package com.coursemanagerfx.logic.basic;
 
-import com.coursemanagerfx.logic.deprecated.CmanSecurity;
-import com.coursemanagerfx.logic.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 
 public class Course {
     private String password;

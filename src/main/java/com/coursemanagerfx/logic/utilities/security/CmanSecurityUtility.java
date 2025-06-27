@@ -1,9 +1,9 @@
-package com.coursemanagerfx.logic.security;
+package com.coursemanagerfx.logic.utilities.security;
 
 import com.coursemanagerfx.logic.basic.Group;
-import com.coursemanagerfx.logic.security.exceptions.EncryptionException;
-import com.coursemanagerfx.logic.security.exceptions.AuthenticationException;
-import com.coursemanagerfx.logic.security.exceptions.DecryptionException;
+import com.coursemanagerfx.logic.utilities.security.exceptions.EncryptionException;
+import com.coursemanagerfx.logic.utilities.security.exceptions.AuthenticationException;
+import com.coursemanagerfx.logic.utilities.security.exceptions.DecryptionException;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -16,7 +16,7 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
-import static com.coursemanagerfx.logic.security.BinaryPlainCmanUtility.buildPlainCman;
+import static com.coursemanagerfx.logic.utilities.security.BinaryPlainCmanUtility.buildPlainCman;
 
 /*
  * Класс для безопасного шифрования и обновления бинарных *.cman‑файлов, содержащих данные Group[].
