@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.logic;
 
 import com.coursemanagerfx.AppConstants;
@@ -178,15 +185,26 @@ public final class Actions {
         /* repaint event table of student */
         public void repaintEventTable(Student student, Group group) {
             if (ctrl == null || group == null) return;
+
+            TableView<StudentEvent> table = ctrl.getEventsTable();
             if (student != null && !student.getEvents().isEmpty()) {
-                ctrl.getEventsTable().getItems().setAll(student.getEvents());
-                ctrl.getEventsTable().getSortOrder().setAll(List.of(ctrl.getStatusColumn()));  // add sort for status column
-                ctrl.getStatusColumn().setSortType(TableColumn.SortType.ASCENDING);            // set sort type for status column
-                ctrl.getEventsTable().sort();
+                table.getItems().setAll(student.getEvents());
+
+                ctrl.getCategoryColumn().setSortType(TableColumn.SortType.ASCENDING);
+                ctrl.getCrtDateColumn().setSortType(TableColumn.SortType.ASCENDING);
+                ctrl.getMarksColumn().setSortType(TableColumn.SortType.DESCENDING);
+
+                table.getSortOrder().setAll(
+                        ctrl.getCategoryColumn(),
+                        ctrl.getCrtDateColumn(),
+                        ctrl.getMarksColumn()
+                );
+
+                table.sort();
             } else {
-                ctrl.getEventsTable().getItems().clear();
-                ctrl.getEventsTable().getSortOrder().clear();       // remove sort from status column
-                ctrl.getEventsTable().refresh();
+                table.getItems().clear();
+                table.getSortOrder().clear();       // remove sort from CATEGORY column
+                table.refresh();
             }
             repaintStudentInfoLbl();
         }
@@ -596,6 +614,7 @@ public final class Actions {
 
         /* add function of event copy/paste */
         public void addCopyPasteEventTableAction() {
+            if (ctrl == null) return;
 
             TableView<StudentEvent> eventsTable = ctrl.getEventsTable();
 
@@ -649,6 +668,36 @@ public final class Actions {
                 row.setContextMenu(rowMenu);
                 return row;
             });
+
+
+
+            /* --- INFO LABEL --- */
+            int duration = 300;
+            Label lblCopyInfo = ctrl.getLblCopyInfo();
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(duration), lblCopyInfo);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(duration), lblCopyInfo);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            lblCopyInfo.setOpacity(0.0);
+            lblCopyInfo.setVisible(false);
+
+            eventsTable.setOnMouseEntered(e -> {
+                fadeOut.stop();
+                lblCopyInfo.setVisible(true);
+                fadeIn.playFromStart();
+            });
+
+            eventsTable.setOnMouseExited(e -> {
+                fadeIn.stop();
+                fadeOut.setOnFinished(ev -> lblCopyInfo.setVisible(false));
+                fadeOut.playFromStart();
+            });
+            /* ------------------ */
         }
         /* ========================== */
 

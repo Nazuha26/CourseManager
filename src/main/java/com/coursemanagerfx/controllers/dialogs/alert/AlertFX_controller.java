@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.controllers.dialogs.alert;
 
 import com.coursemanagerfx.animations.HideAnimation;

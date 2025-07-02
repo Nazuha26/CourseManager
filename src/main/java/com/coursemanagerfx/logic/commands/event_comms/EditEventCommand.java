@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.logic.commands.event_comms;
 
 import com.coursemanagerfx.logic.Actions;

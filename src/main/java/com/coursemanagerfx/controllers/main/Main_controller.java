@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.controllers.main;
 
 import com.coursemanagerfx.AppConstants;
@@ -127,6 +134,8 @@ public class Main_controller implements StageAttachable {
     @FXML private TableColumn<StudentEvent, Number> marksColumn;
     @FXML private TableColumn<StudentEvent, String> expDateColumn;
     @FXML private TableColumn<StudentEvent, EventStatus> statusColumn;
+
+    @FXML private Label lblCopyInfo;
     /* --- TABLE --- */
 
     /* --- MENU --- */
@@ -172,9 +181,6 @@ public class Main_controller implements StageAttachable {
     }
     public TableView<StudentEvent> getEventsTable() {
         return eventsTable;
-    }
-    public TableColumn<StudentEvent, EventStatus> getStatusColumn() {
-        return statusColumn;
     }
     public TextField getTxtFieldSearch() {
         return txtFieldSearch;
@@ -241,6 +247,19 @@ public class Main_controller implements StageAttachable {
     }
     public Button getBtnExport() {
         return btnExport;
+    }
+
+    public TableColumn<StudentEvent, String> getCategoryColumn() {
+        return categoryColumn;
+    }
+    public TableColumn<StudentEvent, LocalDate> getCrtDateColumn() {
+        return crtDateColumn;
+    }
+    public TableColumn<StudentEvent, Number> getMarksColumn() {
+        return marksColumn;
+    }
+    public Label getLblCopyInfo() {
+        return lblCopyInfo;
     }
     /* --- GETTERS --- */
     /* ============================================================== */
@@ -349,10 +368,10 @@ public class Main_controller implements StageAttachable {
 
         initTable();        /* init event table */
 
-        /* sort by status column in ascending type by default */
-        eventsTable.getSortOrder().add(statusColumn);
-        statusColumn.setSortType(TableColumn.SortType.ASCENDING);
-        eventsTable.sort();
+        /* sort by CATEGORY column in ascending type by default */
+        //eventsTable.getSortOrder().add(categoryColumn);
+        //categoryColumn.setSortType(TableColumn.SortType.ASCENDING);
+        //eventsTable.sort();
     }
 
     @FXML private void btnAddStudent() {
@@ -601,8 +620,6 @@ public class Main_controller implements StageAttachable {
 
         /* ----- column CREATION DATE ----- */
         /* sort by date */
-        //crtDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCrtDate().toString()));
-
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         crtDateColumn.setCellValueFactory(cellData ->
@@ -645,6 +662,7 @@ public class Main_controller implements StageAttachable {
             EventCategories ec2 = Actions.getInstance().uiActions().returnCategoryByName(b);
             return Integer.compare(ec1.ordinal(), ec2.ordinal());
         });
+        /* ------------------------------ */
 
         /* ----- style ----- */
         categoryColumn.setCellFactory(column -> new TableCell<StudentEvent, String>() {

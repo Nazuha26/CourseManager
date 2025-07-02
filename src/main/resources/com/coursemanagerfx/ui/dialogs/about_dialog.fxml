@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -67,6 +68,9 @@
                    <tooltip>
                        <Tooltip text="Click to copy email" />
                    </tooltip>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
                </Label>
            </VBox>
            <Label layoutX="149.0" layoutY="25.0" text="Created by Nazuha26&#10;Powered by MaXXer29&#10;© 2025 CourseManagerFX. All rights reserved." textAlignment="CENTER" textFill="#dddddd" underline="true">

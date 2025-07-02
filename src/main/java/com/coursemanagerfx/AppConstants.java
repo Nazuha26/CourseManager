@@ -1,3 +1,11 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
+
 package com.coursemanagerfx;
 
 import javafx.scene.paint.Color;
@@ -9,7 +17,7 @@ import java.util.Locale;
 
 public final class AppConstants {
 
-    public static final String APP_VERSION = "1.2.1";
+    public static final String APP_VERSION = "1.2.2";
 
     public static final Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), ".cmanfx/config", "config.json");
     public static final Path COURSES_PATH = Paths.get(System.getProperty("user.home"), ".cmanfx/courses/");

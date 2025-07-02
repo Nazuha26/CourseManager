@@ -1,3 +1,11 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
+/*
 package com.coursemanagerfx.logic.deprecated.notification;
 
 import animatefx.animation.*;
@@ -18,14 +26,16 @@ public class NotificationFX {
     private static final double SLIDE_OFFSET = 50;   // начальное смещение по X (пикселей)
     private static int count = 1;
 
-    /**
+    */
+/**
      * Конструктор.
      * @param type тип уведомления (для внешнего вида)
      * @param mainText основной текст
      * @param additionalText дополнительный текст
      * @param position позиция уведомления (TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT или BOTTOM_RIGHT)
      * @param container контейнер (AnimatedVBox) в который добавляются уведомления
-     */
+     *//*
+
     public NotificationFX(NotificationType type, String mainText, String additionalText,
                           NotificationPosition position, AnimatedVBox container) {
         this.position = position;
@@ -42,10 +52,12 @@ public class NotificationFX {
         }
     }
 
-    /**
+    */
+/**
      * Показывает уведомление с анимацией появления.
      * Если количество уведомлений в контейнере превышает 5, удаляются лишние с анимацией.
-     */
+     *//*
+
     public void show() {
         if (container.getChildren().size() >= 5) {
             container.setOut(new FadeOutUp());
@@ -61,3 +73,4 @@ public class NotificationFX {
         autoClose.play();
     }
 }
+*/

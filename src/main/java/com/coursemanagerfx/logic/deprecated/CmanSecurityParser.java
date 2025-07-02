@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.logic.deprecated;
 
 import com.coursemanagerfx.logic.basic.event.date.EventDate;

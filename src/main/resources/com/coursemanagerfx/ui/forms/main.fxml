@@ -368,6 +368,14 @@
                                                 <padding>
                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                 </padding></Label>
+                                             <Label fx:id="lblCopyInfo" styleClass="copy-info-label" text="Right-click anywhere in the table to COPY or PASTE an event">
+                                                <font>
+                                                   <Font size="14.0" />
+                                                </font>
+                                                <padding>
+                                                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </padding>
+                                             </Label>
                                           </children>
                                           <padding>
                                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

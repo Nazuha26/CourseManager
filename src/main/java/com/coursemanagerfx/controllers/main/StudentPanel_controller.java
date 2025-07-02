@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.controllers.main;
 
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;

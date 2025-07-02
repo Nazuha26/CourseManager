@@ -1,3 +1,11 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
+/*
 package com.coursemanagerfx.logic.deprecated;
 
 import com.sun.jna.Pointer;
@@ -45,4 +53,4 @@ public class WindowControlUtility {
         HWND hwnd = getHWND(stage);
         User32.INSTANCE.PostMessage(hwnd, User32.WM_CLOSE, null, null);
     }
-}
+}*/

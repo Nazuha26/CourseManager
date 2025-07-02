@@ -38,14 +38,6 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
-    </dependency><dependency>
-      <groupId>org.kordamp.ikonli</groupId>
-      <artifactId>ikonli-javafx</artifactId>
-      <version>12.3.1</version>
-    </dependency><dependency>
-      <groupId>org.kordamp.bootstrapfx</groupId>
-      <artifactId>bootstrapfx-core</artifactId>
-      <version>0.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -70,11 +62,11 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
+    <!--<dependency>
       <groupId>eu.iamgio</groupId>
       <artifactId>animated</artifactId>
       <version>1.3.0</version>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>org.fxmisc.richtext</groupId>
       <artifactId>richtextfx</artifactId>
@@ -85,17 +77,6 @@
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>5.4.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>5.13.0</version>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>5.13.0</version>
     </dependency>
   </dependencies>
 
@@ -146,6 +127,125 @@
           </execution>
         </executions>
       </plugin>
+
+      <!--<plugin>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+        <version>1.2.1.Final</version>
+
+        <executions>
+          <execution>
+            <id>generate-module-info</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate-module-info</goal>
+            </goals>
+            <configuration>
+              <modules>
+                <module>
+                  <artifact>
+                    <groupId>com.coursemanagerfx</groupId>
+                    <artifactId>CourseManagerFX</artifactId>
+                    <version>1.0.0</version>
+                  </artifact>
+                  <additionalDependencies>
+                    <dependency>
+                      <groupId>org.openjfx</groupId>
+                      <artifactId>javafx-controls</artifactId>
+                      <version>17.0.6</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.openjfx</groupId>
+                      <artifactId>javafx-fxml</artifactId>
+                      <version>17.0.6</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.controlsfx</groupId>
+                      <artifactId>controlsfx</artifactId>
+                      <version>11.1.2</version>
+                    </dependency><dependency>
+                    <groupId>com.dlsc.formsfx</groupId>
+                    <artifactId>formsfx-core</artifactId>
+                    <version>11.6.0</version>
+                    <exclusions>
+                      <exclusion>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>*</artifactId>
+                      </exclusion>
+                    </exclusions>
+                  </dependency>
+                    <dependency>
+                      <groupId>org.json</groupId>
+                      <artifactId>json</artifactId>
+                      <version>20231013</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.google.code.gson</groupId>
+                      <artifactId>gson</artifactId>
+                      <version>2.10.1</version>
+                    </dependency>
+
+                    <dependency>
+                      <groupId>org.junit.jupiter</groupId>
+                      <artifactId>junit-jupiter-api</artifactId>
+                      <version>${junit.version}</version>
+                      <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.junit.jupiter</groupId>
+                      <artifactId>junit-jupiter-engine</artifactId>
+                      <version>${junit.version}</version>
+                      <scope>test</scope>
+                    </dependency>
+                    &lt;!&ndash;<dependency>
+                      <groupId>eu.iamgio</groupId>
+                      <artifactId>animated</artifactId>
+                      <version>1.3.0</version>
+                    </dependency>&ndash;&gt;
+                    <dependency>
+                      <groupId>org.fxmisc.richtext</groupId>
+                      <artifactId>richtextfx</artifactId>
+                      <version>0.11.5</version>
+                    </dependency>
+
+                    <dependency>
+                      <groupId>org.apache.poi</groupId>
+                      <artifactId>poi-ooxml</artifactId>
+                      <version>5.4.0</version>
+                    </dependency>
+                  </additionalDependencies>
+                  <moduleInfo>
+                    <name>com.coursemanagerfx</name>
+                    <exports>
+                      !com.coursemanagerfx.internal*;
+                      *;
+                    </exports>
+                    <opens>
+                      com.coursemanagerfx.ui.controller to javafx.fxml;
+                    </opens>
+                    <opensResources>
+                      com.coursemanagerfx.ui.dialogs.password;
+                      com.coursemanagerfx.ui.forms;
+                      com.coursemanagerfx.ui.notifications;
+                      com.coursemanagerfx.ui.styles;
+                    </opensResources>
+                    <addServiceUses>true</addServiceUses>
+                  </moduleInfo>
+                </module>
+                <module>
+                  ...
+                </module>
+              </modules>
+              <jdepsExtraArgs>
+                <arg>&#45;&#45;module-path</arg>
+                <arg>C:\Program Files\BellSoft\LibericaJDK-24-Full\lib</arg>
+                <arg>&#45;&#45;add-modules</arg>
+                <arg>javafx.controls,javafx.fxml</arg>
+              </jdepsExtraArgs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>-->
 
       <!-- Shade вместо assembly: вшиваем всё в один JAR -->
       <plugin>

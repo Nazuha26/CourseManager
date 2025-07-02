@@ -1,3 +1,10 @@
+/*
+========================================
+THIS FILE CREATED FOR "CourseManagerFX"
+            Author: Nazuha26
+========================================
+*/
+
 package com.coursemanagerfx.logic.basic.event.date;
 
 import java.time.LocalDate;
@@ -35,6 +42,8 @@ public class EventDate {
     public void setYear(int year) {
         this.year = year;
     }
+
+    public LocalDate toLocalDate() { return LocalDate.of(year, month, day); }
 
     public String toFormattedWithDaysFrom(EventDate from) {
         LocalDate thisDate = LocalDate.of(this.year, this.month, this.day);
