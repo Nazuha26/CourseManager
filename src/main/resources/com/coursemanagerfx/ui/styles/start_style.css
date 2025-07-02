@@ -52,7 +52,7 @@
 }
 
 .button-cancel,
-.button-confirm {
+.button-default {
     -fx-background-insets: 0;
     -fx-border-insets: 0;
     -fx-background-color: rgba(0,0,0,0.6);
@@ -88,7 +88,7 @@
     -fx-border-radius: 15;
 }
 
-.button-confirm:hover {
+.button-default:hover {
     -fx-background-color: rgba(53, 53, 53, 0.5);
 }
 

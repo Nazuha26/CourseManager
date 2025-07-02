@@ -39,7 +39,7 @@
                   <Font size="14.0" />
               </font>
            </Label>
-           <Button mnemonicParsing="false" onAction="#btnCheckForUpdates" styleClass="button-check-for-updates" text="Check for updates" />
+           <Button mnemonicParsing="false" onAction="#btnCheckForUpdates" styleClass="button-default" text="Check for updates" />
            <!--<Label fx:id="lblNoUpdates" layoutX="171.0" layoutY="47.0" managed="false"
                   text="All latest updates installed" textAlignment="CENTER" textFill="#00bc3c" underline="true">
               <font>
@@ -60,10 +60,7 @@
                        <Font size="14.0" />
                    </font>
                </Label>
-               <Label fx:id="lblEmail" contentDisplay="CENTER" text="coolfr490@gmail.com" textAlignment="CENTER" textFill="#0077ff" underline="true"
-                      onMouseEntered="#onLblEmailHover"
-                      onMouseExited="#onLblEmailUnhover"
-                      onMouseClicked="#onLblEmailClicked">
+               <Label fx:id="lblEmail" contentDisplay="CENTER" onMouseClicked="#onLblEmailClicked" onMouseEntered="#onLblEmailHover" onMouseExited="#onLblEmailUnhover" text="coolfr490@gmail.com" textAlignment="CENTER" textFill="#0077ff" underline="true">
                    <font>
                        <Font size="14.0" />
                    </font>

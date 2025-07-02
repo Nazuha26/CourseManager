@@ -8,9 +8,13 @@ import com.google.gson.*;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.file.*;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Logger LOGGER = Logger.getLogger(ConfigManager.class.getName());
 
     /* ========== PUBLIC API ========== */
 
@@ -37,45 +41,31 @@ public class ConfigManager {
     /* ===== CONFIG SETTERS ===== */
 
     public static void setOpenCourse(String courseName) {
-        AppConfig config = safeLoadingConfig();
-        config.open_course = courseName;
-        saveConfig(config);
+        updateConfig(c -> c.open_course = courseName);
     }
 
     public static void setLanguage(String lang) {
-        AppConfig config = safeLoadingConfig();
-        config.language = lang;
-        saveConfig(config);
+        updateConfig(c -> c.language = lang);
     }
 
     public static void setDefaultPassword(String pass) {
-        AppConfig config = safeLoadingConfig();
-        config.default_password = pass;
-        saveConfig(config);
+        updateConfig(c -> c.default_password = pass);
     }
 
     public static void setAutoUpdate(boolean autoUpdate) {
-        AppConfig config = safeLoadingConfig();
-        config.auto_update = autoUpdate;
-        saveConfig(config);
+        updateConfig(c -> c.auto_update = autoUpdate);
     }
 
     public static void setAutoSave(boolean autoSave) {
-        AppConfig config = safeLoadingConfig();
-        config.auto_save = autoSave;
-        saveConfig(config);
+        updateConfig(c -> c.auto_save = autoSave);
     }
 
     public static void setAutoSaveSecInterval(int sec) {
-        AppConfig config = safeLoadingConfig();
-        config.auto_save_sec_interval = sec;
-        saveConfig(config);
+        updateConfig(c -> c.auto_save_sec_interval = sec);
     }
 
     public static void setExportPath(String path) {
-        AppConfig config = safeLoadingConfig();
-        config.export_path = path;
-        saveConfig(config);
+        updateConfig(c -> c.export_path = path);
     }
 
     /* ========================== */
@@ -86,77 +76,75 @@ public class ConfigManager {
     public static AppConfig safeLoadingConfig() {
         if (cachedConfig != null) return cachedConfig;
 
-        AppConfig config = new AppConfig();     // default params
+        AppConfig config = new AppConfig();               // default params
+        AppConfig defaultConfig = new AppConfig();        // for fallback values
         boolean changed = false;
+        JsonObject obj = null;
 
         try {
             if (Files.notExists(AppConstants.CONFIG_PATH)) {
-                saveConfig(config);
+                saveConfig(config);     // write full default config
                 cachedConfig = config;
                 return config;
             }
 
             String json = Files.readString(AppConstants.CONFIG_PATH);
-            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+            obj = JsonParser.parseString(json).getAsJsonObject();
 
             for (Field field : AppConfig.class.getDeclaredFields()) {
                 String key = field.getName();
-                if (!obj.has(key)) {
+                field.setAccessible(true);
+
+                if (!obj.has(key) || obj.get(key).isJsonNull()) {
+                    Object defaultValue = field.get(defaultConfig);
+                    obj.add(key, GSON.toJsonTree(defaultValue));
+                    field.set(config, defaultValue);
                     changed = true;
                     continue;
                 }
 
                 JsonElement val = obj.get(key);
-                if (val == null || val.isJsonNull()) {
-                    changed = true;
-                    continue;
-                }
-
-                field.setAccessible(true);
 
                 try {
+                    Class<?> type = field.getType();
+
                     /* --- STRING --- */
-                    if (field.getType() == String.class) {
-                        if (val.isJsonPrimitive() && val.getAsJsonPrimitive().isString()) {
-                            String strVal = val.getAsString();
-                            if (strVal.isBlank()) {
-                                changed = true;
-                                continue;
-                            }
-                            field.set(config, strVal);
-                        } else {
-                            changed = true;
-                        }
-                    }
-                    /* --- BOOLEAN --- */
-                    else if (field.getType() == boolean.class) {
-                        if (val.isJsonPrimitive() && val.getAsJsonPrimitive().isBoolean()) {
-                            field.setBoolean(config, val.getAsBoolean());
-                        } else {
-                            changed = true;
-                        }
-                    }
-                    /* --- INTEGER --- */
-                    else if (field.getType() == int.class) {
-                        if (val.isJsonPrimitive() && val.getAsJsonPrimitive().isNumber()) {
-                            int value = val.getAsInt();
+                    if (type == String.class) {
+                        String strVal = val.getAsString();
+                        if (strVal.isBlank()) throw new Exception();
 
-                            /* --- exception parameters --- */
-                            if (key.equals("auto_save_sec_interval") && value <= 0) {
-                                changed = true;
-                            }
+                        /* --- exception parameters --- */
+                        if (key.equals("export_path") && !Files.isDirectory(Path.of(strVal)))
+                            throw new Exception();
 
-                            else field.setInt(config, value);
-                            /* ------------------ */
+                        field.set(config, strVal);
 
-                        } else changed = true;
+                        /* --- BOOLEAN --- */
+                    } else if (type == boolean.class) {
+                        field.setBoolean(config, val.getAsBoolean());
+
+                        /* --- INTEGER --- */
+                    } else if (type == int.class) {
+                        int intVal = val.getAsInt();
+
+                        /* --- exception parameters --- */
+                        if (key.equals("auto_save_sec_interval") && intVal <= 0)
+                            throw new Exception();
+
+                        field.setInt(config, intVal);
                     }
 
                     /* === SETTING OTHER TYPES HERE === */
                     // ...
 
                 } catch (Exception e) {
+                    // use default value
+                    Object defaultValue = field.get(defaultConfig);
+                    obj.add(key, GSON.toJsonTree(defaultValue));
+                    field.set(config, defaultValue);
                     changed = true;
+
+                    LOGGER.info(String.format("Config field '%s' had invalid value and was replaced with default: \"%s\"", key, defaultValue));
                 }
             }
 
@@ -169,7 +157,10 @@ public class ConfigManager {
             changed = true;
         }
 
-        if (changed) saveConfig(config);
+        if (changed) {
+            if (obj != null) saveJsonConfig(obj);
+            else             saveConfig(config);
+        }
 
         cachedConfig = config;
         return config;
@@ -185,15 +176,81 @@ public class ConfigManager {
     private static void saveConfig(AppConfig config) {
         try {
             Files.createDirectories(AppConstants.CONFIG_PATH.getParent());
-            Writer writer = Files.newBufferedWriter(AppConstants.CONFIG_PATH);
-            GSON.toJson(config, writer);
-            writer.close();
+            try (Writer writer = Files.newBufferedWriter(AppConstants.CONFIG_PATH)) { GSON.toJson(config, writer); }
         } catch (IOException ex) {
             AlertFX.showNotification(
                     AlertMessageType.ERROR,
                     "Configuration Error",
                     "Failed to save configuration:\n" + ex.getMessage()
             );
+        }
+    }
+
+    private static void saveJsonConfig(JsonObject obj) {
+        try {
+            Files.createDirectories(AppConstants.CONFIG_PATH.getParent());
+            try (Writer writer = Files.newBufferedWriter(AppConstants.CONFIG_PATH)) { GSON.toJson(obj, writer); }
+        } catch (IOException ex) {
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
+                    "Configuration Error",
+                    "Failed to save configuration:\n" + ex.getMessage()
+            );
+        }
+    }
+
+    public static synchronized void updateConfig(Consumer<AppConfig> updater) {
+        AppConfig config = safeLoadingConfig();
+
+        AppConfig before = GSON.fromJson(GSON.toJson(config), AppConfig.class);
+
+        try {
+            JsonObject obj;
+            if (Files.notExists(AppConstants.CONFIG_PATH))
+                obj = new JsonObject();
+            else {
+                String json = Files.readString(AppConstants.CONFIG_PATH);
+                obj = JsonParser.parseString(json).getAsJsonObject();
+            }
+
+            updater.accept(config);
+
+            for (Field f : AppConfig.class.getDeclaredFields()) {
+                f.setAccessible(true);
+                Object oldVal = f.get(before);
+                Object newVal = f.get(config);
+
+                if (!Objects.equals(oldVal, newVal)) {
+
+                    /* --- exception parameters --- */
+
+                    if (f.getName().equals("export_path")) {
+                        String newPath = (String) newVal;
+                        if (!Files.isDirectory(Path.of(newPath))) {
+                            f.set(config, oldVal);              // if there is no such directory
+                            continue;
+                        }
+                    }
+
+
+                    if (f.getName().equals("auto_save_sec_interval") && ((int)newVal) <= 0) {
+                        f.set(config, oldVal);
+                        continue;
+                    }
+
+                    LOGGER.info(String.format("Updated config field '%s': \"%s\" to \"%s\"", f.getName(), oldVal, newVal));
+
+                    obj.add(f.getName(), GSON.toJsonTree(newVal));
+                }
+            }
+
+            saveJsonConfig(obj);
+            cachedConfig = config;
+
+        } catch (Exception e) {
+            AlertFX.showNotification(AlertMessageType.ERROR,
+                    "Config Error",
+                    "Failed to update config:\n" + e.getMessage());
         }
     }
 

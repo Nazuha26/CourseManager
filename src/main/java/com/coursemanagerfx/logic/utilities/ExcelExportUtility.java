@@ -29,6 +29,16 @@ public class ExcelExportUtility {
     };
     /* =============== */
 
+    /* ===== FONTS ===== */
+    private static XSSFFont     font14;
+    private static XSSFFont     font16;
+    private static XSSFFont font16Bold;
+    private static XSSFFont font18Bold;
+    private static XSSFFont font20Bold;
+
+    private static XSSFFont    tahoma9;
+    /* ================= */
+
     public static boolean exportToExcel(Group[] course, String courseName, File path) {
         Locale locale_before = Locale.getDefault();                     // === remember current locale
         Locale.setDefault(Locale.of("uk", "UA"));       // === ALWAYS SET UKR LOCALE
@@ -48,12 +58,14 @@ public class ExcelExportUtility {
         try (XSSFWorkbook wb = new XSSFWorkbook();
              FileOutputStream fos = new FileOutputStream(outFile)) {
 
-            // Fonts
-            XSSFFont font14 = createFont(wb, 14, false);
-            XSSFFont font16 = createFont(wb, 16, false);
-            XSSFFont font16Bold = createFont(wb, 16, true);
-            XSSFFont font18Bold = createFont(wb, 18, true);
-            XSSFFont font20Bold = createFont(wb, 20, true);
+            /* --- FONTS --- */
+            font14 = createFont(wb, "Times New Roman", 14, false);
+            font16 = createFont(wb, "Times New Roman", 16, false);
+            font16Bold = createFont(wb, "Times New Roman", 16, true);
+            font18Bold = createFont(wb, "Times New Roman", 18, true);
+            font20Bold = createFont(wb, "Times New Roman", 20, true);
+            tahoma9 = createFont(wb, "Tahoma", 9, false);
+            /* ------------- */
 
             // Styles
             XSSFCellStyle centerStyle = createStyle(wb, font16, HorizontalAlignment.CENTER);
@@ -263,7 +275,11 @@ public class ExcelExportUtility {
         anchor.setRow2(cell.getRowIndex() + 3);    // height
 
         Comment comment = drawing.createCellComment(anchor);
-        comment.setString(factory.createRichTextString(text));
+
+        XSSFRichTextString richText = new XSSFRichTextString(text);
+        richText.applyFont(tahoma9);
+
+        comment.setString(richText);
         comment.setVisible(false); // hide by default
 
         cell.setCellComment(comment);
@@ -344,9 +360,9 @@ public class ExcelExportUtility {
         }
     }
 
-    private static XSSFFont createFont(XSSFWorkbook wb, int size, boolean bold) {
+    private static XSSFFont createFont(XSSFWorkbook wb, String fontName, int size, boolean bold) {
         XSSFFont font = wb.createFont();
-        font.setFontName("Times New Roman");
+        font.setFontName(fontName);
         font.setFontHeightInPoints((short) size);
         font.setBold(bold);
         return font;

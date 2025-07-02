@@ -47,9 +47,8 @@
     -fx-text-fill: white;
 }
 
-.button-check-for-updates,
 .button-cancel,
-.button-confirm {
+.button-default {
     -fx-background-insets: 0;
     -fx-border-insets: 0;
     -fx-background-color: rgba(0,0,0,0.6);
@@ -62,8 +61,7 @@
     -fx-padding: 6 12;
 }
 
-.button-check-for-updates:hover,
-.button-confirm:hover {
+.button-default:hover {
     -fx-background-color: rgba(53, 53, 53, 0.5);
 }
 

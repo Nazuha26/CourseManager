@@ -251,7 +251,6 @@ public class Main_controller implements StageAttachable {
     private ImageView historyIcon_To;
     private ImageView historyIcon_Back;
     private Stage stage;
-    private Button activeEditButton = null;
     /* ================================================ */
 
     /* ==================== FIELDS GETTERS/SETTERS ==================== */
@@ -570,6 +569,8 @@ public class Main_controller implements StageAttachable {
     /* init table of events */
     private void initTable() {
 
+        Actions.getInstance().uiActions().addCopyPasteEventTableAction();
+
         /* add placeholder label */
         Label emptyLabel = new Label("You have not added any events yet...");
         emptyLabel.setStyle("-fx-text-fill: rgba(195,195,195,0.5); -fx-font-size: 32px;");
@@ -636,7 +637,14 @@ public class Main_controller implements StageAttachable {
         );
 
         /* sort by ukrainian alphabet */
-        categoryColumn.setComparator(AppConstants.UA_COLLATOR::compare);
+        //categoryColumn.setComparator(AppConstants.UA_COLLATOR::compare);
+
+        /* sort by name in MODs (MOD_1, MOD_2 ...) */
+        categoryColumn.setComparator((a, b) -> {
+            EventCategories ec1 = Actions.getInstance().uiActions().returnCategoryByName(a);
+            EventCategories ec2 = Actions.getInstance().uiActions().returnCategoryByName(b);
+            return Integer.compare(ec1.ordinal(), ec2.ordinal());
+        });
 
         /* ----- style ----- */
         categoryColumn.setCellFactory(column -> new TableCell<StudentEvent, String>() {

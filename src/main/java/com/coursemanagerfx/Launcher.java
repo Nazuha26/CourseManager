@@ -29,6 +29,9 @@ public class Launcher extends Application {
     public static String getDefaultPassword() { return defaultPassword; }
 
     @Override
+    public void init() { ConfigManager.safeLoadingConfig(); }
+
+    @Override
     public void start(Stage primaryStage) throws Exception {
 
         /* set locale for language */

@@ -53,9 +53,14 @@ public class AlertFX_controller implements StageAttachable {
     public Label getLabelPrompt() {
         return labelPrompt;
     }
+
     public Button getBtnCancel() {
         return btnCancel;
     }
+    public Button getBtnConfirm() {
+        return btnConfirm;
+    }
+
 
     @FXML private void initialize() { }
 

@@ -38,6 +38,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -575,8 +577,9 @@ public final class Actions {
             }
 
             boolean confirmed = AlertFX.showQuestion(
-                    "You have unsaved changes.",
-                    "Do you want to exit without saving?"
+                    "Unsaved Changes",
+                    "You have unsaved changes. Are you sure you want to exit without saving?",
+                    "Exit Without Saving"
             );
 
             if (confirmed) {
@@ -590,11 +593,95 @@ public final class Actions {
             }
         }
 
+
+        /* add function of event copy/paste */
+        public void addCopyPasteEventTableAction() {
+
+            TableView<StudentEvent> eventsTable = ctrl.getEventsTable();
+
+            /* ---------- context-menu for empty area ---------- */
+            MenuItem pasteEmptyItem = new MenuItem("Paste event");
+
+            ContextMenu emptyMenu = new ContextMenu(pasteEmptyItem);
+            emptyMenu.setAutoHide(true);
+
+            pasteEmptyItem.setOnAction(ev -> pasteIntoSelectedStudent());
+
+            /* ---------- show empty-area menu on right click ---------- */
+            eventsTable.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+                if (e.getButton() == MouseButton.PRIMARY) emptyMenu.hide();     // hide on left click
+
+                if (eventsTable.getItems().isEmpty()) {
+                    if (e.getButton() == MouseButton.SECONDARY) {
+                        pasteEmptyItem.setDisable(copiedEvent == null);
+                        emptyMenu.show(eventsTable, e.getScreenX(), e.getScreenY());
+                        e.consume();
+                    }
+                }
+            });
+
+            /* ---------- row factory with per-row menu ---------- */
+            eventsTable.setRowFactory(tv -> {
+                TableRow<StudentEvent> row = new TableRow<>();
+
+                /* menu items */
+                MenuItem copyItem  = new MenuItem("Copy event");
+                MenuItem pasteItem = new MenuItem("Paste event");
+                ContextMenu rowMenu = new ContextMenu(copyItem, pasteItem);
+                rowMenu.setAutoHide(true);
+
+                /* menu-state updater */
+                rowMenu.setOnShowing(ev -> {
+                    copyItem.setDisable(row.isEmpty());
+                    pasteItem.setDisable(copiedEvent == null);
+                });
+
+                /* COPY */
+                copyItem.setOnAction(ev -> {
+                    if (row.isEmpty()) return;
+                    copiedEvent = deepCopyEvent(row.getItem(), false);
+                    studentFrom = select.getSelectedStudent();
+                });
+
+                /* PASTE */
+                pasteItem.setOnAction(ev -> pasteIntoSelectedStudent());
+
+                row.setContextMenu(rowMenu);
+                return row;
+            });
+        }
         /* ========================== */
 
 
 
         /* ======  CORE  ====== */
+
+        /* --- copy/paste core --- */
+        private StudentEvent copiedEvent = null;
+        private Student      studentFrom = null;
+
+        private void pasteIntoSelectedStudent() {
+            if (copiedEvent == null) return;
+            Student targetStud = select.getSelectedStudent();
+            if (targetStud == null) return;
+
+            StudentEvent newEvent = deepCopyEvent(copiedEvent, true);
+
+            Command cmd = new AddEventCommand(select.getSelectedGroup(), targetStud, newEvent);
+            cmd.execute();
+            undoRedo.addCommandToStack(cmd);
+
+            historyActions.setHistory(
+                    Actions.HistoryActions.HistoryType.SUCCESS,
+                    "Copied event from \"" +
+                            (studentFrom != null ? studentFrom.getName() : "Unknown") +
+                            "\" to \"" +
+                            targetStud.getName() +
+                            "\""
+            );
+        }
+
+        /* --- save/delete editing event core --- */
         private boolean isShowingDataPickerFlag = false;
 
         private void saveEventAction() {
@@ -707,15 +794,29 @@ public final class Actions {
             }
         }
 
+
+
         /* ======  HELPERS  ====== */
         /* get event category by name in combobox */
-        private EventCategories returnCategoryByName(String name) {
+        public EventCategories returnCategoryByName(String name) {
             for (EventCategories mod : EventCategories.values()) {
                 if (mod.getEventCategory().name().equals(name)) {
                     return mod;
                 }
             }
             return EventCategories.CUSTOM;
+        }
+
+        private StudentEvent deepCopyEvent(StudentEvent original, boolean genId) {
+            int id = !genId ? original.getID() : idGenerator.genGlobalEventId();
+            return new StudentEvent(
+                    id,
+                    original.getCrtDate(),
+                    original.getDescription(),
+                    original.getMark(),
+                    original.getExpDate(),
+                    original.getCategory()
+            );
         }
 
         /* check all fields in event form during creation event or saving edited event */

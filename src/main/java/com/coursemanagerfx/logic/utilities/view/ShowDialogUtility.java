@@ -13,6 +13,7 @@ import com.coursemanagerfx.controllers.dialogs.password.InputPass_controller;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.view.exceptions.DialogLoadException;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -79,7 +80,8 @@ public class ShowDialogUtility {
     public static boolean showAlertDialog( AlertType alertType,
                                            AlertMessageType messageType,
                                            String header,
-                                           String content
+                                           String content,
+                                           String btnOkText
                                          ) throws IOException {
 
         String titleText = switch (alertType) {
@@ -100,9 +102,18 @@ public class ShowDialogUtility {
                         c.getLabelTitle().setText(titleText);
                         c.getLabelMain().setText(header);
                         c.getLabelPrompt().setText(content);
+                        c.getIconType().setImage(messageType.getIcon());
+
+                        /* --- btn setting --- */
                         c.getBtnCancel().setVisible(isQuestion);
                         c.getBtnCancel().setManaged(isQuestion);
-                        c.getIconType().setImage(messageType.getIcon());
+
+                        c.getBtnConfirm().setText(btnOkText);
+
+                        ObservableList<String> style = c.getBtnConfirm().getStyleClass();
+                        style.removeAll("button-default", "button-cancel");
+                        style.add(isQuestion ? "button-cancel" : "button-default");
+                        /* ------------------- */
                     }
             );
 

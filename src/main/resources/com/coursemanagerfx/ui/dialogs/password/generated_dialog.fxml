@@ -33,7 +33,7 @@
                         </font>
                     </Label>
                 </VBox>
-                <Button fx:id="btnCopy" onAction="#btnCopy" styleClass="button-confirm" text="Copy" />
+                <Button fx:id="btnCopy" onAction="#btnCopy" styleClass="button-default" text="Copy" />
             </HBox>
             <Label fx:id="lblCopied" alignment="CENTER" contentDisplay="CENTER" managed="false" text="Successfully copied" textFill="#00bc3c">
                 <font>
