@@ -39,6 +39,8 @@ public class ExcelExportUtility {
     /* ===== FONTS ===== */
     private static XSSFFont     font14;
     private static XSSFFont     font16;
+    private static XSSFFont     font18;
+    private static XSSFFont     font20;
     private static XSSFFont font16Bold;
     private static XSSFFont font18Bold;
     private static XSSFFont font20Bold;
@@ -54,11 +56,11 @@ public class ExcelExportUtility {
                 DateTimeFormatter.ofPattern("LLLL", Locale.forLanguageTag("uk"));
 
         LocalDate now = LocalDate.now();
-        String caption  = courseName + " за " +
+        String headCaption  = courseName + " за " +
                 now.format(monthFormatter) + " " +
                 now.getYear() + " року";
 
-        String fileName = caption + ".xlsx";
+        String fileName = headCaption + ".xlsx";
 
         File outFile = new File(path, fileName);
 
@@ -68,6 +70,8 @@ public class ExcelExportUtility {
             /* --- FONTS --- */
             font14 = createFont(wb, "Times New Roman", 14, false);
             font16 = createFont(wb, "Times New Roman", 16, false);
+            font18 = createFont(wb, "Times New Roman", 18, false);
+            font20 = createFont(wb, "Times New Roman", 20, false);
             font16Bold = createFont(wb, "Times New Roman", 16, true);
             font18Bold = createFont(wb, "Times New Roman", 18, true);
             font20Bold = createFont(wb, "Times New Roman", 20, true);
@@ -76,6 +80,7 @@ public class ExcelExportUtility {
 
             // Styles
             XSSFCellStyle centerStyle = createStyle(wb, font16, HorizontalAlignment.CENTER);
+            XSSFCellStyle captionStyle = createStyle(wb, font20, HorizontalAlignment.CENTER);
             XSSFCellStyle headerStyle = createStyle(wb, font18Bold, HorizontalAlignment.CENTER);
             XSSFCellStyle rotatedStyle = wb.createCellStyle();
             rotatedStyle.cloneStyleFrom(headerStyle);
@@ -93,17 +98,18 @@ public class ExcelExportUtility {
 
             /* create first main caption row */
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 17));   // merge cols A-R
-            XSSFRow row = sheet.createRow(0);//может динамически сделать в зависимости от количества категорий на случай если будет больше категорий
+            XSSFRow row = sheet.createRow(0);//может динамически сделать в зависимости от количества категорий на случай если будет больше категорий?
             row.setHeightInPoints(30);
             XSSFCell cell = row.createCell(0);
-            cell.setCellValue(caption);
-            cell.setCellStyle(headerStyle);     // set center style
+            cell.setCellValue(headCaption);
+            cell.setCellStyle(captionStyle);     // set center style
 
 
 
             /* === HEADING CELLS === */
 
             /* create HEADING cells */
+            sheet.setColumnWidth(0, 1400);                 // set wight for column "№"
             sheet.setColumnWidth(1, 19000);                // set wight for column "ПІБ"
 
             /* set rotated heading style for cells which come after "ПІБ" */
@@ -231,8 +237,8 @@ public class ExcelExportUtility {
             c3.setCellValue(captionForSign);
             c3.setCellStyle(signStyle);
 
-            sheet.addMergedRegion(new CellRangeAddress(baseRow + 1, baseRow + 1, 9, 17));   // merge cols J-R
-            XSSFCell nameCell = r2.createCell(9); // J
+            sheet.addMergedRegion(new CellRangeAddress(baseRow + 1, baseRow + 1, 12, 17));   // merge cols M-R
+            XSSFCell nameCell = r2.createCell(12); // M
             nameCell.setCellValue("Віктор ФЕСЕНКО");
             nameCell.setCellStyle(headOfCourseStyle);
             /* ================================ */

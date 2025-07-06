@@ -643,6 +643,18 @@ public final class Actions {
             eventsTable.setRowFactory(tv -> {
                 TableRow<StudentEvent> row = new TableRow<>();
 
+                /* --- TOOLTIP --- */
+                Tooltip tooltip = new Tooltip("Right-click on an event to COPY\nRight-click anywhere to PASTE");
+                tooltip.setStyle("""
+                    -fx-font-size: 14px;
+                    -fx-padding: 6px 10px;
+                """);
+                /* --------------- */
+
+                row.itemProperty().addListener((obs, oldItem, newItem) -> {
+                    row.setTooltip(newItem == null ? null : tooltip);
+                });
+
                 /* menu items */
                 MenuItem copyItem  = new MenuItem("Copy event");
                 MenuItem pasteItem = new MenuItem("Paste event");
@@ -669,35 +681,6 @@ public final class Actions {
                 return row;
             });
 
-
-
-            /* --- INFO LABEL --- */
-            int duration = 300;
-            Label lblCopyInfo = ctrl.getLblCopyInfo();
-
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(duration), lblCopyInfo);
-            fadeIn.setFromValue(0.0);
-            fadeIn.setToValue(1.0);
-
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(duration), lblCopyInfo);
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-
-            lblCopyInfo.setOpacity(0.0);
-            lblCopyInfo.setVisible(false);
-
-            eventsTable.setOnMouseEntered(e -> {
-                fadeOut.stop();
-                lblCopyInfo.setVisible(true);
-                fadeIn.playFromStart();
-            });
-
-            eventsTable.setOnMouseExited(e -> {
-                fadeIn.stop();
-                fadeOut.setOnFinished(ev -> lblCopyInfo.setVisible(false));
-                fadeOut.playFromStart();
-            });
-            /* ------------------ */
         }
         /* ========================== */
 

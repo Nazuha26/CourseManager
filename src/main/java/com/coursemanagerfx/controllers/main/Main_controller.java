@@ -135,7 +135,6 @@ public class Main_controller implements StageAttachable {
     @FXML private TableColumn<StudentEvent, String> expDateColumn;
     @FXML private TableColumn<StudentEvent, EventStatus> statusColumn;
 
-    @FXML private Label lblCopyInfo;
     /* --- TABLE --- */
 
     /* --- MENU --- */
@@ -151,37 +150,29 @@ public class Main_controller implements StageAttachable {
 
     /* ==================== FXML GETTERS/SETTERS ==================== */
     /* --- GETTERS --- */
-    public BorderPane getTitleBar() {
-        return titleBar;
-    }
-    public BorderPane getRootPane() {
-        return rootPane;
-    }
+    public BorderPane getTitleBar() { return titleBar; }
+    public BorderPane getRootPane() { return rootPane; }
 
-    public InlineCssTextArea getHistoryTxtArea() {
-        return historyTxtArea;
-    }
-    public Label getLblActiveEvents() {
-        return lblActiveEvents;
-    }
-    public Label getLblTotalMark() {
-        return lblTotalMark;
-    }
-    public Label getLblCurHistory() {
-        return lblCurHistory;
-    }
-    public Label getLblAppName() {
-        return lblAppName;
-    }
-    public VBox getStudentVBox() {
-        return studentVBox;
-    }
+    public InlineCssTextArea getHistoryTxtArea() { return historyTxtArea; }
+
+    public Label getLblActiveEvents() { return lblActiveEvents; }
+
+    public Label getLblTotalMark() { return lblTotalMark; }
+
+    public Label getLblCurHistory() { return lblCurHistory; }
+
+    public Label getLblAppName() { return lblAppName; }
+
+    public VBox getStudentVBox() { return studentVBox; }
+
     public HBox getTabHBox() {
         return tabHBox;
     }
+
     public TableView<StudentEvent> getEventsTable() {
         return eventsTable;
     }
+
     public TextField getTxtFieldSearch() {
         return txtFieldSearch;
     }
@@ -257,9 +248,6 @@ public class Main_controller implements StageAttachable {
     }
     public TableColumn<StudentEvent, Number> getMarksColumn() {
         return marksColumn;
-    }
-    public Label getLblCopyInfo() {
-        return lblCopyInfo;
     }
     /* --- GETTERS --- */
     /* ============================================================== */
