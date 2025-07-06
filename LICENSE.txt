@@ -1,0 +1,40 @@
+-------------------------------------------------------------------------------------------------
+                         © 2025 Nazuha26 & MaXXer29. All rights reserved.
+-------------------------------------------------------------------------------------------------
+
+This software is developed and owned by the individuals mentioned
+in this document and contains confidential information.
+Any unauthorized use, copying, distribution, decompilation, disassembly,
+modification, or reverse engineering
+of this software is STRICTLY PROHIBITED.
+
+The software is intended solely for official
+use by higher military educational institutions.
+Permission to use this software is determined by the administration
+of the higher military educational institution.
+Use by any third parties without explicit permission is prohibited.
+
+Violation of the terms of this license may result in criminal liability
+under Article 422 of the Criminal Code of Ukraine.
+This license is governed by and construed in accordance with the laws of Ukraine.
+
+-------------------------------------------------------------------------------------------------
+                         © 2025 Nazuha26 & MaXXer29. Усі права захищено.
+-------------------------------------------------------------------------------------------------
+
+Це програмне забезпечення є розробкою та власністю осіб зазначених
+у цьому документі та містить конфіденційну інформацію.
+Будь-яке несанкціоноване використання, копіювання, розповсюдження,
+декомпіляція, дизасемблювання, модифікація або зворотна інженерія
+цього програмного забезпечення СУВОРО ЗАБОРОНЕНІ.
+
+Програмне забезпечення призначене виключно для службового використання ВВНЗ.
+Дозвіл на використання програмного забезпечення визначається керівництвом ВВНЗ.
+Використання будь-якими сторонніми особами без спеціального дозволу заборонено.
+
+Порушення умов цієї ліцензії може призвести до кримінальної
+відповідальності згідно зі ст. 422 КК України.
+Ця ліцензія регулюється та тлумачиться відповідно до законодавства України.
+
+-------------------------------------------------------------------------------------------------
+
