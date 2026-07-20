@@ -10,8 +10,7 @@ package com.coursemanagerfx.controllers.dialogs.password;
 import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
-import com.coursemanagerfx.controllers.dialogs.NewCourseDialog_controller;
-import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.SeedPhraseGenerator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.input.Clipboard;
@@ -33,7 +32,14 @@ public class GeneratedPass_controller implements StageAttachable {
 
     private Stage stage;
 
-    private String password;
+    private char[] seedPhrase;
+
+    public char[] takeSeedPhrase() {
+        if (!copied || seedPhrase == null) return null;
+        char[] result = seedPhrase;
+        seedPhrase = null;
+        return result;
+    }
 
     // ===== IMPLEMENTED =====
     @Override
@@ -47,24 +53,30 @@ public class GeneratedPass_controller implements StageAttachable {
     @Override
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.setOnCloseRequest(event -> {
+            if (!copied) {
+                event.consume();
+                showCopyWarning();
+            } else {
+                lblPassword.setText("");
+            }
+        });
     }
     // ===== IMPLEMENTED =====
 
     @FXML
     private void initialize() {
-        password = CmanSecurityUtility.generatePassword();
-        lblPassword.setText(password);
+        seedPhrase = SeedPhraseGenerator.generate();
+        lblPassword.setText(new String(seedPhrase));
     }
 
     @FXML
     private void btnClose() {
         if (!copied) {
-            lblCopied.setText("You haven’t copied the password yet!");
-            lblCopied.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
-            lblCopied.setManaged(true);
-            stage.sizeToScene();
+            showCopyWarning();
             return;
         }
+        lblPassword.setText("");
         HideAnimation.play(stage, stage::close);
     }
 
@@ -72,14 +84,20 @@ public class GeneratedPass_controller implements StageAttachable {
     private void btnCopy() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(password);
+        content.putString(new String(seedPhrase));
         clipboard.setContent(content);
 
         copied = true;
 
-        NewCourseDialog_controller.setGeneratedPassword(password);
         lblCopied.setText("Successfully copied");
         lblCopied.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.SUCCESS_COLOUR) + ";");
+        lblCopied.setManaged(true);
+        stage.sizeToScene();
+    }
+
+    private void showCopyWarning() {
+        lblCopied.setText("You haven’t copied the seed phrase yet!");
+        lblCopied.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
         lblCopied.setManaged(true);
         stage.sizeToScene();
     }

@@ -10,6 +10,7 @@ package com.coursemanagerfx.controllers.dialogs.password;
 import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.animations.HideAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
+import com.coursemanagerfx.logic.utilities.security.SeedPhraseGenerator;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -17,6 +18,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+
+import java.util.Arrays;
 
 public class InputPass_controller implements StageAttachable {
     // ========== FXML ==========
@@ -28,9 +31,11 @@ public class InputPass_controller implements StageAttachable {
 
     private Stage stage;
 
-    private String inputPassword;
-    public String getInputPassword() {
-        return inputPassword;
+    private char[] inputSeedPhrase;
+    public char[] takeSeedPhrase() {
+        char[] result = inputSeedPhrase;
+        inputSeedPhrase = null;
+        return result;
     }
 
     // ===== IMPLEMENTED =====
@@ -45,6 +50,9 @@ public class InputPass_controller implements StageAttachable {
     @Override
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.setOnCloseRequest(event -> {
+            if (inputSeedPhrase == null) passField.clear();
+        });
     }
     // ===== IMPLEMENTED =====
 
@@ -63,15 +71,29 @@ public class InputPass_controller implements StageAttachable {
         errorLabel.setText("");
         errorLabel.setManaged(false);
         stage.sizeToScene();
-        String rawPassword = passField.getText();
-        if (rawPassword == null || rawPassword.trim().isEmpty()) {
+        String rawPhrase = passField.getText();
+        if (rawPhrase == null || rawPhrase.trim().isEmpty()) {
             errorLabel.setText("Field cannot be empty!");
             errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
             errorLabel.setManaged(true);
             stage.sizeToScene();
             return;
         }
-        inputPassword = rawPassword;
+
+        char[] rawCharacters = rawPhrase.toCharArray();
+        passField.clear();
+        char[] normalized = SeedPhraseGenerator.normalize(rawCharacters);
+        Arrays.fill(rawCharacters, '\0');
+        if (!SeedPhraseGenerator.isValid(normalized)) {
+            Arrays.fill(normalized, '\0');
+            errorLabel.setText("Enter the five words generated for this course.");
+            errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
+            errorLabel.setManaged(true);
+            stage.sizeToScene();
+            return;
+        }
+
+        inputSeedPhrase = normalized;
         HideAnimation.play(stage, stage::close);
     }
 }

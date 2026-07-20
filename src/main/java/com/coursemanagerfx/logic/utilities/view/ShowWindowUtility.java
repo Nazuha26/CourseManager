@@ -19,6 +19,7 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.Start_controller;
 import com.coursemanagerfx.logic.basic.Group;
+import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import javafx.fxml.FXMLLoader;
@@ -31,6 +32,7 @@ import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class ShowWindowUtility {
     private static <T> T loadWindow(String fxmlPath, Stage stage) throws IOException {
@@ -41,7 +43,6 @@ public class ShowWindowUtility {
         scene.setFill(Color.TRANSPARENT);
 
         AppUtility.setAppIcon(stage);
-        //stage.getIcons().add(new Image(Objects.requireNonNull(ShowWindowUtility.class.getResourceAsStream("/com/coursemanagerfx/ui/cmfx_icon.ico"))));
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setScene(scene);
 
@@ -92,15 +93,37 @@ public class ShowWindowUtility {
     }
 
     // === МЕТОД ОТКРЫТИЯ ГЛАВНОГО ОКНА ПРОГРАММЫ ===
-    public static void showMainWindow(File file) {
+    public static boolean showMainWindow(File file) {
+        return showMainWindow(file, null);
+    }
+
+    public static boolean showMainWindow(File file, Window passwordOwner) {
+        char[] seedPhrase = null;
+        Group[] course = null;
+
+        do {
+            seedPhrase = ShowDialogUtility.showCheckSeedPhraseDialog(passwordOwner);
+            if (seedPhrase == null) return false;
+
+            try {
+                course = CmanSecurityUtility.readSecureFile(file, seedPhrase);
+            } catch (Exception exception) {
+                Arrays.fill(seedPhrase, '\0');
+                seedPhrase = null;
+                AlertFX.showNotification(
+                        AlertMessageType.ERROR,
+                        "Unable to open the course file",
+                        "The seed phrase is incorrect, the file is corrupted, or it uses an unsupported format."
+                );
+            }
+        } while (course == null);
+
         try {
             Stage mainStage = new Stage();
             Main_controller controller = loadWindow(
                     "/com/coursemanagerfx/ui/forms/main.fxml",
                     mainStage
             );
-
-            //if (Launcher.isPrintMouseOnP()) GetPoint.setupMousePositionLogger(mainStage.getScene());
 
             controller.setStage(mainStage);
 
@@ -132,56 +155,18 @@ public class ShowWindowUtility {
                     Duration.seconds(1),
                     () -> StageSetupUtility.setup(controller, mainStage, 0)
             );
-
-
-
-            String password;
-            Group[] course = null;
-            Window owner = mainStage.getScene().getWindow();
-
-            /* === CHECK FOR UPDATES === */
-            Actions.getInstance().uiFlowActions().runUpdateFlow(false);
-            /* ---===================--- */
-
-            if (Launcher.getDefaultPassword().equals("magic")) {       // default password will never be NULL
-                // === PASSWORD CHECKING ===
-                do {
-                    password = ShowDialogUtility.showCheckPasswordDialog(owner);
-                    if (password == null) {
-                        Actions.getInstance().uiActions().mainExitAction();
-                        return;
-                    } // if pressed Cancel
-
-                    try {
-                        course = CmanSecurityUtility.readSecureFile(file, password);
-                    } catch (Exception e) {
-                        AlertFX.showNotification(
-                                AlertMessageType.ERROR,
-                                "Unable to open the course file",
-                                "The password is incorrect or the file is corrupted. Please try again."
-                        );
-                    }
-
-                } while (course == null);
-                // =========================
-            } else {
-                password = Launcher.getDefaultPassword();
-                try {
-                    course = CmanSecurityUtility.readSecureFile(file, password);
-                } catch (Exception e) {
-                    AlertFX.showNotification(
-                            AlertMessageType.ERROR,
-                            "Failed to load course",
-                            "The preset password is incorrect."
-                    );
-                    Actions.getInstance().uiActions().mainExitAction();
-                    return;
-                }
+            try {
+                Launcher.setCourseInfo(new CourseInfo(file, seedPhrase, course));
+            } finally {
+                Arrays.fill(seedPhrase, '\0');
             }
-
-            Launcher.setCourseInfo(new CourseInfo(courseName, password, course));
+            ConfigManager.setOpenCourse(file.getAbsolutePath());
 
             Actions.getInstance().uiFlowActions().runCourseDataLoadingFlow();
+
+            /* Check only after the course has been opened successfully. */
+            Actions.getInstance().uiFlowActions().runUpdateFlow(false);
+            return true;
 
         } catch (IOException ex) {
             AlertFX.showNotification(
@@ -190,6 +175,9 @@ public class ShowWindowUtility {
                     "Failed to load the main window:\n" + ex.getMessage()
             );
             //throw new WindowLoadException("Failed to open main window", ex);
+            return false;
+        } finally {
+            if (seedPhrase != null) Arrays.fill(seedPhrase, '\0');
         }
     }
 }

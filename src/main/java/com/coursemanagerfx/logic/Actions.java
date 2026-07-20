@@ -28,11 +28,11 @@ import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
 import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
-import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
 import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.update.exceptions.NoInternetConnection;
+import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -912,36 +912,13 @@ public final class Actions {
 
         /* === FILE === */
         public void toHomeAction() {
-            Window owner = ctrl.getStage().getScene().getWindow();
-
             boolean yes = AlertFX.showQuestion(
                     "Return to Home",
                     "Are you sure you want to leave the current course and return to the home screen?");
             if (!yes) return;
 
             ConfigManager.setOpenCourse("none");        // set opened course as none for backing home
-
-            /*AlertFX.showNotification(owner,
-                    AlertFX_type.INFO,
-                    "Restart Required",
-                    "To apply the changes, please restart the application.",
-                    true);*/
-
-            try {
-                AppUtility.startRestartAppScript();
-            } catch (FileNotFoundException e) {
-                AlertFX.showNotification(
-                        AlertMessageType.ERROR,
-                        "Restart Error",
-                        "File \"relauncher.exe\" not found.\nPlease reopen CourseManagerFX manually."
-                );
-            } catch (Exception e) {
-                AlertFX.showNotification(
-                        AlertMessageType.ERROR,
-                        "Restart Error",
-                        "Unexpected error while restarting.\n" + e.getMessage()
-                );
-            }
+            Launcher.clearCourseInfo();
 
             WindowBlindsOutAnimation.play(
                     ctrl,
@@ -949,19 +926,25 @@ public final class Actions {
                     ctrl.getStage().getHeight(),
                     Main_controller.MW_ANIM_STRIPE_COUNT,
                     Duration.seconds(1),
-                    ctrl.getStage()::close
+                    () -> {
+                        ctrl.getStage().close();
+                        ShowWindowUtility.showStartWindow();
+                    }
             );
         }
         /* done */
         public void saveAction() {
             Window owner = ctrl.getStage().getScene().getWindow();
             try {
-                File file = AppConstants.COURSES_PATH
-                        .resolve(Launcher.getCourseInfo().getCourseName() + ".cman")
-                        .toFile();
+                File file = Launcher.getCourseInfo().getCourseFile();
 
-                CmanSecurityUtility.updateSecureFile(
-                        Launcher.getCourseInfo().getCourse(), file, Launcher.getCourseInfo().getPassword());
+                char[] seedPhrase = Launcher.getCourseInfo().copySeedPhrase();
+                try {
+                    CmanSecurityUtility.updateSecureFile(
+                            Launcher.getCourseInfo().getCourse(), file, seedPhrase);
+                } finally {
+                    if (seedPhrase != null) Arrays.fill(seedPhrase, '\0');
+                }
 
                 undoRedo.getUndoStack().clear();    // clear undo stack
                 undoRedo.getRedoStack().clear();    // clear redo stack
@@ -985,6 +968,22 @@ public final class Actions {
                         "Message: " + e.getMessage()
                 );
                 throw new SaveException("=== FATAL SAVING ERROR ===", e);
+            }
+        }
+
+        /** Saves an open, changed course before the updater can close the app. */
+        public boolean savePendingChangesBeforeUpdate() {
+            if (ctrl == null
+                    || Launcher.getCourseInfo() == null
+                    || !undoRedo.hasUnsavedChanges()) {
+                return true;
+            }
+
+            try {
+                saveAction();
+                return true;
+            } catch (SaveException exception) {
+                return false;
             }
         }
         /* done */
@@ -1339,6 +1338,8 @@ public final class Actions {
         public BooleanProperty canUndoProperty() { return canUndo; }
         public BooleanProperty canRedoProperty() { return canRedo; }
 
+        public boolean hasUnsavedChanges() { return !undoStack.isEmpty(); }
+
         public UndoRedo()
             { updateState(); }
 
@@ -1499,11 +1500,19 @@ public final class Actions {
                             boolean updateAvailable = UpdateUtility.compareVersions(latest, AppConstants.APP_VERSION) > 0;
 
                             if (updateAvailable) {
-                                boolean yes = ConfigManager.isAutoUpdateEnabled() || AlertFX.showQuestion(
-                                        "New v" + latest + " update is available",
-                                        "Do you want to install it now?");
+                                boolean courseIsOpen = ctrl != null && Launcher.getCourseInfo() != null;
+                                String prompt = "Do you want to download and install it now?";
+                                if (courseIsOpen) {
+                                    prompt += "\n\nUnsaved course changes will be saved before installation.";
+                                }
 
-                                if (yes) {
+                                boolean downloadConfirmed = AlertFX.showQuestion(
+                                        "New v" + latest + " update is available",
+                                        prompt,
+                                        "Download update");
+
+                                if (downloadConfirmed) {
+                                    if (!menuActions.savePendingChangesBeforeUpdate()) return;
 
                                     /* install task */
                                     final Task<Void> installTask = new Task<>() {
@@ -1526,11 +1535,11 @@ public final class Actions {
                                     );
 
                                     installSpinner.showLoadingWindow(
-                                            null,
+                                            courseIsOpen ? ctrl.getStage().getScene().getWindow() : null,
                                             true,
                                             installTask,
                                             e -> {
-                                                Platform.runLater(() -> System.exit(0));
+                                                Platform.exit();
                                             },
                                             e -> {
                                                 Platform.runLater(() -> {

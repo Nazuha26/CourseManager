@@ -10,7 +10,6 @@ package com.coursemanagerfx;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.CourseInfo;
-import com.coursemanagerfx.logic.config_api.AppConfig;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
 import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
@@ -20,7 +19,9 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 
 import static com.coursemanagerfx.AppConstants.*;
@@ -32,9 +33,6 @@ public class Launcher extends Application {
     public static CourseInfo getCourseInfo() { return courseInfo; }
     public static void setCourseInfo(CourseInfo courseInfo) { Launcher.courseInfo = courseInfo; }
     /* ================================================== */
-
-    private static String defaultPassword;
-    public static String getDefaultPassword() { return defaultPassword; }
 
     @Override
     public void init() { ConfigManager.safeLoadingConfig(); }
@@ -69,8 +67,6 @@ public class Launcher extends Application {
         });
         /* =============================== */
 
-        AppConfig config = ConfigManager.safeLoadingConfig();
-
         try {
             Files.createDirectories(COURSES_PATH);
         } catch (IOException e) {
@@ -84,26 +80,52 @@ public class Launcher extends Application {
             return;
         }
 
-        String defPass_ = ConfigManager.getDefaultPassword();
-        if (defPass_.equals("none")) defaultPassword = "magic";
-        else defaultPassword = defPass_;
-
-
-        //presetPassword = "AKs#Ku!H@K";               // 1 курс
-        //presetPassword = "3Tr_J>UrTy";               // 2 курс
-        //presetPassword = "T#6JJd>cm@";               // 3 курс
-
         primaryStage.close();
 
         String courseName = ConfigManager.getOpenCourse();
         if (courseName.equals("none")) ShowWindowUtility.showStartWindow();
         else {
-            File expectedFile = COURSES_PATH.resolve(courseName + ".cman").toFile();
-            if (expectedFile.exists()) ShowWindowUtility.showMainWindow(expectedFile);
-            else ShowWindowUtility.showStartWindow();
+            File expectedFile = resolveConfiguredCourse(courseName);
+            if (expectedFile != null
+                    && expectedFile.isFile()
+                    && ShowWindowUtility.showMainWindow(expectedFile)) {
+                // Main window opened successfully.
+            } else {
+                ConfigManager.setOpenCourse("none");
+                ShowWindowUtility.showStartWindow();
+            }
         }
 
         UpdateUtility.signalSuccessfulStart(getParameters().getRaw());
+    }
+
+    @Override
+    public void stop() {
+        clearCourseInfo();
+    }
+
+    public static void clearCourseInfo() {
+        if (courseInfo == null) return;
+        courseInfo.clearSeedPhrase();
+        courseInfo = null;
+    }
+
+    private static File resolveConfiguredCourse(String configuredCourse) {
+        try {
+            Path configuredPath = Path.of(configuredCourse);
+            if (configuredPath.isAbsolute()) {
+                return configuredPath.toAbsolutePath().normalize().toFile();
+            }
+            String relativeFile = configuredCourse.endsWith(".cman")
+                    ? configuredCourse
+                    : configuredCourse + ".cman";
+            return COURSES_PATH.resolve(relativeFile)
+                    .toAbsolutePath()
+                    .normalize()
+                    .toFile();
+        } catch (InvalidPathException exception) {
+            return null;
+        }
     }
 
     private static boolean printMouseOnP = false;

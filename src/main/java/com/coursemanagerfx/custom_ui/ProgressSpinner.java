@@ -46,7 +46,9 @@ public class ProgressSpinner extends Region {
                                        Consumer<Throwable> onFail,
                                        String task_name ) {
 
-        showLoadingWindow(owner, modal, task, onSuccess, onFail, task_name, 0, 0, new Image(Objects.requireNonNull(ProgressSpinner.class.getResourceAsStream("/com/coursemanagerfx/ui/icons/app/old/cmfx_icon-1.png"))));
+        showLoadingWindow(owner, modal, task, onSuccess, onFail, task_name, 0, 0,
+                new Image(Objects.requireNonNull(ProgressSpinner.class.getResourceAsStream(
+                        "/com/coursemanagerfx/ui/icons/app/256.png"))));
     }
 
     public <V> void showLoadingWindow( Window owner,
@@ -155,7 +157,7 @@ public class ProgressSpinner extends Region {
     /* ================  Internal building  ================ */
 
     private void buildBars() {
-        bars = new javafx.scene.Group();
+        bars = new Group();
         for (int i = 0; i < segments; i++) {
             double a   = Math.toRadians(360.0 / segments * i);
             double sin = Math.sin(a);

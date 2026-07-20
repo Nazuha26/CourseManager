@@ -9,13 +9,9 @@ package com.coursemanagerfx.controllers.main;
 
 import com.coursemanagerfx.animations.WindowBlindsOutAnimation;
 import com.coursemanagerfx.controllers.StageAttachable;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
-import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.custom_ui.GradientBackground;
-import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
-import com.coursemanagerfx.logic.utilities.AppUtility;
-import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
+import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -25,7 +21,6 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 public class Start_controller implements StageAttachable {
 
@@ -85,66 +80,21 @@ public class Start_controller implements StageAttachable {
         Window owner = stage.getScene().getWindow();
         File file = ShowDialogUtility.showOpenCourse(owner);
         if (file == null) return;
-
-        String password = ShowDialogUtility.showCheckPasswordDialog(owner);
-        if (password == null) return;
-
-        String courseName;
-        try {
-            CmanSecurityUtility.readSecureFile(file, password);
-
-            // ======== GET COURSE NAME ==========
-            courseName = file.getName();
-            if (courseName.endsWith(".cman"))
-                courseName = courseName.substring(0, courseName.length() - 5);
-        } catch (Exception e) {
-            ConfigManager.setOpenCourse("none");
-            AlertFX.showNotification(
-                    AlertMessageType.ERROR,
-                    "Unable to open the course file",
-                    "The password is incorrect or the file is corrupted. Please try again."
-            );
-            return;
-        }
-
-        // ======= SAVE COURSE NAME TO CONFIG FILE ========
-        ConfigManager.setOpenCourse(courseName);
-
-        tryRestartApp();
+        openCourse(file, owner);
     }
 
     @FXML
     private void btnNewCourse() {
         Window owner = stage.getScene().getWindow();
-        boolean success = ShowDialogUtility.showNewCourseDialog();
-
-        if (success) {
-            /*AlertFX.showNotification(owner, AlertFX_type.INFO,
-                    "Course created successfully",
-                    "To apply the changes, please restart the application.",
-                    true);*/
-            tryRestartApp();
-        }
+        File createdCourse = ShowDialogUtility.showNewCourseDialog(owner);
+        if (createdCourse != null) openCourse(createdCourse, owner);
     }
 
     /* === CORE === */
 
-    private void tryRestartApp() {
-        try {
-            AppUtility.startRestartAppScript();
-        } catch (FileNotFoundException e) {
-            AlertFX.showNotification(
-                    AlertMessageType.ERROR,
-                    "Restart Error",
-                    "File \"relauncher.exe\" not found.\nPlease reopen CourseManagerFX manually."
-            );
-        } catch (Exception e) {
-            AlertFX.showNotification(
-                    AlertMessageType.ERROR,
-                    "Restart Error",
-                    "Unexpected error while restarting.\n" + e.getMessage()
-            );
-        }
+    private void openCourse(File file, Window passwordOwner) {
+        if (!ShowWindowUtility.showMainWindow(file, passwordOwner)) return;
+
         WindowBlindsOutAnimation.play(
                 this,
                 rootPane.getWidth(),

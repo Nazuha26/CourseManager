@@ -9,7 +9,7 @@
 <?import org.fxmisc.flowless.*?>
 <?import org.fxmisc.richtext.*?>
 
-<BorderPane id="mainPanel" fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../styles/main_style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.main.Main_controller">
+<BorderPane id="mainPanel" fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../styles/main_style.css" xmlns="http://javafx.com/javafx/23.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coursemanagerfx.controllers.main.Main_controller">
    <top>
       <VBox BorderPane.alignment="CENTER">
          <BorderPane fx:id="titleBar" styleClass="title-bar" stylesheets="@../styles/title_bar_style.css">

@@ -15,7 +15,6 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.exceptions.CourseCreationException;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
-import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -25,6 +24,8 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.util.Arrays;
 
 import static com.coursemanagerfx.AppConstants.*;
 
@@ -41,15 +42,12 @@ public class NewCourseDialog_controller implements StageAttachable {
     @FXML private Spinner<Integer> spinGroupsCount;
     // ========== FXML ==========
 
-    private boolean courseCreated = false;
-    public boolean wasCourseCreated() {
-        return courseCreated;
+    private File createdCourseFile;
+    public File getCreatedCourseFile() {
+        return createdCourseFile;
     }
 
     private Stage stage;
-
-    private static String generatedPassword;
-    public static void setGeneratedPassword(String generatedPassword) { NewCourseDialog_controller.generatedPassword = generatedPassword; }
 
     // ===== IMPLEMENTED =====
     @Override
@@ -89,17 +87,28 @@ public class NewCourseDialog_controller implements StageAttachable {
         File newCourseFile = COURSES_PATH.resolve(courseName + ".cman").toFile();
 
         try {
+            if (Files.exists(newCourseFile.toPath())) {
+                errorLabel.setText("A course with this name already exists.");
+                errorLabel.setStyle("-fx-text-fill: " + ColorConstants.toCssRGB(ColorConstants.ERROR_COLOUR) + ";");
+                errorLabel.setManaged(true);
+                Platform.runLater(stage::sizeToScene);
+                return;
+            }
+
             // create empty *.cman
             int groupsCount = spinGroupsCount.getValue();
             Group[] groups = new Group[groupsCount];
             for (int i = 0; i < groupsCount; i++)
                 groups[i] = new Group();
-            ShowDialogUtility.showGeneratedPasswordDialog();
+
+            char[] seedPhrase = ShowDialogUtility.showGeneratedSeedPhraseDialog(
+                    stage.getScene().getWindow());
+            if (seedPhrase == null) return;
             try {
-                CmanSecurityUtility.createSecureFile(groups, newCourseFile, generatedPassword);
+                CmanSecurityUtility.createSecureFile(groups, newCourseFile, seedPhrase);
             } catch (Exception e) {
                 errorLabel.setText("Could not create course. Please try again.");
-                errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
+                errorLabel.setStyle("-fx-text-fill: " + ColorConstants.toCssRGB(ColorConstants.ERROR_COLOUR) + ";");
                 errorLabel.setManaged(true);
                 Platform.runLater(stage::sizeToScene);
 
@@ -110,14 +119,14 @@ public class NewCourseDialog_controller implements StageAttachable {
                 );
                 return;
                 //throw new CourseFileCreateException("Failed to create encrypted course file", ex);
+            } finally {
+                Arrays.fill(seedPhrase, '\0');
             }
-            // remember the created course
-            ConfigManager.setOpenCourse(courseName);
-            courseCreated = true;
+            createdCourseFile = newCourseFile.getAbsoluteFile();
             HideAnimation.play(stage, stage::close);
         } catch (Exception e) {
             errorLabel.setText("Unexpected error");
-            errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");
+            errorLabel.setStyle("-fx-text-fill: " + ColorConstants.toCssRGB(ColorConstants.ERROR_COLOUR) + ";");
             errorLabel.setManaged(true);
             Platform.runLater(stage::sizeToScene);
 

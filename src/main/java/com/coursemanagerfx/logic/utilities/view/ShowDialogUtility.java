@@ -16,6 +16,7 @@ import com.coursemanagerfx.controllers.dialogs.NewCourseDialog_controller;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX_controller;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertType;
+import com.coursemanagerfx.controllers.dialogs.password.GeneratedPass_controller;
 import com.coursemanagerfx.controllers.dialogs.password.InputPass_controller;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import com.coursemanagerfx.logic.utilities.view.exceptions.DialogLoadException;
@@ -26,7 +27,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.*;
 
-import javax.xml.transform.Source;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -149,8 +149,8 @@ public class ShowDialogUtility {
         }
     }
 
-    // === CHECK PASSWORD DIALOG ===
-    public static String showCheckPasswordDialog(Window owner) {
+    // === CHECK SEED PHRASE DIALOG ===
+    public static char[] showCheckSeedPhraseDialog(Window owner) {
         try {
             InputPass_controller c = showDialog(
                     "/com/coursemanagerfx/ui/dialogs/password/input_password_dialog.fxml",
@@ -158,35 +158,38 @@ public class ShowDialogUtility {
                     owner
             );
 
-            return c.getInputPassword();
+            return c.takeSeedPhrase();
         } catch (IOException ex) {
-            throw new DialogLoadException("Failed to load password dialog", ex);
+            throw new DialogLoadException("Failed to load seed phrase dialog", ex);
         }
     }
 
     // === NEW COURSE DIALOG ===
-    public static boolean showNewCourseDialog() {
+    public static File showNewCourseDialog(Window owner) {
         try {
             NewCourseDialog_controller c = showDialog(
                     "/com/coursemanagerfx/ui/dialogs/new_course_dialog.fxml",
-                    null
+                    null,
+                    owner
             );
 
-            return c.wasCourseCreated();
+            return c.getCreatedCourseFile();
         } catch (IOException ex) {
             throw new DialogLoadException("Failed to load new course dialog", ex);
         }
     }
 
-    // === GENERATED PASSWORD DIALOG ===
-    public static void showGeneratedPasswordDialog() {
+    // === GENERATED SEED PHRASE DIALOG ===
+    public static char[] showGeneratedSeedPhraseDialog(Window owner) {
         try {
-            showDialog(
+            GeneratedPass_controller controller = showDialog(
                     "/com/coursemanagerfx/ui/dialogs/password/generated_dialog.fxml",
-                    null
+                    null,
+                    owner
             );
+            return controller.takeSeedPhrase();
         } catch (IOException ex) {
-            throw new DialogLoadException("Failed to load generated password dialog", ex);
+            throw new DialogLoadException("Failed to load generated seed phrase dialog", ex);
         }
     }
 

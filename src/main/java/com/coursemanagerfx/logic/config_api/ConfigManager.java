@@ -33,10 +33,6 @@ public class ConfigManager {
 
     public static String getLanguage()           { return safeLoadingConfig().language; }
 
-    public static String getDefaultPassword()    { return safeLoadingConfig().default_password; }
-
-    public static boolean isAutoUpdateEnabled()  { return safeLoadingConfig().auto_update; }
-
     public static boolean isAutoSaveEnabled()    { return safeLoadingConfig().auto_save; }
 
     public static int getAutoSaveSecInterval()   { return safeLoadingConfig().auto_save_sec_interval; }
@@ -53,14 +49,6 @@ public class ConfigManager {
 
     public static void setLanguage(String lang) {
         updateConfig(c -> c.language = lang);
-    }
-
-    public static void setDefaultPassword(String pass) {
-        updateConfig(c -> c.default_password = pass);
-    }
-
-    public static void setAutoUpdate(boolean autoUpdate) {
-        updateConfig(c -> c.auto_update = autoUpdate);
     }
 
     public static void setAutoSave(boolean autoSave) {
@@ -85,8 +73,7 @@ public class ConfigManager {
 
         AppConfig config = new AppConfig();               // default params
         AppConfig defaultConfig = new AppConfig();        // for fallback values
-        boolean changed = false;
-        JsonObject obj = null;
+        boolean rewriteRequired = false;
 
         try {
             if (Files.notExists(AppConstants.CONFIG_PATH)) {
@@ -96,17 +83,17 @@ public class ConfigManager {
             }
 
             String json = Files.readString(AppConstants.CONFIG_PATH);
-            obj = JsonParser.parseString(json).getAsJsonObject();
+            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
 
+            // Only fields declared in AppConfig are read. Unknown fields are ignored.
             for (Field field : AppConfig.class.getDeclaredFields()) {
                 String key = field.getName();
                 field.setAccessible(true);
 
                 if (!obj.has(key) || obj.get(key).isJsonNull()) {
                     Object defaultValue = field.get(defaultConfig);
-                    obj.add(key, GSON.toJsonTree(defaultValue));
                     field.set(config, defaultValue);
-                    changed = true;
+                    rewriteRequired = true;
                     continue;
                 }
 
@@ -147,9 +134,8 @@ public class ConfigManager {
                 } catch (Exception e) {
                     // use default value
                     Object defaultValue = field.get(defaultConfig);
-                    obj.add(key, GSON.toJsonTree(defaultValue));
                     field.set(config, defaultValue);
-                    changed = true;
+                    rewriteRequired = true;
 
                     LOGGER.info(String.format("Config field '%s' had invalid value and was replaced with default: \"%s\"", key, defaultValue));
                 }
@@ -161,18 +147,14 @@ public class ConfigManager {
                     "Configuration Error",
                     "Failed to load config:\n" + ex.getMessage()
             );
-            changed = true;
+            rewriteRequired = true;
         }
 
-        if (changed) {
-            if (obj != null) saveJsonConfig(obj);
-            else             saveConfig(config);
-        }
+        if (rewriteRequired) saveConfig(config);
 
         cachedConfig = config;
         return config;
     }
-
 
     /* ================================ */
 
@@ -193,33 +175,12 @@ public class ConfigManager {
         }
     }
 
-    private static void saveJsonConfig(JsonObject obj) {
-        try {
-            Files.createDirectories(AppConstants.CONFIG_PATH.getParent());
-            try (Writer writer = Files.newBufferedWriter(AppConstants.CONFIG_PATH)) { GSON.toJson(obj, writer); }
-        } catch (IOException ex) {
-            AlertFX.showNotification(
-                    AlertMessageType.ERROR,
-                    "Configuration Error",
-                    "Failed to save configuration:\n" + ex.getMessage()
-            );
-        }
-    }
-
     public static synchronized void updateConfig(Consumer<AppConfig> updater) {
         AppConfig config = safeLoadingConfig();
 
         AppConfig before = GSON.fromJson(GSON.toJson(config), AppConfig.class);
 
         try {
-            JsonObject obj;
-            if (Files.notExists(AppConstants.CONFIG_PATH))
-                obj = new JsonObject();
-            else {
-                String json = Files.readString(AppConstants.CONFIG_PATH);
-                obj = JsonParser.parseString(json).getAsJsonObject();
-            }
-
             updater.accept(config);
 
             for (Field f : AppConfig.class.getDeclaredFields()) {
@@ -246,12 +207,11 @@ public class ConfigManager {
                     }
 
                     LOGGER.info(String.format("Updated config field '%s': \"%s\" to \"%s\"", f.getName(), oldVal, newVal));
-
-                    obj.add(f.getName(), GSON.toJsonTree(newVal));
                 }
             }
 
-            saveJsonConfig(obj);
+            // Rewriting from AppConfig intentionally removes unknown JSON fields.
+            saveConfig(config);
             cachedConfig = config;
 
         } catch (Exception e) {
