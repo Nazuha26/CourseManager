@@ -21,7 +21,10 @@ cancelledMarker = fso.GetAbsolutePathName(arguments(3))
 successMarker = fso.GetAbsolutePathName(arguments(4))
 appPid = CLng(arguments(5))
 version = arguments(6)
-elevated = arguments.Count >= 8 And LCase(arguments(7)) = "--elevated"
+elevated = False
+If arguments.Count >= 8 Then
+    elevated = (LCase(CStr(arguments(7))) = "--elevated")
+End If
 
 If Not elevated Then
     RequestElevation payloadDir, installDir, readyMarker, cancelledMarker, _

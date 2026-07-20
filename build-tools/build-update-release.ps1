@@ -77,8 +77,37 @@ try {
             [System.Text.UTF8Encoding]::new($false))
 
     Write-Host '[2/3] Creating ZIP and Ed25519 signature...'
-    Compress-Archive -Path (Join-Path $staging '*') `
-            -DestinationPath $archivePath -CompressionLevel Optimal
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    $zip = [System.IO.Compression.ZipFile]::Open(
+            $archivePath,
+            [System.IO.Compression.ZipArchiveMode]::Create)
+
+    try {
+        $separator = [System.IO.Path]::DirectorySeparatorChar
+        $prefix = $staging.TrimEnd($separator) + $separator
+
+        Get-ChildItem -LiteralPath $staging -Recurse -Force |
+                Sort-Object FullName |
+                ForEach-Object {
+
+            $entryName = $_.FullName.Substring($prefix.Length)
+            $entryName = $entryName.Replace($separator, [char]'/')
+
+            if ($_.PSIsContainer) {
+                [void]$zip.CreateEntry("$entryName/")
+            } else {
+                [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                        $zip,
+                        $_.FullName,
+                        $entryName,
+                        [System.IO.Compression.CompressionLevel]::Optimal)
+            }
+        }
+    } finally {
+        $zip.Dispose()
+    }
 
     & $java $signerSource sign $PrivateKey $archivePath $signaturePath
     if ($LASTEXITCODE -ne 0) {
