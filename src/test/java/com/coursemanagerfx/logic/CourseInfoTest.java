@@ -10,6 +10,7 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CourseInfoTest {
@@ -43,5 +44,27 @@ class CourseInfoTest {
 
         info.clearSeedPhrase();
         assertNull(info.copySeedPhrase());
+    }
+
+    @Test
+    void allocatesMonotonicIdsWithoutReusingDeletedObjects() {
+        char[] phrase = "abacus abdomen abdominal abide abiding".toCharArray();
+        CourseInfo info = new CourseInfo(
+                temporaryDirectory.resolve("ids.cman").toFile(),
+                phrase,
+                new Group[] {new Group()});
+        Arrays.fill(phrase, '\0');
+
+        int firstStudent = info.takeNextStudentId();
+        int secondStudent = info.takeNextStudentId();
+        int firstEvent = info.takeNextEventId();
+        int secondEvent = info.takeNextEventId();
+
+        assertEquals(firstStudent + 1, secondStudent);
+        assertEquals(firstEvent + 1, secondEvent);
+        assertNotEquals(firstStudent, secondStudent);
+        assertNotEquals(firstEvent, secondEvent);
+        assertEquals(secondStudent + 1, info.getNextStudentId());
+        assertEquals(secondEvent + 1, info.getNextEventId());
     }
 }

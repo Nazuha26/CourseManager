@@ -89,16 +89,25 @@ class CmanSecurityUtilityTest {
             CmanSecurityUtility.createSecureFile(groups, file.toFile(), seedPhrase);
             byte[] original = Files.readAllBytes(file);
 
-            CmanSecurityUtility.updateSecureFile(groups, file.toFile(), seedPhrase);
+            CmanSecurityUtility.updateSecureFile(
+                    groups,
+                    file.toFile(),
+                    seedPhrase,
+                    1_000_050,
+                    10_050);
             byte[] updated = Files.readAllBytes(file);
 
             assertArrayEquals(original, Files.readAllBytes(backup));
             assertFalse(Arrays.equals(
                     Arrays.copyOfRange(original, 28, CmanCrypto.HEADER_LENGTH),
                     Arrays.copyOfRange(updated, 28, CmanCrypto.HEADER_LENGTH)));
-            assertEquals(1, CmanSecurityUtility.readSecureFile(
-                    file.toFile(),
-                    seedPhrase).length);
+            BinaryPlainCmanUtility.CourseData restored =
+                    CmanSecurityUtility.readSecureCourseData(
+                            file.toFile(),
+                            seedPhrase);
+            assertEquals(1, restored.groups().length);
+            assertEquals(1_000_050, restored.nextStudentId());
+            assertEquals(10_050, restored.nextEventId());
         } finally {
             Arrays.fill(seedPhrase, '\0');
         }

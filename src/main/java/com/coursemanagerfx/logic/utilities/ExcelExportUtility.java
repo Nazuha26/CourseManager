@@ -12,6 +12,7 @@ import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.EventStatus;
 import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
+import com.coursemanagerfx.logic.config_api.ConfigManager;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
@@ -28,12 +29,17 @@ import java.util.List;
 public class ExcelExportUtility {
 
     /* === HEADERS === */
-    private final static String[] HEADERS = {
-            "№", "П.І.Б.", "Сесія", "СФП", "СК, КГ, КВ", "Заохочення", "Стягнення",
-            "Секретники", "Редколегія", "Журналісти", "Спорторги", "Наукова діяльність",
-            "Сертифікати", "Призери змагань", "Волонтерська діяльність",
-            "Громадське життя", "Додаткові бали", "Заг. к-ть. балів"
-    };
+    private static String[] headers() {
+        String[] headers = new String[EventCategories.values().length + 3];
+        headers[0] = "№";
+        headers[1] = "П.І.Б.";
+        EventCategories[] categories = EventCategories.values();
+        for (int i = 0; i < categories.length; i++) {
+            headers[i + 2] = categories[i].getDisplayName();
+        }
+        headers[headers.length - 1] = "Заг. к-ть. балів";
+        return headers;
+    }
     /* =============== */
 
     /* ===== FONTS ===== */
@@ -114,9 +120,10 @@ public class ExcelExportUtility {
 
             /* set rotated heading style for cells which come after "ПІБ" */
             XSSFRow headerRow = sheet.createRow(1);
-            for (int i = 0; i < HEADERS.length; i++) {
+            String[] headers = headers();
+            for (int i = 0; i < headers.length; i++) {
                 XSSFCell headerRowCell = headerRow.createCell(i);
-                headerRowCell.setCellValue(HEADERS[i]);
+                headerRowCell.setCellValue(headers[i]);
                 if (i >= 2) headerRowCell.setCellStyle(rotatedStyle);
                 else headerRowCell.setCellStyle(headerStyle);
             }
@@ -223,12 +230,12 @@ public class ExcelExportUtility {
 
             XSSFRow r1 = sheet.createRow(baseRow);
             XSSFCell c1 = r1.createCell(1);
-            c1.setCellValue("Начальник курсу");
+            c1.setCellValue(ConfigManager.getExcelSignatureTitle());
             c1.setCellStyle(signStyle);
 
             XSSFRow r2 = sheet.createRow(baseRow + 1);
             XSSFCell c2 = r2.createCell(1);
-            c2.setCellValue("підполковник");
+            c2.setCellValue(ConfigManager.getExcelSignatureRank());
             c2.setCellStyle(signStyle);
 
             XSSFRow r3 = sheet.createRow(baseRow + 2);
@@ -239,7 +246,7 @@ public class ExcelExportUtility {
 
             sheet.addMergedRegion(new CellRangeAddress(baseRow + 1, baseRow + 1, 12, 17));   // merge cols M-R
             XSSFCell nameCell = r2.createCell(12); // M
-            nameCell.setCellValue("Віктор ФЕСЕНКО");
+            nameCell.setCellValue(ConfigManager.getExcelSignatureName());
             nameCell.setCellStyle(headOfCourseStyle);
             /* ================================ */
 

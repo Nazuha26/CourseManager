@@ -16,6 +16,9 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.file.*;
 import java.util.Objects;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -38,6 +41,17 @@ public class ConfigManager {
     public static int getAutoSaveSecInterval()   { return safeLoadingConfig().auto_save_sec_interval; }
 
     public static File getExportPath()           { return new File(safeLoadingConfig().export_path); }
+
+    public static String getCategoryName(String key, String defaultName) {
+        String configured = safeLoadingConfig().category_names.get(key);
+        return configured == null || configured.isBlank() ? defaultName : configured;
+    }
+
+    public static String getExcelSignatureTitle() { return safeLoadingConfig().excel_signature.title; }
+
+    public static String getExcelSignatureRank()  { return safeLoadingConfig().excel_signature.rank; }
+
+    public static String getExcelSignatureName()  { return safeLoadingConfig().excel_signature.name; }
 
 
 
@@ -126,6 +140,10 @@ public class ConfigManager {
                             throw new Exception();
 
                         field.setInt(config, intVal);
+                    } else {
+                        Object parsed = GSON.fromJson(val, field.getGenericType());
+                        if (parsed == null) throw new Exception();
+                        field.set(config, parsed);
                     }
 
                     /* === SETTING OTHER TYPES HERE === */
@@ -140,6 +158,8 @@ public class ConfigManager {
                     LOGGER.info(String.format("Config field '%s' had invalid value and was replaced with default: \"%s\"", key, defaultValue));
                 }
             }
+
+            rewriteRequired |= normalizeStructuredFields(config, defaultConfig);
 
         } catch (Exception ex) {
             AlertFX.showNotification(
@@ -161,6 +181,64 @@ public class ConfigManager {
 
 
     /* ========== CORE ========== */
+
+    private static boolean normalizeStructuredFields(
+            AppConfig config,
+            AppConfig defaults) {
+
+        boolean changed = false;
+
+        if (config.category_names == null) {
+            config.category_names = AppConfig.defaultCategoryNames();
+            changed = true;
+        } else {
+            Map<String, String> normalized = new LinkedHashMap<>();
+            for (Map.Entry<String, String> entry : defaults.category_names.entrySet()) {
+                String value = config.category_names.get(entry.getKey());
+                if (value == null || value.isBlank()) {
+                    value = entry.getValue();
+                    changed = true;
+                }
+                normalized.put(entry.getKey(), value);
+            }
+            if (new HashSet<>(normalized.values()).size() != normalized.size()) {
+                normalized = new LinkedHashMap<>(defaults.category_names);
+                changed = true;
+            }
+            config.category_names = normalized;
+        }
+
+        if (config.excel_signature == null) {
+            config.excel_signature = new AppConfig.ExcelSignature();
+            changed = true;
+        } else {
+            changed |= replaceBlankSignatureFields(
+                    config.excel_signature,
+                    defaults.excel_signature);
+        }
+
+        return changed;
+    }
+
+    private static boolean replaceBlankSignatureFields(
+            AppConfig.ExcelSignature signature,
+            AppConfig.ExcelSignature defaults) {
+
+        boolean changed = false;
+        if (signature.title == null || signature.title.isBlank()) {
+            signature.title = defaults.title;
+            changed = true;
+        }
+        if (signature.rank == null || signature.rank.isBlank()) {
+            signature.rank = defaults.rank;
+            changed = true;
+        }
+        if (signature.name == null || signature.name.isBlank()) {
+            signature.name = defaults.name;
+            changed = true;
+        }
+        return changed;
+    }
 
     private static void saveConfig(AppConfig config) {
         try {

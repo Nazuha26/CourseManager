@@ -18,9 +18,9 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.Start_controller;
-import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
 import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
+import com.coursemanagerfx.logic.utilities.security.BinaryPlainCmanUtility;
 import com.coursemanagerfx.logic.utilities.AppUtility;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -99,14 +99,14 @@ public class ShowWindowUtility {
 
     public static boolean showMainWindow(File file, Window passwordOwner) {
         char[] seedPhrase = null;
-        Group[] course = null;
+        BinaryPlainCmanUtility.CourseData courseData = null;
 
         do {
             seedPhrase = ShowDialogUtility.showCheckSeedPhraseDialog(passwordOwner);
             if (seedPhrase == null) return false;
 
             try {
-                course = CmanSecurityUtility.readSecureFile(file, seedPhrase);
+                courseData = CmanSecurityUtility.readSecureCourseData(file, seedPhrase);
             } catch (Exception exception) {
                 Arrays.fill(seedPhrase, '\0');
                 seedPhrase = null;
@@ -116,7 +116,7 @@ public class ShowWindowUtility {
                         "The seed phrase is incorrect, the file is corrupted, or it uses an unsupported format."
                 );
             }
-        } while (course == null);
+        } while (courseData == null);
 
         try {
             Stage mainStage = new Stage();
@@ -156,7 +156,12 @@ public class ShowWindowUtility {
                     () -> StageSetupUtility.setup(controller, mainStage, 0)
             );
             try {
-                Launcher.setCourseInfo(new CourseInfo(file, seedPhrase, course));
+                Launcher.setCourseInfo(new CourseInfo(
+                        file,
+                        seedPhrase,
+                        courseData.groups(),
+                        courseData.nextStudentId(),
+                        courseData.nextEventId()));
             } finally {
                 Arrays.fill(seedPhrase, '\0');
             }

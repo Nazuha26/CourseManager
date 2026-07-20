@@ -14,10 +14,14 @@ class AppConfigTest {
 
     @Test
     void obsoleteFieldsAreNotPartOfCurrentSchema() {
-        String json = new Gson().toJson(new AppConfig());
+        AppConfig config = new AppConfig();
+        String json = new Gson().toJson(config);
 
         assertFalse(json.contains("auto_update"));
         assertFalse(json.contains("default_password"));
+        assertEquals(15, config.category_names.size());
+        assertEquals("Сесія", config.category_names.get("MOD_1"));
+        assertEquals("Віктор ФЕСЕНКО", config.excel_signature.name);
     }
 
     @Test
@@ -39,6 +43,8 @@ class AppConfigTest {
                 "language",
                 "auto_save",
                 "auto_save_sec_interval",
-                "export_path"), rewritten.keySet());
+                "export_path",
+                "category_names",
+                "excel_signature"), rewritten.keySet());
     }
 }

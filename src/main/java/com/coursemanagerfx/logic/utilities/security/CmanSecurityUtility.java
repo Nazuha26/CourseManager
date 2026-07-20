@@ -65,13 +65,31 @@ public final class CmanSecurityUtility {
             File file,
             char[] seedPhrase) throws IOException, EncryptionException {
 
+        updateSecureFile(
+                groups,
+                file,
+                seedPhrase,
+                BinaryPlainCmanUtility.nextStudentIdFor(groups),
+                BinaryPlainCmanUtility.nextEventIdFor(groups));
+    }
+
+    public static void updateSecureFile(
+            Group[] groups,
+            File file,
+            char[] seedPhrase,
+            int nextStudentId,
+            int nextEventId) throws IOException, EncryptionException {
+
         Objects.requireNonNull(file, "file");
         Path target = file.toPath().toAbsolutePath().normalize();
         if (!Files.isRegularFile(target)) {
             throw new NoSuchFileException(target.toString());
         }
 
-        byte[] plaintext = buildPlainCman(Objects.requireNonNull(groups, "groups"));
+        byte[] plaintext = BinaryPlainCmanUtility.buildPlainCman(
+                Objects.requireNonNull(groups, "groups"),
+                nextStudentId,
+                nextEventId);
         byte[] encrypted = null;
         try {
             encrypted = CmanCrypto.encrypt(plaintext, seedPhrase);
@@ -85,6 +103,13 @@ public final class CmanSecurityUtility {
     public static Group[] readSecureFile(File file, char[] seedPhrase)
             throws IOException {
 
+        return readSecureCourseData(file, seedPhrase).groups();
+    }
+
+    public static BinaryPlainCmanUtility.CourseData readSecureCourseData(
+            File file,
+            char[] seedPhrase) throws IOException {
+
         Objects.requireNonNull(file, "file");
         Path source = file.toPath().toAbsolutePath().normalize();
         long size = Files.size(source);
@@ -97,7 +122,7 @@ public final class CmanSecurityUtility {
         try {
             plaintext = CmanCrypto.decrypt(encrypted, seedPhrase);
             try {
-                return BinaryPlainCmanUtility.parsePlainCman(
+                return BinaryPlainCmanUtility.parseCourseData(
                         new ByteArrayInputStream(plaintext));
             } catch (IOException | RuntimeException exception) {
                 throw new DecryptionException(

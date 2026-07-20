@@ -400,7 +400,7 @@ public final class Actions {
             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(false));       // turn off sortable of event table
 
             /* === fill in the panel === */
-            ctrl.getComBoxEventCategory().getSelectionModel().select(event.getCategory().getEventCategory().name()); // type
+            ctrl.getComBoxEventCategory().getSelectionModel().select(event.getCategory().getDisplayName()); // type
             ctrl.getTxtAreaEventDescrp().setText(event.getDescription());                                // description
             /* creation date */
             EventDate cd = event.getCrtDate();
@@ -456,7 +456,7 @@ public final class Actions {
 
             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(true));       // turn on sortable of event table
 
-            ctrl.getComBoxEventCategory().getSelectionModel().select(EventCategories.MOD_1.getEventCategory().name());
+            ctrl.getComBoxEventCategory().getSelectionModel().select(EventCategories.MOD_1.getDisplayName());
 
             ctrl.getBtnDeleteEvent().setVisible(false);
             ctrl.getBtnDeleteEvent().setManaged(false);
@@ -832,7 +832,7 @@ public final class Actions {
         /* get event category by name in combobox */
         public EventCategories returnCategoryByName(String name) {
             for (EventCategories mod : EventCategories.values()) {
-                if (mod.getEventCategory().name().equals(name)) {
+                if (mod.getDisplayName().equals(name)) {
                     return mod;
                 }
             }
@@ -941,7 +941,11 @@ public final class Actions {
                 char[] seedPhrase = Launcher.getCourseInfo().copySeedPhrase();
                 try {
                     CmanSecurityUtility.updateSecureFile(
-                            Launcher.getCourseInfo().getCourse(), file, seedPhrase);
+                            Launcher.getCourseInfo().getCourse(),
+                            file,
+                            seedPhrase,
+                            Launcher.getCourseInfo().getNextStudentId(),
+                            Launcher.getCourseInfo().getNextEventId());
                 } finally {
                     if (seedPhrase != null) Arrays.fill(seedPhrase, '\0');
                 }
@@ -1062,27 +1066,10 @@ public final class Actions {
      * *****************************************************************/
     public static class IdGenerator {
         public int genGlobalStudentId() {
-            Set<Integer> existingIds = new HashSet<>();
-
-            for (Group group : Launcher.getCourseInfo().getCourse())
-                for (Student student : group.getStudents())
-                    existingIds.add(student.getStudentID());
-
-            int newId = 1_000_000;
-            while (existingIds.contains(newId)) newId++;
-            return newId;
+            return Launcher.getCourseInfo().takeNextStudentId();
         }
         public int genGlobalEventId() {
-            Set<Integer> existingIds = new HashSet<>();
-
-            for (Group group : Launcher.getCourseInfo().getCourse())
-                for (Student student : group.getStudents())
-                    for (StudentEvent event : student.getEvents())
-                        existingIds.add(event.getID());
-
-            int newId = 10_000;
-            while (existingIds.contains(newId)) newId++;
-            return newId;
+            return Launcher.getCourseInfo().takeNextEventId();
         }
     }
 

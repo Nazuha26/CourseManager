@@ -1,0 +1,2073 @@
+diff --git a/src/main/java/com/coursemanagerfx/controllers/main/Main_controller.java b/src/main/java/com/coursemanagerfx/controllers/main/Main_controller.java
+index 7dee5c9..07474c3 100644
+--- a/src/main/java/com/coursemanagerfx/controllers/main/Main_controller.java
++++ b/src/main/java/com/coursemanagerfx/controllers/main/Main_controller.java
+@@ -347,9 +347,9 @@ public class Main_controller implements StageAttachable {
+         comBoxExpTimeType.getSelectionModel().selectFirst();    // and select DAYS by default
+ 
+         /* init event categories combobox */
+-        comBoxEventCategory.setVisibleRowCount(15);
+-        for (EventCategories type : EventCategories.values())
+-            comBoxEventCategory.getItems().add(type.getEventCategory().name());
++        comBoxEventCategory.setVisibleRowCount(15);
++        for (EventCategories type : EventCategories.values())
++            comBoxEventCategory.getItems().add(type.getDisplayName());
+         comBoxEventCategory.getSelectionModel().selectFirst();      // and select first type by default
+ 
+         initSpinners();     /* init mark and expiration time spinners */
+@@ -634,12 +634,11 @@ public class Main_controller implements StageAttachable {
+ 
+         /* ----- column CATEGORY ----- */
+         categoryColumn.setCellValueFactory(cellData ->
+-                new ReadOnlyStringWrapper(
+-                        cellData.getValue()
+-                                .getCategory()
+-                                .getEventCategory()
+-                                .name())
+-        );
++                new ReadOnlyStringWrapper(
++                        cellData.getValue()
++                                .getCategory()
++                                .getDisplayName())
++        );
+ 
+         /* sort by ukrainian alphabet */
+         //categoryColumn.setComparator(AppConstants.UA_COLLATOR::compare);
+@@ -648,7 +647,7 @@ public class Main_controller implements StageAttachable {
+         categoryColumn.setComparator((a, b) -> {
+             EventCategories ec1 = Actions.getInstance().uiActions().returnCategoryByName(a);
+             EventCategories ec2 = Actions.getInstance().uiActions().returnCategoryByName(b);
+-            return Integer.compare(ec1.ordinal(), ec2.ordinal());
++            return Integer.compare(ec1.getCode(), ec2.getCode());
+         });
+         /* ------------------------------ */
+ 
+@@ -683,7 +682,7 @@ public class Main_controller implements StageAttachable {
+                         fxColor.getOpacity()
+                 );
+ 
+-                setText(category.name());
++                setText(event.getCategory().getDisplayName());
+                 setStyle("-fx-background-color: " + rgba + ";");
+             }
+         });
+diff --git a/src/main/java/com/coursemanagerfx/logic/Actions.java b/src/main/java/com/coursemanagerfx/logic/Actions.java
+index 562ab1f..d3596c2 100644
+--- a/src/main/java/com/coursemanagerfx/logic/Actions.java
++++ b/src/main/java/com/coursemanagerfx/logic/Actions.java
+@@ -400,7 +400,7 @@ public final class Actions {
+             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(false));       // turn off sortable of event table
+ 
+             /* === fill in the panel === */
+-            ctrl.getComBoxEventCategory().getSelectionModel().select(event.getCategory().getEventCategory().name()); // type
++            ctrl.getComBoxEventCategory().getSelectionModel().select(event.getCategory().getDisplayName()); // type
+             ctrl.getTxtAreaEventDescrp().setText(event.getDescription());                                // description
+             /* creation date */
+             EventDate cd = event.getCrtDate();
+@@ -456,7 +456,7 @@ public final class Actions {
+ 
+             ctrl.getEventsTable().getColumns().forEach(col -> col.setSortable(true));       // turn on sortable of event table
+ 
+-            ctrl.getComBoxEventCategory().getSelectionModel().select(EventCategories.MOD_1.getEventCategory().name());
++            ctrl.getComBoxEventCategory().getSelectionModel().select(EventCategories.MOD_1.getDisplayName());
+ 
+             ctrl.getBtnDeleteEvent().setVisible(false);
+             ctrl.getBtnDeleteEvent().setManaged(false);
+@@ -832,7 +832,7 @@ public final class Actions {
+         /* get event category by name in combobox */
+         public EventCategories returnCategoryByName(String name) {
+             for (EventCategories mod : EventCategories.values()) {
+-                if (mod.getEventCategory().name().equals(name)) {
++                if (mod.getDisplayName().equals(name)) {
+                     return mod;
+                 }
+             }
+@@ -940,8 +940,12 @@ public final class Actions {
+ 
+                 char[] seedPhrase = Launcher.getCourseInfo().copySeedPhrase();
+                 try {
+-                    CmanSecurityUtility.updateSecureFile(
+-                            Launcher.getCourseInfo().getCourse(), file, seedPhrase);
++                    CmanSecurityUtility.updateSecureFile(
++                            Launcher.getCourseInfo().getCourse(),
++                            file,
++                            seedPhrase,
++                            Launcher.getCourseInfo().getNextStudentId(),
++                            Launcher.getCourseInfo().getNextEventId());
+                 } finally {
+                     if (seedPhrase != null) Arrays.fill(seedPhrase, '\0');
+                 }
+@@ -1060,31 +1064,14 @@ public final class Actions {
+     /* ******************************************************************
+      *                          CLASS  IdGenerator
+      * *****************************************************************/
+-    public static class IdGenerator {
+-        public int genGlobalStudentId() {
+-            Set<Integer> existingIds = new HashSet<>();
+-
+-            for (Group group : Launcher.getCourseInfo().getCourse())
+-                for (Student student : group.getStudents())
+-                    existingIds.add(student.getStudentID());
+-
+-            int newId = 1_000_000;
+-            while (existingIds.contains(newId)) newId++;
+-            return newId;
+-        }
+-        public int genGlobalEventId() {
+-            Set<Integer> existingIds = new HashSet<>();
+-
+-            for (Group group : Launcher.getCourseInfo().getCourse())
+-                for (Student student : group.getStudents())
+-                    for (StudentEvent event : student.getEvents())
+-                        existingIds.add(event.getID());
+-
+-            int newId = 10_000;
+-            while (existingIds.contains(newId)) newId++;
+-            return newId;
+-        }
+-    }
++    public static class IdGenerator {
++        public int genGlobalStudentId() {
++            return Launcher.getCourseInfo().takeNextStudentId();
++        }
++        public int genGlobalEventId() {
++            return Launcher.getCourseInfo().takeNextEventId();
++        }
++    }
+ 
+     /* ******************************************************************
+      *                          CLASS  FormAnims
+diff --git a/src/main/java/com/coursemanagerfx/logic/CourseInfo.java b/src/main/java/com/coursemanagerfx/logic/CourseInfo.java
+index 0409fdb..a0911cf 100644
+--- a/src/main/java/com/coursemanagerfx/logic/CourseInfo.java
++++ b/src/main/java/com/coursemanagerfx/logic/CourseInfo.java
+@@ -8,6 +8,8 @@ THIS FILE CREATED FOR "CourseManagerFX"
+ package com.coursemanagerfx.logic;
+ 
+ import com.coursemanagerfx.logic.basic.Group;
++import com.coursemanagerfx.logic.basic.Student;
++import com.coursemanagerfx.logic.basic.event.StudentEvent;
+ 
+ import java.io.File;
+ import java.util.Arrays;
+@@ -18,8 +20,25 @@ public class CourseInfo {
+     private final String courseName;
+     private char[] seedPhrase;
+     private final Group[] course;
++    private int nextStudentId;
++    private int nextEventId;
+ 
+     public CourseInfo(File courseFile, char[] seedPhrase, Group[] course) {
++        this(
++                courseFile,
++                seedPhrase,
++                course,
++                deriveNextStudentId(course),
++                deriveNextEventId(course));
++    }
++
++    public CourseInfo(
++            File courseFile,
++            char[] seedPhrase,
++            Group[] course,
++            int nextStudentId,
++            int nextEventId) {
++
+         this.courseFile = Objects.requireNonNull(courseFile, "courseFile")
+                 .getAbsoluteFile();
+         String fileName = this.courseFile.getName();
+@@ -29,6 +48,9 @@ public class CourseInfo {
+         Objects.requireNonNull(seedPhrase, "seedPhrase");
+         this.seedPhrase = Arrays.copyOf(seedPhrase, seedPhrase.length);
+         this.course = Objects.requireNonNull(course, "course");
++        validateNextIds(course, nextStudentId, nextEventId);
++        this.nextStudentId = nextStudentId;
++        this.nextEventId = nextEventId;
+     }
+ 
+     public File getCourseFile() {
+@@ -44,9 +66,31 @@ public class CourseInfo {
+         return Arrays.copyOf(seedPhrase, seedPhrase.length);
+     }
+ 
+-    public Group[] getCourse() {
+-        return course;
+-    }
++    public Group[] getCourse() {
++        return course;
++    }
++
++    public synchronized int takeNextStudentId() {
++        if (nextStudentId == Integer.MAX_VALUE) {
++            throw new IllegalStateException("No more student IDs are available");
++        }
++        return nextStudentId++;
++    }
++
++    public synchronized int takeNextEventId() {
++        if (nextEventId == Integer.MAX_VALUE) {
++            throw new IllegalStateException("No more event IDs are available");
++        }
++        return nextEventId++;
++    }
++
++    public synchronized int getNextStudentId() {
++        return nextStudentId;
++    }
++
++    public synchronized int getNextEventId() {
++        return nextEventId;
++    }
+ 
+     public void clearSeedPhrase() {
+         if (seedPhrase != null) {
+@@ -55,13 +99,61 @@ public class CourseInfo {
+         }
+     }
+ 
+-    public boolean isEmpty() {
++    public boolean isEmpty() {
+         if (course == null) return true;
+         for (Group group : course) {
+             if (group != null && group.getStudents() != null && !group.getStudents().isEmpty()) {
+                 return false;
+             }
+         }
+-        return true;
+-    }
+-}
++        return true;
++    }
++
++    private static int deriveNextStudentId(Group[] groups) {
++        int maximum = 999_999;
++        if (groups != null) {
++            for (Group group : groups) {
++                if (group == null || group.getStudents() == null) continue;
++                for (Student student : group.getStudents()) {
++                    if (student != null) maximum = Math.max(maximum, student.getStudentID());
++                }
++            }
++        }
++        return increment(maximum, "student");
++    }
++
++    private static int deriveNextEventId(Group[] groups) {
++        int maximum = 9_999;
++        if (groups != null) {
++            for (Group group : groups) {
++                if (group == null || group.getStudents() == null) continue;
++                for (Student student : group.getStudents()) {
++                    if (student == null || student.getEvents() == null) continue;
++                    for (StudentEvent event : student.getEvents()) {
++                        if (event != null) maximum = Math.max(maximum, event.getID());
++                    }
++                }
++            }
++        }
++        return increment(maximum, "event");
++    }
++
++    private static int increment(int value, String type) {
++        if (value == Integer.MAX_VALUE) {
++            throw new IllegalArgumentException("No more " + type + " IDs are available");
++        }
++        return value + 1;
++    }
++
++    private static void validateNextIds(
++            Group[] groups,
++            int nextStudentId,
++            int nextEventId) {
++
++        int minimumStudentId = deriveNextStudentId(groups);
++        int minimumEventId = deriveNextEventId(groups);
++        if (nextStudentId < minimumStudentId || nextEventId < minimumEventId) {
++            throw new IllegalArgumentException("Persisted next ID is lower than an existing ID");
++        }
++    }
++}
+diff --git a/src/main/java/com/coursemanagerfx/logic/basic/event/category/EventCategories.java b/src/main/java/com/coursemanagerfx/logic/basic/event/category/EventCategories.java
+index 250eecf..5ff8f83 100644
+--- a/src/main/java/com/coursemanagerfx/logic/basic/event/category/EventCategories.java
++++ b/src/main/java/com/coursemanagerfx/logic/basic/event/category/EventCategories.java
+@@ -5,29 +5,55 @@ THIS FILE CREATED FOR "CourseManagerFX"
+ ========================================
+ */
+ 
+-package com.coursemanagerfx.logic.basic.event.category;
+-
+-import javafx.scene.paint.Color;
+-
+-public enum EventCategories {
+-    MOD_1     (new EventCategory(CategoryTag.SESSIYA, "Сесія", Color.rgb(223, 12, 12, 0.1))),
+-    MOD_2     (new EventCategory(CategoryTag.SFP, "СФП", Color.rgb(223, 107, 12, 0.1))),
+-    MOD_3     (new EventCategory(CategoryTag.SK_KG_KV, "СК, КГ, КВ", Color.rgb(223, 188, 12, 0.1))),
+-    MOD_4     (new EventCategory(CategoryTag.ZAOHOCHENNYA, "Заохочення", Color.rgb(163, 223, 12, 0.1))),
+-    MOD_5     (new EventCategory(CategoryTag.STYAGNENNYA, "Стягнення", Color.rgb(96, 223, 12, 0.1))),
+-    MOD_6     (new EventCategory(CategoryTag.SEKRETNIKI, "Секретники", Color.rgb(19, 223, 12, 0.1))),
+-    MOD_7     (new EventCategory(CategoryTag.REDKOLEGIYA, "Редколегія", Color.rgb(12, 223, 86, 0.1))),
+-    MOD_8     (new EventCategory(CategoryTag.JURNALISTI, "Журналісти", Color.rgb(12, 223, 198, 0.1))),
+-    MOD_9     (new EventCategory(CategoryTag.SPORTORGI, "Спорторги", Color.rgb(12, 167, 223, 0.1))),
+-    MOD_10    (new EventCategory(CategoryTag.NAUKA, "Наукова діял.", Color.rgb(12, 96, 223, 0.1))),
+-    MOD_11    (new EventCategory(CategoryTag.SERTIFICATI, "Сертифікати", Color.rgb(19, 12, 223, 0.1))),
+-    MOD_12    (new EventCategory(CategoryTag.ZMAGANNYA, "Призери змагань", Color.rgb(96, 12, 223, 0.1))),
+-    MOD_13    (new EventCategory(CategoryTag.VOLONTERI, "Волонтер. діял.", Color.rgb(209, 12, 223, 0.1))),
+-    MOD_14    (new EventCategory(CategoryTag.GROMAD_JITTYA, "Громад. життя", Color.rgb(223, 12, 139, 0.1))),
+-
+-    CUSTOM    (new EventCategory(CategoryTag.DODAT_BAL, "Додаткові бали", Color.rgb(223, 12, 44, 0.1)));
+-
+-    private final EventCategory eventCategory;
+-    EventCategories(EventCategory category) { this.eventCategory = category; }
+-    public EventCategory getEventCategory() { return eventCategory; }
+-}
++package com.coursemanagerfx.logic.basic.event.category;
++
++import com.coursemanagerfx.logic.config_api.ConfigManager;
++import javafx.scene.paint.Color;
++
++import java.util.Arrays;
++
++public enum EventCategories {
++    MOD_1     (1, new EventCategory(CategoryTag.SESSIYA, "Сесія", Color.rgb(223, 12, 12, 0.1))),
++    MOD_2     (2, new EventCategory(CategoryTag.SFP, "СФП", Color.rgb(223, 107, 12, 0.1))),
++    MOD_3     (3, new EventCategory(CategoryTag.SK_KG_KV, "СК, КГ, КВ", Color.rgb(223, 188, 12, 0.1))),
++    MOD_4     (4, new EventCategory(CategoryTag.ZAOHOCHENNYA, "Заохочення", Color.rgb(163, 223, 12, 0.1))),
++    MOD_5     (5, new EventCategory(CategoryTag.STYAGNENNYA, "Стягнення", Color.rgb(96, 223, 12, 0.1))),
++    MOD_6     (6, new EventCategory(CategoryTag.SEKRETNIKI, "Секретники", Color.rgb(19, 223, 12, 0.1))),
++    MOD_7     (7, new EventCategory(CategoryTag.REDKOLEGIYA, "Редколегія", Color.rgb(12, 223, 86, 0.1))),
++    MOD_8     (8, new EventCategory(CategoryTag.JURNALISTI, "Журналісти", Color.rgb(12, 223, 198, 0.1))),
++    MOD_9     (9, new EventCategory(CategoryTag.SPORTORGI, "Спорторги", Color.rgb(12, 167, 223, 0.1))),
++    MOD_10    (10, new EventCategory(CategoryTag.NAUKA, "Наукова діял.", Color.rgb(12, 96, 223, 0.1))),
++    MOD_11    (11, new EventCategory(CategoryTag.SERTIFICATI, "Сертифікати", Color.rgb(19, 12, 223, 0.1))),
++    MOD_12    (12, new EventCategory(CategoryTag.ZMAGANNYA, "Призери змагань", Color.rgb(96, 12, 223, 0.1))),
++    MOD_13    (13, new EventCategory(CategoryTag.VOLONTERI, "Волонтер. діял.", Color.rgb(209, 12, 223, 0.1))),
++    MOD_14    (14, new EventCategory(CategoryTag.GROMAD_JITTYA, "Громад. життя", Color.rgb(223, 12, 139, 0.1))),
++
++    CUSTOM    (15, new EventCategory(CategoryTag.DODAT_BAL, "Додаткові бали", Color.rgb(223, 12, 44, 0.1)));
++
++    private final int code;
++    private final EventCategory eventCategory;
++
++    EventCategories(int code, EventCategory category) {
++        this.code = code;
++        this.eventCategory = category;
++    }
++
++    /** Stable value written to CMAN files. Never derive this value from ordinal(). */
++    public int getCode() {
++        return code;
++    }
++
++    public EventCategory getEventCategory() { return eventCategory; }
++
++    public String getDisplayName() {
++        return ConfigManager.getCategoryName(name(), eventCategory.name());
++    }
++
++    public static EventCategories fromCode(int code) {
++        return Arrays.stream(values())
++                .filter(category -> category.code == code)
++                .findFirst()
++                .orElseThrow(() -> new IllegalArgumentException(
++                        "Unknown event category code: " + code));
++    }
++}
+diff --git a/src/main/java/com/coursemanagerfx/logic/config_api/AppConfig.java b/src/main/java/com/coursemanagerfx/logic/config_api/AppConfig.java
+index 029f3ce..6cd393d 100644
+--- a/src/main/java/com/coursemanagerfx/logic/config_api/AppConfig.java
++++ b/src/main/java/com/coursemanagerfx/logic/config_api/AppConfig.java
+@@ -7,7 +7,9 @@ THIS FILE CREATED FOR "CourseManagerFX"
+ 
+ package com.coursemanagerfx.logic.config_api;
+ 
+-import java.io.File;
++import java.io.File;
++import java.util.LinkedHashMap;
++import java.util.Map;
+ 
+ public class AppConfig {
+ 
+@@ -15,10 +17,38 @@ public class AppConfig {
+ 
+     public String open_course = "none";
+     public String language = "en";
+-    public boolean auto_save = true;
+-    public int auto_save_sec_interval = 60;
+-    public String export_path = System.getProperty("user.home") + File.separator + "Desktop";
++    public boolean auto_save = true;
++    public int auto_save_sec_interval = 60;
++    public String export_path = System.getProperty("user.home") + File.separator + "Desktop";
++    public Map<String, String> category_names = defaultCategoryNames();
++    public ExcelSignature excel_signature = new ExcelSignature();
+ 
+-    /* ========================== */
+-
+-}
++    /* ========================== */
++
++    public static Map<String, String> defaultCategoryNames() {
++        Map<String, String> names = new LinkedHashMap<>();
++        names.put("MOD_1", "Сесія");
++        names.put("MOD_2", "СФП");
++        names.put("MOD_3", "СК, КГ, КВ");
++        names.put("MOD_4", "Заохочення");
++        names.put("MOD_5", "Стягнення");
++        names.put("MOD_6", "Секретники");
++        names.put("MOD_7", "Редколегія");
++        names.put("MOD_8", "Журналісти");
++        names.put("MOD_9", "Спорторги");
++        names.put("MOD_10", "Наукова діял.");
++        names.put("MOD_11", "Сертифікати");
++        names.put("MOD_12", "Призери змагань");
++        names.put("MOD_13", "Волонтер. діял.");
++        names.put("MOD_14", "Громад. життя");
++        names.put("CUSTOM", "Додаткові бали");
++        return names;
++    }
++
++    public static class ExcelSignature {
++        public String title = "Начальник курсу";
++        public String rank = "підполковник";
++        public String name = "Віктор ФЕСЕНКО";
++    }
++
++}
+diff --git a/src/main/java/com/coursemanagerfx/logic/config_api/ConfigManager.java b/src/main/java/com/coursemanagerfx/logic/config_api/ConfigManager.java
+index ba6e2db..07eb762 100644
+--- a/src/main/java/com/coursemanagerfx/logic/config_api/ConfigManager.java
++++ b/src/main/java/com/coursemanagerfx/logic/config_api/ConfigManager.java
+@@ -15,7 +15,10 @@ import com.google.gson.*;
+ import java.io.*;
+ import java.lang.reflect.Field;
+ import java.nio.file.*;
+-import java.util.Objects;
++import java.util.Objects;
++import java.util.LinkedHashMap;
++import java.util.Map;
++import java.util.HashSet;
+ import java.util.function.Consumer;
+ import java.util.logging.Logger;
+ 
+@@ -37,7 +40,18 @@ public class ConfigManager {
+ 
+     public static int getAutoSaveSecInterval()   { return safeLoadingConfig().auto_save_sec_interval; }
+ 
+-    public static File getExportPath()           { return new File(safeLoadingConfig().export_path); }
++    public static File getExportPath()           { return new File(safeLoadingConfig().export_path); }
++
++    public static String getCategoryName(String key, String defaultName) {
++        String configured = safeLoadingConfig().category_names.get(key);
++        return configured == null || configured.isBlank() ? defaultName : configured;
++    }
++
++    public static String getExcelSignatureTitle() { return safeLoadingConfig().excel_signature.title; }
++
++    public static String getExcelSignatureRank()  { return safeLoadingConfig().excel_signature.rank; }
++
++    public static String getExcelSignatureName()  { return safeLoadingConfig().excel_signature.name; }
+ 
+ 
+ 
+@@ -126,7 +140,11 @@ public class ConfigManager {
+                             throw new Exception();
+ 
+                         field.setInt(config, intVal);
+-                    }
++                    } else {
++                        Object parsed = GSON.fromJson(val, field.getGenericType());
++                        if (parsed == null) throw new Exception();
++                        field.set(config, parsed);
++                    }
+ 
+                     /* === SETTING OTHER TYPES HERE === */
+                     // ...
+@@ -139,9 +157,11 @@ public class ConfigManager {
+ 
+                     LOGGER.info(String.format("Config field '%s' had invalid value and was replaced with default: \"%s\"", key, defaultValue));
+                 }
+-            }
+-
+-        } catch (Exception ex) {
++            }
++
++            rewriteRequired |= normalizeStructuredFields(config, defaultConfig);
++
++        } catch (Exception ex) {
+             AlertFX.showNotification(
+                     AlertMessageType.ERROR,
+                     "Configuration Error",
+@@ -160,9 +180,67 @@ public class ConfigManager {
+ 
+ 
+ 
+-    /* ========== CORE ========== */
+-
+-    private static void saveConfig(AppConfig config) {
++    /* ========== CORE ========== */
++
++    private static boolean normalizeStructuredFields(
++            AppConfig config,
++            AppConfig defaults) {
++
++        boolean changed = false;
++
++        if (config.category_names == null) {
++            config.category_names = AppConfig.defaultCategoryNames();
++            changed = true;
++        } else {
++            Map<String, String> normalized = new LinkedHashMap<>();
++            for (Map.Entry<String, String> entry : defaults.category_names.entrySet()) {
++                String value = config.category_names.get(entry.getKey());
++                if (value == null || value.isBlank()) {
++                    value = entry.getValue();
++                    changed = true;
++                }
++                normalized.put(entry.getKey(), value);
++            }
++            if (new HashSet<>(normalized.values()).size() != normalized.size()) {
++                normalized = new LinkedHashMap<>(defaults.category_names);
++                changed = true;
++            }
++            config.category_names = normalized;
++        }
++
++        if (config.excel_signature == null) {
++            config.excel_signature = new AppConfig.ExcelSignature();
++            changed = true;
++        } else {
++            changed |= replaceBlankSignatureFields(
++                    config.excel_signature,
++                    defaults.excel_signature);
++        }
++
++        return changed;
++    }
++
++    private static boolean replaceBlankSignatureFields(
++            AppConfig.ExcelSignature signature,
++            AppConfig.ExcelSignature defaults) {
++
++        boolean changed = false;
++        if (signature.title == null || signature.title.isBlank()) {
++            signature.title = defaults.title;
++            changed = true;
++        }
++        if (signature.rank == null || signature.rank.isBlank()) {
++            signature.rank = defaults.rank;
++            changed = true;
++        }
++        if (signature.name == null || signature.name.isBlank()) {
++            signature.name = defaults.name;
++            changed = true;
++        }
++        return changed;
++    }
++
++    private static void saveConfig(AppConfig config) {
+         try {
+             Files.createDirectories(AppConstants.CONFIG_PATH.getParent());
+             try (Writer writer = Files.newBufferedWriter(AppConstants.CONFIG_PATH)) { GSON.toJson(config, writer); }
+diff --git a/src/main/java/com/coursemanagerfx/logic/utilities/ExcelExportUtility.java b/src/main/java/com/coursemanagerfx/logic/utilities/ExcelExportUtility.java
+index 5a9b5ba..0c1fe30 100644
+--- a/src/main/java/com/coursemanagerfx/logic/utilities/ExcelExportUtility.java
++++ b/src/main/java/com/coursemanagerfx/logic/utilities/ExcelExportUtility.java
+@@ -9,9 +9,10 @@ package com.coursemanagerfx.logic.utilities;
+ 
+ import com.coursemanagerfx.logic.basic.Group;
+ import com.coursemanagerfx.logic.basic.Student;
+-import com.coursemanagerfx.logic.basic.event.EventStatus;
+-import com.coursemanagerfx.logic.basic.event.category.EventCategories;
+-import com.coursemanagerfx.logic.basic.event.StudentEvent;
++import com.coursemanagerfx.logic.basic.event.EventStatus;
++import com.coursemanagerfx.logic.basic.event.category.EventCategories;
++import com.coursemanagerfx.logic.basic.event.StudentEvent;
++import com.coursemanagerfx.logic.config_api.ConfigManager;
+ import org.apache.poi.ss.usermodel.*;
+ import org.apache.poi.ss.util.CellRangeAddress;
+ import org.apache.poi.xssf.usermodel.*;
+@@ -28,12 +29,17 @@ import java.util.List;
+ public class ExcelExportUtility {
+ 
+     /* === HEADERS === */
+-    private final static String[] HEADERS = {
+-            "№", "П.І.Б.", "Сесія", "СФП", "СК, КГ, КВ", "Заохочення", "Стягнення",
+-            "Секретники", "Редколегія", "Журналісти", "Спорторги", "Наукова діяльність",
+-            "Сертифікати", "Призери змагань", "Волонтерська діяльність",
+-            "Громадське життя", "Додаткові бали", "Заг. к-ть. балів"
+-    };
++    private static String[] headers() {
++        String[] headers = new String[EventCategories.values().length + 3];
++        headers[0] = "№";
++        headers[1] = "П.І.Б.";
++        EventCategories[] categories = EventCategories.values();
++        for (int i = 0; i < categories.length; i++) {
++            headers[i + 2] = categories[i].getDisplayName();
++        }
++        headers[headers.length - 1] = "Заг. к-ть. балів";
++        return headers;
++    }
+     /* =============== */
+ 
+     /* ===== FONTS ===== */
+@@ -114,9 +120,10 @@ public class ExcelExportUtility {
+ 
+             /* set rotated heading style for cells which come after "ПІБ" */
+             XSSFRow headerRow = sheet.createRow(1);
+-            for (int i = 0; i < HEADERS.length; i++) {
+-                XSSFCell headerRowCell = headerRow.createCell(i);
+-                headerRowCell.setCellValue(HEADERS[i]);
++            String[] headers = headers();
++            for (int i = 0; i < headers.length; i++) {
++                XSSFCell headerRowCell = headerRow.createCell(i);
++                headerRowCell.setCellValue(headers[i]);
+                 if (i >= 2) headerRowCell.setCellStyle(rotatedStyle);
+                 else headerRowCell.setCellStyle(headerStyle);
+             }
+@@ -223,12 +230,12 @@ public class ExcelExportUtility {
+ 
+             XSSFRow r1 = sheet.createRow(baseRow);
+             XSSFCell c1 = r1.createCell(1);
+-            c1.setCellValue("Начальник курсу");
++            c1.setCellValue(ConfigManager.getExcelSignatureTitle());
+             c1.setCellStyle(signStyle);
+ 
+             XSSFRow r2 = sheet.createRow(baseRow + 1);
+             XSSFCell c2 = r2.createCell(1);
+-            c2.setCellValue("підполковник");
++            c2.setCellValue(ConfigManager.getExcelSignatureRank());
+             c2.setCellStyle(signStyle);
+ 
+             XSSFRow r3 = sheet.createRow(baseRow + 2);
+@@ -239,7 +246,7 @@ public class ExcelExportUtility {
+ 
+             sheet.addMergedRegion(new CellRangeAddress(baseRow + 1, baseRow + 1, 12, 17));   // merge cols M-R
+             XSSFCell nameCell = r2.createCell(12); // M
+-            nameCell.setCellValue("Віктор ФЕСЕНКО");
++            nameCell.setCellValue(ConfigManager.getExcelSignatureName());
+             nameCell.setCellStyle(headOfCourseStyle);
+             /* ================================ */
+ 
+diff --git a/src/main/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtility.java b/src/main/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtility.java
+index 0517833..9d0baec 100644
+--- a/src/main/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtility.java
++++ b/src/main/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtility.java
+@@ -1,438 +1,590 @@
+-/*
+-========================================
+-THIS FILE CREATED FOR "CourseManagerFX"
+-            Author: Nazuha26
+-========================================
+-*/
+-
+-package com.coursemanagerfx.logic.utilities.security;
+-
+-import com.coursemanagerfx.logic.basic.Group;
+-import com.coursemanagerfx.logic.basic.Student;
+-import com.coursemanagerfx.logic.basic.event.category.EventCategories;
+-import com.coursemanagerfx.logic.basic.event.StudentEvent;
+-import com.coursemanagerfx.logic.basic.event.date.EventDate;
+-
+-import java.io.*;
+-import java.nio.ByteBuffer;
+-import java.nio.ByteOrder;
+-import java.nio.charset.StandardCharsets;
+-import java.util.*;
+-
+-/*
+- * Формат бинарного .cman‑файла:
+- *
+- * ┌──────────────┬─────────────────────────────────────────────────────────────────────┐
+- * │ Секция       │ Описание                                                            │
+- * ├──────────────┼─────────────────────────────────────────────────────────────────────┤
+- * │ HEADER       │ • "HEAD" (4 байта, ASCII)                                           │
+- * │ (32 байта)   │ • groupsCount (4 байта, int)                                        │
+- * │              │ • offsetSTDS (4 байта, uint32)                                      │
+- * │              │ • offsetTBLN (4 байта, uint32)                                      │
+- * │              │ • offsetEVTS (4 байта, uint32)                                      │
+- * │              │ • offsetTBLE (4 байта, uint32)                                      │
+- * │              │ • резерв (8 байт нулей)                                             │
+- * ├──────────────┼─────────────────────────────────────────────────────────────────────┤
+- * │ STDS         │ • "STDS" (4 байта, ASCII)                                           │
+- * │              │ Для каждой из groupsCount групп:                                    │
+- * │              │   • studentCount (2 байта, short)                                   │
+- * │              │   Для каждого студента:                                             │
+- * │              │     – studentID (4 байта, int)                                      │
+- * │              │     – nameOffset (4 байта, uint32, смещение в TBLN)                 │
+- * ├──────────────┼─────────────────────────────────────────────────────────────────────┤
+- * │ TBLN         │ • "TBLN" (4 байта, ASCII)                                           │
+- * │(таблица имён)│ • Нуль‑терминированные строки:                                      │
+- * │              │   – UTF‑8 байты имени                                               │
+- * │              │   – пробел заменяется байтом 0xFF                                   │
+- * │              │   – завершение строки: 0x00                                         │
+- * ├──────────────┼─────────────────────────────────────────────────────────────────────┤
+- * │ EVTS         │ • "EVTS" (4 байта, ASCII)                                           │
+- * │              │ • totalEvents (4 байта, int)                                        │
+- * │              │ Для каждого события:                                                │
+- * │              │   – eventID (4 байта, int)                                          │
+- * │              │   – studentID (4 байта, int)                                        │
+- * │              │   – creationOffset (4 байта, uint32, смещение в TBLE)               │
+- * │              │   – mark (8 байт, double)                                           │
+- * │              │   – expiredOffset (4 байта, uint32, смещение в TBLE)                │
+- * │              │   – type (1 байт, порядковый номер типа из enum EventTypes)         │
+- * ├──────────────┼─────────────────────────────────────────────────────────────────────┤
+- * │ TBLE         │ • "TBLE" (4 байта, ASCII)                                           │
+- * │ (тексты)     │ • Нуль‑терминированные строки:                                      │
+- * │              │   – UTF‑8 байты (дата создания, описание, дата истечения)           │
+- * │              │   – пробел заменяется байтом 0xFF                                   │
+- * │              │   – завершение каждой строки: 0x00                                  │
+- * └──────────────┴─────────────────────────────────────────────────────────────────────┘
+- */
+-
+-public class BinaryPlainCmanUtility {
+-    /**
+-     * Сохраняет массив групп в бинарный .cman‑файл.
+-     */
+-    public static byte[] buildPlainCman(Group[] groups) throws IOException {
+-        /* ────────────────────────── 1) TBLN — таблица имён ────────────────────────── */
+-        ByteArrayOutputStream namesBaos = new ByteArrayOutputStream();
+-        Map<String, Integer> nameOffset = new HashMap<>();
+-        for (Group g : groups) {
+-            for (Student s : g.getStudents()) {
+-                String name = s.getName();
+-                if (!nameOffset.containsKey(name)) {
+-                    int off = namesBaos.size();
+-                    nameOffset.put(name, off);
+-                    // UTF‑8 + пробелы → 0xFF
+-                    for (byte b : name.getBytes(StandardCharsets.UTF_8)) {
+-                        namesBaos.write(b == ' ' ? 0xFF : b);
+-                    }
+-                    namesBaos.write(0x00); // terminator
+-                }
+-            }
+-        }
+-        byte[] namesTable = prependMagic("TBLN", namesBaos.toByteArray());
+-
+-        /* ────────────────────────── 2) TBLE — тексты событий ─────────────────────── */
+-        ByteArrayOutputStream textsBaos = new ByteArrayOutputStream();
+-        Map<String, Integer> textOffset = new HashMap<>();
+-        List<SaverEvent> allEvents = new ArrayList<>();
+-        for (Group g : groups) {
+-            for (Student s : g.getStudents()) {
+-                for (StudentEvent e : s.getEvents()) {
+-                    allEvents.add(new SaverEvent(e, s.getStudentID()));
+-                }
+-            }
+-        }
+-        for (SaverEvent e : allEvents) {
+-            for (String txt : Arrays.asList(e.creationDate, e.description, e.expiredDate)) {
+-                String key = e.id + "|" + txt;
+-                if (!textOffset.containsKey(key)) {
+-                    int off = textsBaos.size();
+-                    textOffset.put(key, off);
+-                    for (byte b : txt.getBytes(StandardCharsets.UTF_8)) {
+-                        textsBaos.write(b == ' ' ? 0xFF : b);
+-                    }
+-                    textsBaos.write(0x00);
+-                }
+-            }
+-        }
+-        byte[] textTable = prependMagic("TBLE", textsBaos.toByteArray());
+-
+-        /* ────────────────────────── 3) STDS — информация о студентах ─────────────── */
+-        ByteArrayOutputStream stdsBaos = new ByteArrayOutputStream();
+-        stdsBaos.write(ascii("STDS"));
+-        DataOutputStream dosStds = new DataOutputStream(stdsBaos);
+-        for (Group g : groups) {
+-            dosStds.writeShort(g.getStudents().size());
+-            for (Student s : g.getStudents()) {
+-                dosStds.writeInt(s.getStudentID());
+-                dosStds.writeInt(nameOffset.get(s.getName()));
+-            }
+-        }
+-        byte[] stdsSection = stdsBaos.toByteArray();
+-
+-        /* ────────────────────────── 4) EVTS — события ────────────────────────────── */
+-        ByteArrayOutputStream evtsBaos = new ByteArrayOutputStream();
+-        evtsBaos.write(ascii("EVTS"));
+-        DataOutputStream dosEvts = new DataOutputStream(evtsBaos);
+-        dosEvts.writeInt(allEvents.size());
+-        for (SaverEvent e : allEvents) {
+-            dosEvts.writeInt(e.id);
+-            dosEvts.writeInt(e.studentId);
+-            dosEvts.writeInt(textOffset.get(e.id + "|" + e.creationDate));
+-            dosEvts.writeDouble(e.mark);
+-            dosEvts.writeInt(textOffset.get(e.id + "|" + e.expiredDate));
+-            dosEvts.writeByte(e.type.ordinal()); // ← записываем тип события (1 байт)
+-        }
+-        byte[] evtsSection = evtsBaos.toByteArray();
+-
+-        /* ────────────────────────── 5) вычисляем оффсеты ─────────────────────────── */
+-        int offSTDS = 32;
+-        int offTBLN = offSTDS + stdsSection.length;
+-        int offEVTS = offTBLN + namesTable.length;
+-        int offTBLE = offEVTS + evtsSection.length;
+-/*
+-        *//* ────────────────────────── 6) запись в файл ─────────────────────────────── *//*
+-        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(outFile))) {
+-            // HEADER
+-            out.write(ascii("HEAD"));
+-            out.writeInt(groups.length);
+-            out.writeInt(offSTDS);
+-            out.writeInt(offTBLN);
+-            out.writeInt(offEVTS);
+-            out.writeInt(offTBLE);
+-            out.writeLong(0L); // резерв (8 байт нулей)
+-
+-            // Секции
+-            out.write(stdsSection);
+-            out.write(namesTable);
+-            out.write(evtsSection);
+-            out.write(textTable);
+-        }*/
+-
+-        ByteArrayOutputStream resultBaos = new ByteArrayOutputStream();
+-        DataOutputStream out = new DataOutputStream(resultBaos);
+-
+-        // HEADER
+-        out.write(ascii("HEAD"));
+-        out.writeInt(groups.length);
+-        out.writeInt(offSTDS);
+-        out.writeInt(offTBLN);
+-        out.writeInt(offEVTS);
+-        out.writeInt(offTBLE);
+-        out.writeLong(0L); // резерв (8 байт нулей)
+-
+-        // Секции
+-        out.write(stdsSection);
+-        out.write(namesTable);
+-        out.write(evtsSection);
+-        out.write(textTable);
+-
+-        return resultBaos.toByteArray();
+-    }
+-
+-    public static Group[] parsePlainCman(InputStream in) throws IOException {
+-        byte[] data = in.readAllBytes();
+-        ByteBuffer buffer = ByteBuffer.wrap(data);
+-        buffer.order(ByteOrder.BIG_ENDIAN);
+-
+-        // 1) HEADER
+-        byte[] magic = new byte[4];
+-        buffer.get(magic);
+-        if (!"HEAD".equals(new String(magic, StandardCharsets.US_ASCII))) {
+-            throw new IOException("Некорректный файл: not HEAD magic");
+-        }
+-        int groupsCount = buffer.getInt();
+-        int offSTDS = buffer.getInt();
+-        int offTBLN = buffer.getInt();
+-        int offEVTS = buffer.getInt();
+-        int offTBLE = buffer.getInt();
+-        buffer.position(buffer.position() + 8); // skip reserved
+-
+-        // 2) STDS
+-        buffer.position(offSTDS);
+-        buffer.get(magic);
+-        if (!"STDS".equals(new String(magic, StandardCharsets.US_ASCII))) {
+-            throw new IOException("Ожидалась секция STDS");
+-        }
+-        List<List<HolderStudent>> rawGroups = new ArrayList<>();
+-        for (int gi = 0; gi < groupsCount; gi++) {
+-            int cnt = Short.toUnsignedInt(buffer.getShort());
+-            List<HolderStudent> lst = new ArrayList<>();
+-            for (int i = 0; i < cnt; i++) {
+-                int sid = buffer.getInt();
+-                int nameOff = buffer.getInt();
+-                lst.add(new HolderStudent(sid, nameOff));
+-            }
+-            rawGroups.add(lst);
+-        }
+-
+-        // 3) TBLN
+-        byte[] namesBuf = Arrays.copyOfRange(data, offTBLN + 4, offEVTS);
+-
+-        // Построение объектов Student
+-        List<List<Student>> groups = new ArrayList<>();
+-        for (var rawG : rawGroups) {
+-            List<Student> students = new ArrayList<>();
+-            for (var h : rawG) {
+-                String name = readString(namesBuf, h.nameOffset);
+-                Student s = new Student(name, h.id);
+-                // инициализируем пустой список событий
+-                s.setEvents(new ArrayList<>());
+-                students.add(s);
+-            }
+-            groups.add(students);
+-        }
+-
+-        // 4) EVTS
+-        buffer.position(offEVTS);
+-        buffer.get(magic);
+-        if (!"EVTS".equals(new String(magic, StandardCharsets.US_ASCII))) {
+-            throw new IOException("Ожидалась секция EVTS");
+-        }
+-        int totalEvents = buffer.getInt();
+-        List<HolderEvent> rawEvents = new ArrayList<>();
+-        for (int i = 0; i < totalEvents; i++) {
+-            int eid = buffer.getInt();
+-            int sid = buffer.getInt();
+-            int creationOff = buffer.getInt();
+-            double mark = buffer.getDouble();
+-            int expiredOff = buffer.getInt();
+-            int typeOrd = Byte.toUnsignedInt(buffer.get());
+-            rawEvents.add(new HolderEvent(eid, sid, creationOff, mark, expiredOff, typeOrd));
+-        }
+-
+-        // 5) TBLE
+-        byte[] textBuf = Arrays.copyOfRange(data, offTBLE + 4, data.length);
+-
+-        // 6) Распределяем события
+-        for (var ev : rawEvents) {
+-            String creationDate = readString(textBuf, ev.creationOffset);
+-
+-            String description = "";
+-            int idx = ev.creationOffset;
+-            while (idx < textBuf.length && textBuf[idx] != 0) idx++;
+-            idx++; // перейти через 0x00
+-            if (idx < textBuf.length) {
+-                description = readString(textBuf, idx);
+-            }
+-
+-            String expiredDate = readString(textBuf, ev.expiredOffset);
+-
+-            // Создаем StudentEvent с учётом типа
+-            StudentEvent se = new StudentEvent(
+-                    ev.eventID,
+-                    parseEventDate(creationDate),
+-                    description,
+-                    ev.mark,
+-                    parseEventDate(expiredDate),
+-                    EventCategories.values()[ev.typeOrdinal]
+-            );
+-
+-            // Добавляем событие нужному студенту
+-            outer:
+-            for (List<Student> grp : groups) {
+-                for (Student s : grp) {
+-                    if (s.getStudentID() == ev.studentId) {
+-                        s.getEvents().add(se);
+-                        break outer;
+-                    }
+-                }
+-            }
+-        }
+-
+-        // 7) Итоговый массив
+-        Group[] result = new Group[groupsCount];
+-        for (int i = 0; i < groupsCount; i++) {
+-            Group g = new Group();
+-            g.setStudents(groups.get(i));
+-            result[i] = g;
+-        }
+-        return result;
+-    }
+-
+-    /* ────────────────────────── вспомогательные методы ──────────────────────────── */
+-    public static byte[] ascii(String s) {
+-        return s.getBytes();
+-    }
+-
+-    public static byte[] prependMagic(String magic, byte[] data) throws IOException {
+-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+-        baos.write(magic.getBytes());
+-        baos.write(data);
+-        return baos.toByteArray();
+-    }
+-
+-    private static EventDate parseEventDate(String s) {
+-        String[] parts = s.split("\\.");
+-        int day = Integer.parseInt(parts[0]);
+-        int month = Integer.parseInt(parts[1]);
+-        int year = Integer.parseInt(parts[2]);
+-        return new EventDate(day, month, year);
+-    }
+-
+-    private static String readString(byte[] buf, int off) {
+-        int i = off;
+-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+-        while (i < buf.length && buf[i] != 0) {
+-            baos.write(buf[i] == (byte)0xFF ? ' ' : buf[i]);
+-            i++;
+-        }
+-        return baos.toString(StandardCharsets.UTF_8);
+-    }
+-
+-    private record HolderStudent(int id, int nameOffset) { }
+-
+-    private static class HolderEvent {
+-        final int eventID, studentId, creationOffset, expiredOffset, typeOrdinal;
+-        final double mark;
+-        HolderEvent(int eid, int sid, int co, double mark, int eo, int typeOrdinal) {
+-            this.eventID = eid;
+-            this.studentId = sid;
+-            this.creationOffset = co;
+-            this.mark = mark;
+-            this.expiredOffset = eo;
+-            this.typeOrdinal = typeOrdinal;
+-        }
+-    }
+-
+-    /** Внутренний переносчик данных, чтобы не тащить Student внутри EVTS‑пакета. */
+-    public static class SaverEvent {
+-        int id;
+-        int studentId;
+-        double mark;
+-        String creationDate;
+-        String description;
+-        String expiredDate;
+-        EventCategories type;
+-
+-        SaverEvent(StudentEvent e, int studentId) {
+-            this.id = e.getID();
+-            this.studentId = studentId;
+-            this.creationDate = e.getCrtDate().toString();      // EventDate → String
+-            this.description = e.getDescription();
+-            this.mark = e.getMark();
+-            this.expiredDate = e.getExpDate().toString();        // EventDate → String
+-            this.type = e.getCategory();
+-        }
+-    }
+-
+-    /*public static void main(String[] args) throws IOException {
+-        // Группа 1
+-        List<StudentEvent> events1 = new ArrayList<>();
+-        events1.add(new StudentEvent(10001, new EventDate(1, 1, 2025), "Math exam", 5, new EventDate(2, 1, 2025), EventTypes.MOD_1));
+-        events1.add(new StudentEvent(10002, new EventDate(3, 1, 2025), "Biology lab", 4, new EventDate(5, 1, 2025), EventTypes.MOD_2));
+-        events1.add(new StudentEvent(10003, new EventDate(5, 1, 2025), "Chemistry quiz", 3, new EventDate(6, 1, 2025), EventTypes.MOD_3));
+-        Student student1 = new Student("Артем");
+-        student1.setEvents(events1);
+-
+-        List<StudentEvent> events2 = new ArrayList<>();
+-        events2.add(new StudentEvent(20001, new EventDate(2, 1, 2025), "History presentation", 5, new EventDate(3, 1, 2025), EventTypes.MOD_2));
+-        events2.add(new StudentEvent(20002, new EventDate(4, 1, 2025), "Physics forces", 4, new EventDate(6, 1, 2025), EventTypes.MOD_1));
+-        Student student2 = new Student("Оля");
+-        student2.setEvents(events2);
+-
+-        Group group1 = new Group();
+-        group1.setStudents(List.of(student1, student2));
+-
+-        // Группа 2
+-        List<StudentEvent> events3 = new ArrayList<>();
+-        events3.add(new StudentEvent(30001, new EventDate(7, 1, 2025), "Art portfolio presentation", 5, new EventDate(8, 1, 2025), EventTypes.MOD_3));
+-        events3.add(new StudentEvent(30002, new EventDate(9, 1, 2025), "Music theory test", 3, new EventDate(10, 1, 2025), EventTypes.MOD_1));
+-        Student student3 = new Student("Максим");
+-        student3.setEvents(events3);
+-
+-        Group group2 = new Group();
+-        group2.setStudents(List.of(student3));
+-
+-        // Группа 3
+-        List<StudentEvent> events4 = new ArrayList<>();
+-        events4.add(new StudentEvent(40001, new EventDate(11, 1, 2025), "Literature essay: Lesya Ukrainka", 4, new EventDate(13, 1, 2025), EventTypes.MOD_2));
+-        events4.add(new StudentEvent(40002, new EventDate(12, 1, 2025), "Geography quiz", 5, new EventDate(14, 1, 2025), EventTypes.MOD_3));
+-        Student student4 = new Student("Ірина");
+-        student4.setEvents(events4);
+-
+-        List<StudentEvent> events5 = new ArrayList<>();
+-        events5.add(new StudentEvent(50001, new EventDate(14, 1, 2025), "Economics case study", 3, new EventDate(15, 1, 2025), EventTypes.MOD_1));
+-        events5.add(new StudentEvent(50002, new EventDate(15, 1, 2025), "Programming contest", 5, new EventDate(16, 1, 2025), EventTypes.MOD_2));
+-        Student student5 = new Student("Богдан");
+-        student5.setEvents(events5);
+-
+-        Group group3 = new Group();
+-        group3.setStudents(List.of(student4, student5));
+-
+-        // Группа 4
+-        List<StudentEvent> events6 = new ArrayList<>();
+-        events6.add(new StudentEvent(60001, new EventDate(17, 1, 2025), "Biology research project", 5, new EventDate(18, 1, 2025), EventTypes.MOD_3));
+-        events6.add(new StudentEvent(60002, new EventDate(18, 1, 2025), "Algebra exam", 4, new EventDate(19, 1, 2025), EventTypes.MOD_1));
+-        Student student6 = new Student("Наташа");
+-        student6.setEvents(events6);
+-
+-        Group group4 = new Group();
+-        group4.setStudents(List.of(student6));
+-
+-        // Собираем всё в массив
+-        Group[] course = new Group[]{ group1, group2, group3, group4 };
+-
+-        // Сохраняем в файл
+-        File out = new File("demo.cman");
+-        buildPlainCman(course);
+-        System.out.println("Файл успешно сохранён по пути: " + out.getAbsolutePath());
+-    }*/
+-}
++/*
++========================================
++THIS FILE CREATED FOR "CourseManagerFX"
++            Author: Nazuha26
++========================================
++*/
++
++package com.coursemanagerfx.logic.utilities.security;
++
++import com.coursemanagerfx.logic.basic.Group;
++import com.coursemanagerfx.logic.basic.Student;
++import com.coursemanagerfx.logic.basic.event.StudentEvent;
++import com.coursemanagerfx.logic.basic.event.category.EventCategories;
++import com.coursemanagerfx.logic.basic.event.date.EventDate;
++
++import java.io.ByteArrayOutputStream;
++import java.io.DataOutputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.nio.ByteBuffer;
++import java.nio.ByteOrder;
++import java.nio.charset.CharacterCodingException;
++import java.nio.charset.CodingErrorAction;
++import java.nio.charset.StandardCharsets;
++import java.time.LocalDate;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Objects;
++import java.util.Set;
++
++/**
++ * Builds and parses the authenticated plaintext payload stored inside CMAN v1.
++ *
++ * <p>The 32-byte header stores section offsets and the next student/event IDs.
++ * TBLN and TBLE use length-prefixed UTF-8 strings. Every EVTS record contains
++ * explicit offsets for creation date, description and expiration date, plus a
++ * stable category code that is independent of enum declaration order.</p>
++ */
++public final class BinaryPlainCmanUtility {
++
++    public static final int HEADER_SIZE = 32;
++    public static final int FIRST_STUDENT_ID = 1_000_000;
++    public static final int FIRST_EVENT_ID = 10_000;
++
++    private static final int EVENT_RECORD_SIZE = 29;
++    private static final int MAX_GROUPS = 10_000;
++    private static final int MAX_EVENTS = 2_000_000;
++    private static final int MAX_STRING_BYTES = 16 * 1024 * 1024;
++
++    private BinaryPlainCmanUtility() {
++    }
++
++    public record CourseData(
++            Group[] groups,
++            int nextStudentId,
++            int nextEventId) {
++
++        public CourseData {
++            Objects.requireNonNull(groups, "groups");
++        }
++    }
++
++    public static byte[] buildPlainCman(Group[] groups) throws IOException {
++        return buildPlainCman(
++                groups,
++                nextStudentIdFor(groups),
++                nextEventIdFor(groups));
++    }
++
++    public static byte[] buildPlainCman(
++            Group[] groups,
++            int nextStudentId,
++            int nextEventId) throws IOException {
++
++        validateCourse(groups, nextStudentId, nextEventId);
++
++        StringTable names = new StringTable();
++        StringTable texts = new StringTable();
++        List<SaverEvent> allEvents = new ArrayList<>();
++
++        for (Group group : groups) {
++            for (Student student : group.getStudents()) {
++                names.offsetOf(student.getName());
++                for (StudentEvent event : student.getEvents()) {
++                    SaverEvent saved = new SaverEvent(event, student.getStudentID());
++                    saved.creationOffset = texts.offsetOf(saved.creationDate);
++                    saved.descriptionOffset = texts.offsetOf(saved.description);
++                    saved.expirationOffset = texts.offsetOf(saved.expirationDate);
++                    allEvents.add(saved);
++                }
++            }
++        }
++
++        byte[] stdsSection = buildStudentsSection(groups, names);
++        byte[] namesSection = prependMagic("TBLN", names.toByteArray());
++        byte[] eventsSection = buildEventsSection(allEvents);
++        byte[] textsSection = prependMagic("TBLE", texts.toByteArray());
++
++        int offsetSTDS = HEADER_SIZE;
++        int offsetTBLN = checkedAdd(offsetSTDS, stdsSection.length);
++        int offsetEVTS = checkedAdd(offsetTBLN, namesSection.length);
++        int offsetTBLE = checkedAdd(offsetEVTS, eventsSection.length);
++
++        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
++        try (DataOutputStream out = new DataOutputStream(bytes)) {
++            out.write(ascii("HEAD"));
++            out.writeInt(groups.length);
++            out.writeInt(offsetSTDS);
++            out.writeInt(offsetTBLN);
++            out.writeInt(offsetEVTS);
++            out.writeInt(offsetTBLE);
++            out.writeInt(nextStudentId);
++            out.writeInt(nextEventId);
++            out.write(stdsSection);
++            out.write(namesSection);
++            out.write(eventsSection);
++            out.write(textsSection);
++        }
++        return bytes.toByteArray();
++    }
++
++    public static Group[] parsePlainCman(InputStream input) throws IOException {
++        return parseCourseData(input).groups();
++    }
++
++    public static CourseData parseCourseData(InputStream input) throws IOException {
++        Objects.requireNonNull(input, "input");
++        byte[] data = input.readAllBytes();
++        if (data.length < HEADER_SIZE + 16) {
++            throw new IOException("CMAN payload is too short");
++        }
++
++        ByteBuffer header = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN);
++        requireMagic(header, "HEAD");
++        int groupsCount = header.getInt();
++        int offsetSTDS = header.getInt();
++        int offsetTBLN = header.getInt();
++        int offsetEVTS = header.getInt();
++        int offsetTBLE = header.getInt();
++        int nextStudentId = header.getInt();
++        int nextEventId = header.getInt();
++
++        validateSectionOffsets(
++                data,
++                groupsCount,
++                offsetSTDS,
++                offsetTBLN,
++                offsetEVTS,
++                offsetTBLE);
++
++        ByteBuffer studentsBuffer = sectionPayload(
++                data, offsetSTDS, offsetTBLN, "STDS");
++        byte[] namesBuffer = sectionBytes(
++                data, offsetTBLN, offsetEVTS, "TBLN");
++        ByteBuffer eventsBuffer = sectionPayload(
++                data, offsetEVTS, offsetTBLE, "EVTS");
++        byte[] textsBuffer = sectionBytes(
++                data, offsetTBLE, data.length, "TBLE");
++
++        List<List<Student>> parsedGroups = new ArrayList<>(groupsCount);
++        Map<Integer, Student> studentsById = new HashMap<>();
++        int maximumStudentId = FIRST_STUDENT_ID - 1;
++
++        for (int groupIndex = 0; groupIndex < groupsCount; groupIndex++) {
++            requireRemaining(studentsBuffer, Short.BYTES, "student count");
++            int studentCount = Short.toUnsignedInt(studentsBuffer.getShort());
++            requireRemaining(
++                    studentsBuffer,
++                    Math.multiplyExact(studentCount, Integer.BYTES * 2),
++                    "student records");
++
++            List<Student> students = new ArrayList<>(studentCount);
++            for (int i = 0; i < studentCount; i++) {
++                int studentId = studentsBuffer.getInt();
++                int nameOffset = studentsBuffer.getInt();
++                if (studentId < FIRST_STUDENT_ID) {
++                    throw new IOException("Invalid student ID: " + studentId);
++                }
++                Student student = new Student(
++                        readString(namesBuffer, nameOffset),
++                        studentId);
++                student.setEvents(new ArrayList<>());
++                if (studentsById.putIfAbsent(studentId, student) != null) {
++                    throw new IOException("Duplicate student ID: " + studentId);
++                }
++                maximumStudentId = Math.max(maximumStudentId, studentId);
++                students.add(student);
++            }
++            parsedGroups.add(students);
++        }
++        if (studentsBuffer.hasRemaining()) {
++            throw new IOException("Unexpected data at the end of STDS");
++        }
++
++        requireRemaining(eventsBuffer, Integer.BYTES, "event count");
++        int totalEvents = eventsBuffer.getInt();
++        if (totalEvents < 0 || totalEvents > MAX_EVENTS) {
++            throw new IOException("Invalid event count: " + totalEvents);
++        }
++        int expectedEventBytes;
++        try {
++            expectedEventBytes = Math.multiplyExact(totalEvents, EVENT_RECORD_SIZE);
++        } catch (ArithmeticException exception) {
++            throw new IOException("Event section is too large", exception);
++        }
++        if (eventsBuffer.remaining() != expectedEventBytes) {
++            throw new IOException("Invalid EVTS section length");
++        }
++
++        Set<Integer> eventIds = new HashSet<>();
++        int maximumEventId = FIRST_EVENT_ID - 1;
++        for (int i = 0; i < totalEvents; i++) {
++            int eventId = eventsBuffer.getInt();
++            int studentId = eventsBuffer.getInt();
++            int creationOffset = eventsBuffer.getInt();
++            int descriptionOffset = eventsBuffer.getInt();
++            double mark = eventsBuffer.getDouble();
++            int expirationOffset = eventsBuffer.getInt();
++            int categoryCode = Byte.toUnsignedInt(eventsBuffer.get());
++
++            if (eventId < FIRST_EVENT_ID || !eventIds.add(eventId)) {
++                throw new IOException("Invalid or duplicate event ID: " + eventId);
++            }
++            Student student = studentsById.get(studentId);
++            if (student == null) {
++                throw new IOException(
++                        "Event " + eventId + " references unknown student " + studentId);
++            }
++
++            EventCategories category;
++            try {
++                category = EventCategories.fromCode(categoryCode);
++            } catch (IllegalArgumentException exception) {
++                throw new IOException(exception.getMessage(), exception);
++            }
++
++            StudentEvent event = new StudentEvent(
++                    eventId,
++                    parseEventDate(readString(textsBuffer, creationOffset)),
++                    readString(textsBuffer, descriptionOffset),
++                    mark,
++                    parseEventDate(readString(textsBuffer, expirationOffset)),
++                    category);
++            student.getEvents().add(event);
++            maximumEventId = Math.max(maximumEventId, eventId);
++        }
++
++        validateNextId(nextStudentId, maximumStudentId, FIRST_STUDENT_ID, "student");
++        validateNextId(nextEventId, maximumEventId, FIRST_EVENT_ID, "event");
++
++        Group[] groups = new Group[groupsCount];
++        for (int i = 0; i < groupsCount; i++) {
++            Group group = new Group();
++            group.setStudents(parsedGroups.get(i));
++            groups[i] = group;
++        }
++        return new CourseData(groups, nextStudentId, nextEventId);
++    }
++
++    public static int nextStudentIdFor(Group[] groups) throws IOException {
++        return nextIdAfterMaximum(groups, true);
++    }
++
++    public static int nextEventIdFor(Group[] groups) throws IOException {
++        return nextIdAfterMaximum(groups, false);
++    }
++
++    private static int nextIdAfterMaximum(Group[] groups, boolean students)
++            throws IOException {
++
++        Objects.requireNonNull(groups, "groups");
++        int maximum = students ? FIRST_STUDENT_ID - 1 : FIRST_EVENT_ID - 1;
++        for (Group group : groups) {
++            if (group == null || group.getStudents() == null) continue;
++            for (Student student : group.getStudents()) {
++                if (student == null) continue;
++                if (students) {
++                    maximum = Math.max(maximum, student.getStudentID());
++                } else if (student.getEvents() != null) {
++                    for (StudentEvent event : student.getEvents()) {
++                        if (event != null) maximum = Math.max(maximum, event.getID());
++                    }
++                }
++            }
++        }
++        if (maximum == Integer.MAX_VALUE) {
++            throw new IOException("No more " + (students ? "student" : "event") + " IDs available");
++        }
++        return maximum + 1;
++    }
++
++    private static byte[] buildStudentsSection(Group[] groups, StringTable names)
++            throws IOException {
++
++        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
++        try (DataOutputStream out = new DataOutputStream(bytes)) {
++            out.write(ascii("STDS"));
++            for (Group group : groups) {
++                List<Student> students = group.getStudents();
++                if (students.size() > 0xFFFF) {
++                    throw new IOException("A group contains too many students");
++                }
++                out.writeShort(students.size());
++                for (Student student : students) {
++                    out.writeInt(student.getStudentID());
++                    out.writeInt(names.offsetOf(student.getName()));
++                }
++            }
++        }
++        return bytes.toByteArray();
++    }
++
++    private static byte[] buildEventsSection(List<SaverEvent> events)
++            throws IOException {
++
++        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
++        try (DataOutputStream out = new DataOutputStream(bytes)) {
++            out.write(ascii("EVTS"));
++            out.writeInt(events.size());
++            for (SaverEvent event : events) {
++                out.writeInt(event.id);
++                out.writeInt(event.studentId);
++                out.writeInt(event.creationOffset);
++                out.writeInt(event.descriptionOffset);
++                out.writeDouble(event.mark);
++                out.writeInt(event.expirationOffset);
++                out.writeByte(event.category.getCode());
++            }
++        }
++        return bytes.toByteArray();
++    }
++
++    private static void validateCourse(
++            Group[] groups,
++            int nextStudentId,
++            int nextEventId) throws IOException {
++
++        Objects.requireNonNull(groups, "groups");
++        if (groups.length > MAX_GROUPS) {
++            throw new IOException("Too many groups: " + groups.length);
++        }
++
++        Set<Integer> studentIds = new HashSet<>();
++        Set<Integer> eventIds = new HashSet<>();
++        int maximumStudentId = FIRST_STUDENT_ID - 1;
++        int maximumEventId = FIRST_EVENT_ID - 1;
++        int eventCount = 0;
++
++        for (Group group : groups) {
++            if (group == null || group.getStudents() == null) {
++                throw new IOException("Course contains a null group or student list");
++            }
++            if (group.getStudents().size() > 0xFFFF) {
++                throw new IOException("A group contains too many students");
++            }
++            for (Student student : group.getStudents()) {
++                if (student == null || student.getName() == null || student.getEvents() == null) {
++                    throw new IOException("Course contains incomplete student data");
++                }
++                int studentId = student.getStudentID();
++                if (studentId < FIRST_STUDENT_ID || !studentIds.add(studentId)) {
++                    throw new IOException("Invalid or duplicate student ID: " + studentId);
++                }
++                maximumStudentId = Math.max(maximumStudentId, studentId);
++
++                for (StudentEvent event : student.getEvents()) {
++                    if (event == null
++                            || event.getCrtDate() == null
++                            || event.getDescription() == null
++                            || event.getExpDate() == null
++                            || event.getCategory() == null) {
++                        throw new IOException("Course contains incomplete event data");
++                    }
++                    int eventId = event.getID();
++                    if (eventId < FIRST_EVENT_ID || !eventIds.add(eventId)) {
++                        throw new IOException("Invalid or duplicate event ID: " + eventId);
++                    }
++                    maximumEventId = Math.max(maximumEventId, eventId);
++                    if (++eventCount > MAX_EVENTS) {
++                        throw new IOException("Too many events");
++                    }
++                }
++            }
++        }
++
++        validateNextId(nextStudentId, maximumStudentId, FIRST_STUDENT_ID, "student");
++        validateNextId(nextEventId, maximumEventId, FIRST_EVENT_ID, "event");
++    }
++
++    private static void validateNextId(
++            int nextId,
++            int maximumId,
++            int firstId,
++            String type) throws IOException {
++
++        if (nextId < firstId || nextId <= maximumId) {
++            throw new IOException("Invalid next " + type + " ID: " + nextId);
++        }
++    }
++
++    private static void validateSectionOffsets(
++            byte[] data,
++            int groupsCount,
++            int offsetSTDS,
++            int offsetTBLN,
++            int offsetEVTS,
++            int offsetTBLE) throws IOException {
++
++        if (groupsCount < 0 || groupsCount > MAX_GROUPS) {
++            throw new IOException("Invalid group count: " + groupsCount);
++        }
++        if (offsetSTDS != HEADER_SIZE
++                || offsetTBLN < offsetSTDS + 4
++                || offsetEVTS < offsetTBLN + 4
++                || offsetTBLE < offsetEVTS + 8
++                || offsetTBLE + 4 > data.length) {
++            throw new IOException("Invalid CMAN section offsets");
++        }
++    }
++
++    private static ByteBuffer sectionPayload(
++            byte[] data,
++            int start,
++            int end,
++            String magic) throws IOException {
++
++        requireSection(data, start, end, magic);
++        return ByteBuffer.wrap(data, start + 4, end - start - 4)
++                .slice()
++                .order(ByteOrder.BIG_ENDIAN);
++    }
++
++    private static byte[] sectionBytes(
++            byte[] data,
++            int start,
++            int end,
++            String magic) throws IOException {
++
++        requireSection(data, start, end, magic);
++        byte[] bytes = new byte[end - start - 4];
++        System.arraycopy(data, start + 4, bytes, 0, bytes.length);
++        return bytes;
++    }
++
++    private static void requireSection(
++            byte[] data,
++            int start,
++            int end,
++            String expectedMagic) throws IOException {
++
++        if (start < HEADER_SIZE || end < start + 4 || end > data.length) {
++            throw new IOException("Invalid " + expectedMagic + " section bounds");
++        }
++        for (int i = 0; i < 4; i++) {
++            if (data[start + i] != expectedMagic.charAt(i)) {
++                throw new IOException("Expected " + expectedMagic + " section");
++            }
++        }
++    }
++
++    private static void requireMagic(ByteBuffer buffer, String expected)
++            throws IOException {
++
++        requireRemaining(buffer, expected.length(), expected + " magic");
++        byte[] actual = new byte[expected.length()];
++        buffer.get(actual);
++        if (!expected.equals(new String(actual, StandardCharsets.US_ASCII))) {
++            throw new IOException("Expected " + expected + " magic");
++        }
++    }
++
++    private static void requireRemaining(
++            ByteBuffer buffer,
++            int required,
++            String field) throws IOException {
++
++        if (required < 0 || buffer.remaining() < required) {
++            throw new IOException("Truncated CMAN " + field);
++        }
++    }
++
++    private static int checkedAdd(int left, int right) throws IOException {
++        try {
++            return Math.addExact(left, right);
++        } catch (ArithmeticException exception) {
++            throw new IOException("CMAN payload is too large", exception);
++        }
++    }
++
++    private static EventDate parseEventDate(String value) throws IOException {
++        try {
++            String[] parts = value.split("\\.", -1);
++            if (parts.length != 3) throw new NumberFormatException();
++            int day = Integer.parseInt(parts[0]);
++            int month = Integer.parseInt(parts[1]);
++            int year = Integer.parseInt(parts[2]);
++            LocalDate.of(year, month, day);
++            return new EventDate(day, month, year);
++        } catch (RuntimeException exception) {
++            throw new IOException("Invalid event date: " + value, exception);
++        }
++    }
++
++    private static String readString(byte[] bytes, int offset) throws IOException {
++        if (offset < 0 || offset > bytes.length - Integer.BYTES) {
++            throw new IOException("Invalid string offset: " + offset);
++        }
++        int length = ByteBuffer.wrap(bytes, offset, Integer.BYTES)
++                .order(ByteOrder.BIG_ENDIAN)
++                .getInt();
++        if (length < 0
++                || length > MAX_STRING_BYTES
++                || offset + Integer.BYTES + length > bytes.length) {
++            throw new IOException("Invalid UTF-8 string length: " + length);
++        }
++        try {
++            return StandardCharsets.UTF_8.newDecoder()
++                    .onMalformedInput(CodingErrorAction.REPORT)
++                    .onUnmappableCharacter(CodingErrorAction.REPORT)
++                    .decode(ByteBuffer.wrap(bytes, offset + Integer.BYTES, length))
++                    .toString();
++        } catch (CharacterCodingException exception) {
++            throw new IOException("Invalid UTF-8 string", exception);
++        }
++    }
++
++    public static byte[] ascii(String value) {
++        return value.getBytes(StandardCharsets.US_ASCII);
++    }
++
++    public static byte[] prependMagic(String magic, byte[] data) throws IOException {
++        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
++        bytes.write(ascii(magic));
++        bytes.write(data);
++        return bytes.toByteArray();
++    }
++
++    private static final class StringTable {
++        private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
++        private final Map<String, Integer> offsets = new HashMap<>();
++
++        int offsetOf(String value) throws IOException {
++            Integer existing = offsets.get(value);
++            if (existing != null) return existing;
++
++            byte[] encoded = value.getBytes(StandardCharsets.UTF_8);
++            if (encoded.length > MAX_STRING_BYTES) {
++                throw new IOException("CMAN text value is too long");
++            }
++            int offset = bytes.size();
++            try (DataOutputStream out = new DataOutputStream(bytes)) {
++                out.writeInt(encoded.length);
++                out.write(encoded);
++                out.flush();
++            }
++            offsets.put(value, offset);
++            return offset;
++        }
++
++        byte[] toByteArray() {
++            return bytes.toByteArray();
++        }
++    }
++
++    private static final class SaverEvent {
++        final int id;
++        final int studentId;
++        final double mark;
++        final String creationDate;
++        final String description;
++        final String expirationDate;
++        final EventCategories category;
++        int creationOffset;
++        int descriptionOffset;
++        int expirationOffset;
++
++        SaverEvent(StudentEvent event, int studentId) {
++            this.id = event.getID();
++            this.studentId = studentId;
++            this.creationDate = event.getCrtDate().toString();
++            this.description = event.getDescription();
++            this.mark = event.getMark();
++            this.expirationDate = event.getExpDate().toString();
++            this.category = event.getCategory();
++        }
++    }
++}
+diff --git a/src/main/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtility.java b/src/main/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtility.java
+index 8346fb7..d28e7b1 100644
+--- a/src/main/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtility.java
++++ b/src/main/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtility.java
+@@ -60,18 +60,36 @@ public final class CmanSecurityUtility {
+         }
+     }
+ 
+-    public static void updateSecureFile(
+-            Group[] groups,
+-            File file,
+-            char[] seedPhrase) throws IOException, EncryptionException {
+-
+-        Objects.requireNonNull(file, "file");
++    public static void updateSecureFile(
++            Group[] groups,
++            File file,
++            char[] seedPhrase) throws IOException, EncryptionException {
++
++        updateSecureFile(
++                groups,
++                file,
++                seedPhrase,
++                BinaryPlainCmanUtility.nextStudentIdFor(groups),
++                BinaryPlainCmanUtility.nextEventIdFor(groups));
++    }
++
++    public static void updateSecureFile(
++            Group[] groups,
++            File file,
++            char[] seedPhrase,
++            int nextStudentId,
++            int nextEventId) throws IOException, EncryptionException {
++
++        Objects.requireNonNull(file, "file");
+         Path target = file.toPath().toAbsolutePath().normalize();
+         if (!Files.isRegularFile(target)) {
+             throw new NoSuchFileException(target.toString());
+         }
+ 
+-        byte[] plaintext = buildPlainCman(Objects.requireNonNull(groups, "groups"));
++        byte[] plaintext = BinaryPlainCmanUtility.buildPlainCman(
++                Objects.requireNonNull(groups, "groups"),
++                nextStudentId,
++                nextEventId);
+         byte[] encrypted = null;
+         try {
+             encrypted = CmanCrypto.encrypt(plaintext, seedPhrase);
+@@ -82,8 +100,15 @@ public final class CmanSecurityUtility {
+         }
+     }
+ 
+-    public static Group[] readSecureFile(File file, char[] seedPhrase)
+-            throws IOException {
++    public static Group[] readSecureFile(File file, char[] seedPhrase)
++            throws IOException {
++
++        return readSecureCourseData(file, seedPhrase).groups();
++    }
++
++    public static BinaryPlainCmanUtility.CourseData readSecureCourseData(
++            File file,
++            char[] seedPhrase) throws IOException {
+ 
+         Objects.requireNonNull(file, "file");
+         Path source = file.toPath().toAbsolutePath().normalize();
+@@ -97,8 +122,8 @@ public final class CmanSecurityUtility {
+         try {
+             plaintext = CmanCrypto.decrypt(encrypted, seedPhrase);
+             try {
+-                return BinaryPlainCmanUtility.parsePlainCman(
+-                        new ByteArrayInputStream(plaintext));
++                return BinaryPlainCmanUtility.parseCourseData(
++                        new ByteArrayInputStream(plaintext));
+             } catch (IOException | RuntimeException exception) {
+                 throw new DecryptionException(
+                         "The encrypted CMAN payload is corrupted",
+diff --git a/src/main/java/com/coursemanagerfx/logic/utilities/view/ShowWindowUtility.java b/src/main/java/com/coursemanagerfx/logic/utilities/view/ShowWindowUtility.java
+index 053e144..85d45f2 100644
+--- a/src/main/java/com/coursemanagerfx/logic/utilities/view/ShowWindowUtility.java
++++ b/src/main/java/com/coursemanagerfx/logic/utilities/view/ShowWindowUtility.java
+@@ -18,9 +18,9 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
+ import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
+ import com.coursemanagerfx.controllers.main.Main_controller;
+ import com.coursemanagerfx.controllers.main.Start_controller;
+-import com.coursemanagerfx.logic.basic.Group;
+ import com.coursemanagerfx.logic.config_api.ConfigManager;
+ import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
++import com.coursemanagerfx.logic.utilities.security.BinaryPlainCmanUtility;
+ import com.coursemanagerfx.logic.utilities.AppUtility;
+ import javafx.fxml.FXMLLoader;
+ import javafx.geometry.Rectangle2D;
+@@ -99,14 +99,14 @@ public class ShowWindowUtility {
+ 
+     public static boolean showMainWindow(File file, Window passwordOwner) {
+         char[] seedPhrase = null;
+-        Group[] course = null;
++        BinaryPlainCmanUtility.CourseData courseData = null;
+ 
+         do {
+             seedPhrase = ShowDialogUtility.showCheckSeedPhraseDialog(passwordOwner);
+             if (seedPhrase == null) return false;
+ 
+             try {
+-                course = CmanSecurityUtility.readSecureFile(file, seedPhrase);
++                courseData = CmanSecurityUtility.readSecureCourseData(file, seedPhrase);
+             } catch (Exception exception) {
+                 Arrays.fill(seedPhrase, '\0');
+                 seedPhrase = null;
+@@ -116,7 +116,7 @@ public class ShowWindowUtility {
+                         "The seed phrase is incorrect, the file is corrupted, or it uses an unsupported format."
+                 );
+             }
+-        } while (course == null);
++        } while (courseData == null);
+ 
+         try {
+             Stage mainStage = new Stage();
+@@ -156,7 +156,12 @@ public class ShowWindowUtility {
+                     () -> StageSetupUtility.setup(controller, mainStage, 0)
+             );
+             try {
+-                Launcher.setCourseInfo(new CourseInfo(file, seedPhrase, course));
++                Launcher.setCourseInfo(new CourseInfo(
++                        file,
++                        seedPhrase,
++                        courseData.groups(),
++                        courseData.nextStudentId(),
++                        courseData.nextEventId()));
+             } finally {
+                 Arrays.fill(seedPhrase, '\0');
+             }
+diff --git a/src/test/java/com/coursemanagerfx/logic/CourseInfoTest.java b/src/test/java/com/coursemanagerfx/logic/CourseInfoTest.java
+index df7d290..8177963 100644
+--- a/src/test/java/com/coursemanagerfx/logic/CourseInfoTest.java
++++ b/src/test/java/com/coursemanagerfx/logic/CourseInfoTest.java
+@@ -10,6 +10,7 @@ import java.util.Arrays;
+ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertNotEquals;
+ import static org.junit.jupiter.api.Assertions.assertNull;
+ 
+ class CourseInfoTest {
+@@ -44,4 +45,26 @@ class CourseInfoTest {
+         info.clearSeedPhrase();
+         assertNull(info.copySeedPhrase());
+     }
++
++    @Test
++    void allocatesMonotonicIdsWithoutReusingDeletedObjects() {
++        char[] phrase = "abacus abdomen abdominal abide abiding".toCharArray();
++        CourseInfo info = new CourseInfo(
++                temporaryDirectory.resolve("ids.cman").toFile(),
++                phrase,
++                new Group[] {new Group()});
++        Arrays.fill(phrase, '\0');
++
++        int firstStudent = info.takeNextStudentId();
++        int secondStudent = info.takeNextStudentId();
++        int firstEvent = info.takeNextEventId();
++        int secondEvent = info.takeNextEventId();
++
++        assertEquals(firstStudent + 1, secondStudent);
++        assertEquals(firstEvent + 1, secondEvent);
++        assertNotEquals(firstStudent, secondStudent);
++        assertNotEquals(firstEvent, secondEvent);
++        assertEquals(secondStudent + 1, info.getNextStudentId());
++        assertEquals(secondEvent + 1, info.getNextEventId());
++    }
+ }
+diff --git a/src/test/java/com/coursemanagerfx/logic/config_api/AppConfigTest.java b/src/test/java/com/coursemanagerfx/logic/config_api/AppConfigTest.java
+index 613a055..eac5823 100644
+--- a/src/test/java/com/coursemanagerfx/logic/config_api/AppConfigTest.java
++++ b/src/test/java/com/coursemanagerfx/logic/config_api/AppConfigTest.java
+@@ -13,11 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
+ class AppConfigTest {
+ 
+     @Test
+-    void obsoleteFieldsAreNotPartOfCurrentSchema() {
+-        String json = new Gson().toJson(new AppConfig());
+-
+-        assertFalse(json.contains("auto_update"));
+-        assertFalse(json.contains("default_password"));
++    void obsoleteFieldsAreNotPartOfCurrentSchema() {
++        AppConfig config = new AppConfig();
++        String json = new Gson().toJson(config);
++
++        assertFalse(json.contains("auto_update"));
++        assertFalse(json.contains("default_password"));
++        assertEquals(15, config.category_names.size());
++        assertEquals("Сесія", config.category_names.get("MOD_1"));
++        assertEquals("Віктор ФЕСЕНКО", config.excel_signature.name);
+     }
+ 
+     @Test
+@@ -36,9 +40,11 @@ class AppConfigTest {
+         assertEquals("ua", config.language);
+         assertEquals(Set.of(
+                 "open_course",
+-                "language",
+-                "auto_save",
+-                "auto_save_sec_interval",
+-                "export_path"), rewritten.keySet());
++                "language",
++                "auto_save",
++                "auto_save_sec_interval",
++                "export_path",
++                "category_names",
++                "excel_signature"), rewritten.keySet());
+     }
+ }
+diff --git a/cman-data-work/src/test/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtilityTest.java b/src/test/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtilityTest.java
+new file mode 100644
+index 0000000..f372661
+--- /dev/null
++++ b/src/test/java/com/coursemanagerfx/logic/utilities/security/BinaryPlainCmanUtilityTest.java
+@@ -0,0 +1,137 @@
++package com.coursemanagerfx.logic.utilities.security;
++
++import com.coursemanagerfx.logic.basic.Group;
++import com.coursemanagerfx.logic.basic.Student;
++import com.coursemanagerfx.logic.basic.event.StudentEvent;
++import com.coursemanagerfx.logic.basic.event.category.EventCategories;
++import com.coursemanagerfx.logic.basic.event.date.EventDate;
++import org.junit.jupiter.api.Test;
++
++import java.io.ByteArrayInputStream;
++import java.io.IOException;
++import java.nio.ByteBuffer;
++import java.nio.ByteOrder;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++
++class BinaryPlainCmanUtilityTest {
++
++    @Test
++    void categoryCodesAreExplicitAndStable() {
++        EventCategories[] categories = EventCategories.values();
++        assertEquals(15, categories.length);
++        for (int i = 0; i < categories.length; i++) {
++            int expectedCode = i + 1;
++            assertEquals(expectedCode, categories[i].getCode());
++            assertEquals(categories[i], EventCategories.fromCode(expectedCode));
++        }
++        assertThrows(IllegalArgumentException.class,
++                () -> EventCategories.fromCode(0));
++    }
++
++    @Test
++    void roundTripKeepsIndependentTextOffsetsAndNextIds() throws Exception {
++        Group group = new Group();
++        Student student = new Student("Іван Петренко", 1_000_007);
++        String descriptionEqualToDate = "01.02.2026";
++        student.getEvents().add(new StudentEvent(
++                10_042,
++                new EventDate(1, 2, 2026),
++                descriptionEqualToDate,
++                4.5,
++                new EventDate(1, 3, 2026),
++                EventCategories.MOD_9));
++        group.getStudents().add(student);
++
++        byte[] payload = BinaryPlainCmanUtility.buildPlainCman(
++                new Group[] {group},
++                1_000_100,
++                10_100);
++        BinaryPlainCmanUtility.CourseData restored =
++                BinaryPlainCmanUtility.parseCourseData(
++                        new ByteArrayInputStream(payload));
++
++        Student restoredStudent = restored.groups()[0].getStudents().get(0);
++        StudentEvent restoredEvent = restoredStudent.getEvents().get(0);
++        assertEquals("Іван Петренко", restoredStudent.getName());
++        assertEquals(descriptionEqualToDate, restoredEvent.getDescription());
++        assertEquals(EventCategories.MOD_9, restoredEvent.getCategory());
++        assertEquals(1_000_100, restored.nextStudentId());
++        assertEquals(10_100, restored.nextEventId());
++    }
++
++    @Test
++    void everyCategoryRoundTripsThroughItsStableCode() throws Exception {
++        Group group = new Group();
++        Student student = new Student("Student", 1_000_000);
++        EventCategories[] categories = EventCategories.values();
++        for (int i = 0; i < categories.length; i++) {
++            student.getEvents().add(new StudentEvent(
++                    10_000 + i,
++                    new EventDate(1, 1, 2026),
++                    "Event " + i,
++                    i + 1,
++                    new EventDate(2, 1, 2026),
++                    categories[i]));
++        }
++        group.getStudents().add(student);
++
++        byte[] payload = BinaryPlainCmanUtility.buildPlainCman(
++                new Group[] {group});
++        Group[] restored = BinaryPlainCmanUtility.parsePlainCman(
++                new ByteArrayInputStream(payload));
++
++        for (int i = 0; i < categories.length; i++) {
++            assertEquals(
++                    categories[i],
++                    restored[0].getStudents().get(0).getEvents().get(i).getCategory());
++        }
++    }
++
++    @Test
++    void rejectsCorruptedSectionOffsetsAndUnknownCategoryCodes() throws Exception {
++        Group group = new Group();
++        Student student = new Student("Student", 1_000_000);
++        student.getEvents().add(new StudentEvent(
++                10_000,
++                new EventDate(1, 1, 2026),
++                "Description",
++                1,
++                new EventDate(2, 1, 2026),
++                EventCategories.MOD_1));
++        group.getStudents().add(student);
++
++        byte[] invalidOffset = BinaryPlainCmanUtility.buildPlainCman(
++                new Group[] {group});
++        ByteBuffer.wrap(invalidOffset)
++                .order(ByteOrder.BIG_ENDIAN)
++                .putInt(20, invalidOffset.length + 1);
++        assertThrows(IOException.class,
++                () -> BinaryPlainCmanUtility.parseCourseData(
++                        new ByteArrayInputStream(invalidOffset)));
++
++        byte[] invalidCategory = BinaryPlainCmanUtility.buildPlainCman(
++                new Group[] {group});
++        ByteBuffer header = ByteBuffer.wrap(invalidCategory).order(ByteOrder.BIG_ENDIAN);
++        int eventsOffset = header.getInt(16);
++        int categoryOffset = eventsOffset + 4 + 4 + 28;
++        invalidCategory[categoryOffset] = 0;
++        assertThrows(IOException.class,
++                () -> BinaryPlainCmanUtility.parseCourseData(
++                        new ByteArrayInputStream(invalidCategory)));
++    }
++
++    @Test
++    void rejectsNextIdsThatCouldReuseExistingIds() {
++        Group group = new Group();
++        Student student = new Student("Student", 1_000_010);
++        group.getStudents().add(student);
++
++        assertThrows(IOException.class,
++                () -> BinaryPlainCmanUtility.buildPlainCman(
++                        new Group[] {group},
++                        1_000_010,
++                        BinaryPlainCmanUtility.FIRST_EVENT_ID));
++    }
++}
+diff --git a/src/test/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtilityTest.java b/src/test/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtilityTest.java
+index 3513aa3..250cd2d 100644
+--- a/src/test/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtilityTest.java
++++ b/src/test/java/com/coursemanagerfx/logic/utilities/security/CmanSecurityUtilityTest.java
+@@ -89,16 +89,25 @@ class CmanSecurityUtilityTest {
+             CmanSecurityUtility.createSecureFile(groups, file.toFile(), seedPhrase);
+             byte[] original = Files.readAllBytes(file);
+ 
+-            CmanSecurityUtility.updateSecureFile(groups, file.toFile(), seedPhrase);
+-            byte[] updated = Files.readAllBytes(file);
++            CmanSecurityUtility.updateSecureFile(
++                    groups,
++                    file.toFile(),
++                    seedPhrase,
++                    1_000_050,
++                    10_050);
++            byte[] updated = Files.readAllBytes(file);
+ 
+             assertArrayEquals(original, Files.readAllBytes(backup));
+             assertFalse(Arrays.equals(
+                     Arrays.copyOfRange(original, 28, CmanCrypto.HEADER_LENGTH),
+                     Arrays.copyOfRange(updated, 28, CmanCrypto.HEADER_LENGTH)));
+-            assertEquals(1, CmanSecurityUtility.readSecureFile(
+-                    file.toFile(),
+-                    seedPhrase).length);
++            BinaryPlainCmanUtility.CourseData restored =
++                    CmanSecurityUtility.readSecureCourseData(
++                            file.toFile(),
++                            seedPhrase);
++            assertEquals(1, restored.groups().length);
++            assertEquals(1_000_050, restored.nextStudentId());
++            assertEquals(10_050, restored.nextEventId());
+         } finally {
+             Arrays.fill(seedPhrase, '\0');
+         }

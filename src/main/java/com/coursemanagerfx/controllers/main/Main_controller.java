@@ -349,7 +349,7 @@ public class Main_controller implements StageAttachable {
         /* init event categories combobox */
         comBoxEventCategory.setVisibleRowCount(15);
         for (EventCategories type : EventCategories.values())
-            comBoxEventCategory.getItems().add(type.getEventCategory().name());
+            comBoxEventCategory.getItems().add(type.getDisplayName());
         comBoxEventCategory.getSelectionModel().selectFirst();      // and select first type by default
 
         initSpinners();     /* init mark and expiration time spinners */
@@ -637,8 +637,7 @@ public class Main_controller implements StageAttachable {
                 new ReadOnlyStringWrapper(
                         cellData.getValue()
                                 .getCategory()
-                                .getEventCategory()
-                                .name())
+                                .getDisplayName())
         );
 
         /* sort by ukrainian alphabet */
@@ -648,7 +647,7 @@ public class Main_controller implements StageAttachable {
         categoryColumn.setComparator((a, b) -> {
             EventCategories ec1 = Actions.getInstance().uiActions().returnCategoryByName(a);
             EventCategories ec2 = Actions.getInstance().uiActions().returnCategoryByName(b);
-            return Integer.compare(ec1.ordinal(), ec2.ordinal());
+            return Integer.compare(ec1.getCode(), ec2.getCode());
         });
         /* ------------------------------ */
 
@@ -683,7 +682,7 @@ public class Main_controller implements StageAttachable {
                         fxColor.getOpacity()
                 );
 
-                setText(category.name());
+                setText(event.getCategory().getDisplayName());
                 setStyle("-fx-background-color: " + rgba + ";");
             }
         });
