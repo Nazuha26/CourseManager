@@ -1,12 +1,7 @@
 package com.coursemanagerfx.controllers.main;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.Timeline;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.util.Duration;
 
@@ -165,9 +160,12 @@ public final class MainFormAnimations {
         slide.setFromY(fromY);
         slide.setToY(toY);
         slide.setInterpolator(Interpolator.EASE_IN);
-        return new ParallelTransition(
-                slide,
-                fade(node, fromOpacity, toOpacity, duration));
+        return cacheDuring(
+                node,
+                new ParallelTransition(
+                        slide,
+                        fade(node, fromOpacity, toOpacity, duration))
+        );
     }
 
     private static ParallelTransition slideFadeX(
@@ -182,9 +180,12 @@ public final class MainFormAnimations {
         slide.setFromX(fromX);
         slide.setToX(toX);
         slide.setInterpolator(Interpolator.EASE_IN);
-        return new ParallelTransition(
-                slide,
-                fade(node, fromOpacity, toOpacity, duration));
+        return cacheDuring(
+                node,
+                new ParallelTransition(
+                        slide,
+                        fade(node, fromOpacity, toOpacity, duration))
+        );
     }
 
     private static FadeTransition fade(
@@ -206,7 +207,7 @@ public final class MainFormAnimations {
     }
 
     private static Timeline blink(Node node, double milliseconds) {
-        return new Timeline(
+        Timeline timeline = new Timeline(
                 new KeyFrame(
                         Duration.ZERO,
                         new KeyValue(node.opacityProperty(), 1, Interpolator.EASE_BOTH)),
@@ -215,6 +216,32 @@ public final class MainFormAnimations {
                         new KeyValue(node.opacityProperty(), 0, Interpolator.EASE_BOTH)),
                 new KeyFrame(
                         Duration.millis(milliseconds),
-                        new KeyValue(node.opacityProperty(), 1, Interpolator.EASE_BOTH)));
+                        new KeyValue(node.opacityProperty(), 1, Interpolator.EASE_BOTH))
+        );
+
+        return cacheDuring(node, timeline);
+    }
+
+    private static <T extends Animation> T cacheDuring(Node node, T animation) {
+        boolean[] previousCache = new boolean[1];
+        CacheHint[] previousHint = new CacheHint[1];
+        boolean[] caching = new boolean[1];
+
+        animation.statusProperty().addListener((observable, oldStatus, newStatus) -> {
+            if (newStatus == Animation.Status.RUNNING && !caching[0]) {
+                previousCache[0] = node.isCache();
+                previousHint[0] = node.getCacheHint();
+
+                node.setCache(true);
+                node.setCacheHint(CacheHint.SPEED);
+                caching[0] = true;
+            } else if (newStatus == Animation.Status.STOPPED && caching[0]) {
+                node.setCacheHint(previousHint[0]);
+                node.setCache(previousCache[0]);
+                caching[0] = false;
+            }
+        });
+
+        return animation;
     }
 }

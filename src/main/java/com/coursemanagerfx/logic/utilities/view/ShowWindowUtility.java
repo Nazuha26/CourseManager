@@ -28,8 +28,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
+import javafx.stage.Window;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -64,6 +66,7 @@ public class ShowWindowUtility {
             controller.setStage(startStage);
 
             startStage.show();
+            closeNativeSplash();
 
             String title = "Welcome to CourseManagerFX – v" + AppConstants.APP_VERSION;
             startStage.setTitle(title);
@@ -137,6 +140,7 @@ public class ShowWindowUtility {
             // ---=======================---
 
             mainStage.show();
+            closeNativeSplash();
 
             String fileName = file.getName();
             String courseName = fileName.endsWith(".cman")
@@ -183,6 +187,13 @@ public class ShowWindowUtility {
             return false;
         } finally {
             if (seedPhrase != null) Arrays.fill(seedPhrase, '\0');
+        }
+    }
+
+    private static void closeNativeSplash() {
+        SplashScreen splash = SplashScreen.getSplashScreen();
+        if (splash != null) {
+            splash.close();
         }
     }
 }
