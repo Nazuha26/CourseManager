@@ -11,11 +11,14 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.CourseInfo;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.utilities.SingleInstanceGuard;
 import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
 import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,10 +26,17 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Optional;
 
 import static com.coursemanagerfx.AppConstants.*;
 
 public class Launcher extends Application {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
+
+    private SingleInstanceGuard instanceGuard;
+    private boolean anotherInstanceDetected;
+    private IOException instanceLockFailure;
 
     /* ===== STATIC INFORMATION ABOUT OPENED COURSE ===== */
     private static CourseInfo courseInfo;
@@ -35,10 +45,43 @@ public class Launcher extends Application {
     /* ================================================== */
 
     @Override
-    public void init() { ConfigManager.safeLoadingConfig(); }
+    public void init() {
+        try {
+            Optional<SingleInstanceGuard> acquired =
+                    SingleInstanceGuard.tryAcquire(INSTANCE_LOCK_PATH);
+            if (acquired.isPresent()) instanceGuard = acquired.get();
+            else anotherInstanceDetected = true;
+        } catch (IOException exception) {
+            instanceLockFailure = exception;
+        }
+
+        if (!anotherInstanceDetected && instanceLockFailure == null) {
+            ConfigManager.safeLoadingConfig();
+        }
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        if (anotherInstanceDetected) {
+            LOGGER.info("A second application instance was blocked");
+            AlertFX.showNotification(
+                    AlertMessageType.INFO,
+                    "CourseManagerFX is already running",
+                    "Only one application instance can be open at a time.");
+            Platform.exit();
+            return;
+        }
+        if (instanceLockFailure != null) {
+            LOGGER.error("Could not acquire the application instance lock", instanceLockFailure);
+            AlertFX.showNotification(
+                    AlertMessageType.ERROR,
+                    "Startup Error",
+                    "Could not create the application lock file:\n"
+                            + INSTANCE_LOCK_PATH.toAbsolutePath());
+            Platform.exit();
+            return;
+        }
 
         /* set locale for language */
         String language = ConfigManager.getLanguage();
@@ -48,6 +91,7 @@ public class Launcher extends Application {
 
         /* === handling all exceptions === */
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            LOGGER.error("Unhandled exception in thread {}", thread.getName(), throwable);
             Platform.runLater(() -> {
                 AlertFX.showNotification(
                         AlertMessageType.ERROR,
@@ -57,6 +101,7 @@ public class Launcher extends Application {
             });
         });
         Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+            LOGGER.error("Unhandled exception in JavaFX thread {}", thread.getName(), throwable);
             Platform.runLater(() -> {
                 AlertFX.showNotification(
                         AlertMessageType.ERROR,
@@ -70,7 +115,7 @@ public class Launcher extends Application {
         try {
             Files.createDirectories(COURSES_PATH);
         } catch (IOException e) {
-            System.err.println("Failed to create courses directory: " + COURSES_PATH.toAbsolutePath());
+            LOGGER.error("Failed to create courses directory: {}", COURSES_PATH.toAbsolutePath(), e);
             AlertFX.showNotification(
                     AlertMessageType.ERROR,
                     "Startup Error",
@@ -102,6 +147,15 @@ public class Launcher extends Application {
     @Override
     public void stop() {
         clearCourseInfo();
+        if (instanceGuard != null) {
+            try {
+                instanceGuard.close();
+            } catch (IOException exception) {
+                LOGGER.warn("Could not release the application instance lock", exception);
+            } finally {
+                instanceGuard = null;
+            }
+        }
     }
 
     public static void clearCourseInfo() {
@@ -136,7 +190,7 @@ public class Launcher extends Application {
     public static void main(String[] args) {
         for (String arg : args) {
             if ("-p".equalsIgnoreCase(arg)) {
-                System.out.println("""
+                LOGGER.info("""
                         === TURN ON GET MOUSE POSITION MODE ===
                         ===      RELATIVE TO THE SCENE      ===
                         X | Y

@@ -11,6 +11,8 @@ import com.coursemanagerfx.AppConstants;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.google.gson.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -20,11 +22,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Logger LOGGER = Logger.getLogger(ConfigManager.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigManager.class);
 
     /* ========== PUBLIC API ========== */
 
@@ -155,13 +156,17 @@ public class ConfigManager {
                     field.set(config, defaultValue);
                     rewriteRequired = true;
 
-                    LOGGER.info(String.format("Config field '%s' had invalid value and was replaced with default: \"%s\"", key, defaultValue));
+                    LOGGER.info(
+                            "Config field '{}' had an invalid value and was replaced with default: {}",
+                            key,
+                            defaultValue);
                 }
             }
 
             rewriteRequired |= normalizeStructuredFields(config, defaultConfig);
 
         } catch (Exception ex) {
+            LOGGER.error("Failed to load configuration", ex);
             AlertFX.showNotification(
                     AlertMessageType.ERROR,
                     "Configuration Error",
@@ -245,6 +250,7 @@ public class ConfigManager {
             Files.createDirectories(AppConstants.CONFIG_PATH.getParent());
             try (Writer writer = Files.newBufferedWriter(AppConstants.CONFIG_PATH)) { GSON.toJson(config, writer); }
         } catch (IOException ex) {
+            LOGGER.error("Failed to save configuration", ex);
             AlertFX.showNotification(
                     AlertMessageType.ERROR,
                     "Configuration Error",
@@ -284,7 +290,11 @@ public class ConfigManager {
                         continue;
                     }
 
-                    LOGGER.info(String.format("Updated config field '%s': \"%s\" to \"%s\"", f.getName(), oldVal, newVal));
+                    LOGGER.info(
+                            "Updated config field '{}': '{}' to '{}'",
+                            f.getName(),
+                            oldVal,
+                            newVal);
                 }
             }
 
@@ -293,6 +303,7 @@ public class ConfigManager {
             cachedConfig = config;
 
         } catch (Exception e) {
+            LOGGER.error("Failed to update configuration", e);
             AlertFX.showNotification(AlertMessageType.ERROR,
                     "Config Error",
                     "Failed to update config:\n" + e.getMessage());

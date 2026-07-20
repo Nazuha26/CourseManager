@@ -26,6 +26,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,8 @@ import java.util.function.Consumer;
 import static com.coursemanagerfx.AppConstants.COURSES_PATH;
 
 public class ShowDialogUtility {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShowDialogUtility.class);
 
     /* show APPLICATION MODAL dialog */
     private static <T> T showDialog(String fxml, Consumer<T> controllerConfigurator) throws IOException
@@ -54,10 +58,10 @@ public class ShowDialogUtility {
         if (owner != null ) {
             stage.initOwner(owner);
             stage.initModality(Modality.WINDOW_MODAL);
-            System.out.println("WINDOW-MODAL dialog is shown");
+            LOGGER.debug("Window-modal dialog is shown: {}", fxml);
         } else {
             stage.initModality(Modality.APPLICATION_MODAL);
-            System.out.println("APP-MODAL    dialog is shown");
+            LOGGER.debug("Application-modal dialog is shown: {}", fxml);
         }
 
         T controller = loader.getController();

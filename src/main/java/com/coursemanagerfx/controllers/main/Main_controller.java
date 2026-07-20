@@ -18,19 +18,17 @@ import com.coursemanagerfx.logic.basic.event.category.EventCategories;
 import com.coursemanagerfx.logic.basic.event.EventStatus;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.basic.event.category.EventCategory;
-import com.coursemanagerfx.logic.basic.event.date.ExpDateStrings;
 import com.coursemanagerfx.logic.commands.*;
 import com.coursemanagerfx.logic.commands.student_comms.AddStudentCommand;
+import com.coursemanagerfx.logic.autosave.AutoSaveManager;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.history.HistoryManager;
+import com.coursemanagerfx.logic.history.UndoRedoManager;
 import com.coursemanagerfx.logic.utilities.view.ShowDialogUtility;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -46,19 +44,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.*;
-import javafx.util.Callback;
-import javafx.util.Duration;
-import javafx.util.StringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import org.fxmisc.richtext.InlineCssTextArea;
 
-import java.text.DecimalFormatSymbols;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
-import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -258,6 +249,7 @@ public class Main_controller implements StageAttachable {
     private ImageView historyIcon_To;
     private ImageView historyIcon_Back;
     private Stage stage;
+    private AutoSaveManager autoSaveManager;
     /* ================================================ */
 
     /* ==================== FIELDS GETTERS/SETTERS ==================== */
@@ -265,7 +257,12 @@ public class Main_controller implements StageAttachable {
     public Stage getStage() { return stage; }
 
     /* --- SETTERS --- */
-    public void setStage(Stage stage) { this.stage = stage; }
+    public void setStage(Stage stage) {
+        this.stage = stage;
+        stage.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
+            if (autoSaveManager != null) autoSaveManager.close();
+        });
+    }
     /* ================================================================ */
 
 
@@ -274,17 +271,22 @@ public class Main_controller implements StageAttachable {
         new GradientBackground(rootPane, 0.005, 2); // gradient bg
         Actions.getInstance().setController(this);
 
-        initAutoSaveAction();       // init auto saving
+        autoSaveManager = new AutoSaveManager(
+                ConfigManager.isAutoSaveEnabled(),
+                ConfigManager.getAutoSaveSecInterval(),
+                Actions.getInstance().undoRedo()::hasUnsavedChanges,
+                Actions.getInstance().menuActions()::saveAction);
+        autoSaveManager.start();
 
-        Actions.getInstance().historyActions().setHistory(
-                Actions.HistoryActions.HistoryType.INFO,
+        Actions.getInstance().historyActions().add(
+                HistoryManager.HistoryType.INFO,
                 ConfigManager.isAutoSaveEnabled() ?
                         "Autosave is enabled. Saving will occur every " + ConfigManager.getAutoSaveSecInterval()
                                 + " seconds, you can change these parameters in the program config file (config.json)"
                         : "Autosave disabled"
         );
 
-        Actions.UndoRedo undoManager = Actions.getInstance().undoRedo();
+        UndoRedoManager undoManager = Actions.getInstance().undoRedo();
 
         /* bind disable properties for undo/redo buttons and menus */
         btnUndo.disableProperty().bind(Bindings.not(undoManager.canUndoProperty()));
@@ -330,29 +332,7 @@ public class Main_controller implements StageAttachable {
         btnBackFromHistory.setContentDisplay(ContentDisplay.RIGHT);*/
         // =============================================
 
-        /* init custom style for data pickers */
-        dtpkCreationDate.setDayCellFactory(addDatePickerCSS());
-        dtpkExpirationDate.setDayCellFactory(addDatePickerCSS());
-        applyDateFormat(dtpkCreationDate, "dd.MM.yyyy");
-        applyDateFormat(dtpkExpirationDate, "dd.MM.yyyy");
-
-
-
-        /* init expiration combobox */
-        comBoxExpTimeType.setItems(FXCollections.observableArrayList(
-                ExpDateStrings.DAYS,
-                ExpDateStrings.WEEKS,
-                ExpDateStrings.MONTHS
-        ));
-        comBoxExpTimeType.getSelectionModel().selectFirst();    // and select DAYS by default
-
-        /* init event categories combobox */
-        comBoxEventCategory.setVisibleRowCount(15);
-        for (EventCategories type : EventCategories.values())
-            comBoxEventCategory.getItems().add(type.getDisplayName());
-        comBoxEventCategory.getSelectionModel().selectFirst();      // and select first type by default
-
-        initSpinners();     /* init mark and expiration time spinners */
+        MainInputConfigurator.configure(this);
 
         initTable();        /* init event table */
 
@@ -393,37 +373,37 @@ public class Main_controller implements StageAttachable {
             return;
         }
 
-        int studentID = Actions.getInstance().idGenerator().genGlobalStudentId();
+        int studentID = Actions.getInstance().idGenerator().nextStudentId();
         Student newStudent = new Student(studentName, studentID);
 
         Command cmd = new AddStudentCommand(selectedGroup, newStudent);
         cmd.execute();
-        Actions.getInstance().undoRedo().addCommandToStack(cmd);
+        Actions.getInstance().undoRedo().add(cmd);
 
-        Actions.getInstance().historyActions().setHistory(
-                Actions.HistoryActions.HistoryType.SUCCESS,
+        Actions.getInstance().historyActions().add(
+                HistoryManager.HistoryType.SUCCESS,
                 "Successfully added student: \"" + studentName + "\""
         );
     }
 
     @FXML private void btnAddEvent() {
-        Actions.getInstance().formAnims().loadEventInfoPane();
-        Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.SHOW);
+        Actions.getInstance().formAnims().showEventInfo();
+        Actions.getInstance().formAnims().mainTopPanelInOut(MainFormAnimations.State.SHOW);
     }
 
     @FXML private void btnCancelEvent()
-        { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
+        { Actions.getInstance().formAnims().mainTopPanelInOut(MainFormAnimations.State.HIDE); }
 
     @FXML private void btnCreateEvent()
         { Actions.getInstance().uiActions().createEventAction(); }
 
     @FXML private void btnHistory() {
-        Actions.getInstance().formAnims().loadHistoryPane();
-        Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.SHOW);
+        Actions.getInstance().formAnims().showHistory();
+        Actions.getInstance().formAnims().mainTopPanelInOut(MainFormAnimations.State.SHOW);
     }
 
     @FXML private void btnBackFromHistory()
-        { Actions.getInstance().formAnims().mainTopPanelInOut(Actions.FormAnims.State.HIDE); }
+        { Actions.getInstance().formAnims().mainTopPanelInOut(MainFormAnimations.State.HIDE); }
 
     @FXML private void btnClearHistory() {
         historyTxtArea.clear();
@@ -431,7 +411,7 @@ public class Main_controller implements StageAttachable {
     }
 
     @FXML private void toggleExpirationInput() {
-        if (Actions.getInstance().formAnims().isToggleAnimPlaysFlag()) return;
+        if (Actions.getInstance().formAnims().isToggleAnimationPlaying()) return;
         Actions.getInstance().uiActions().toggleExpInputAction();
     }
 
@@ -484,94 +464,6 @@ public class Main_controller implements StageAttachable {
     /* ====================== */
 
     /* =============== CORE =============== */
-
-    /* init spinners */
-    private void initSpinners() {
-
-        /* ---------- expiration time spinner ---------- */
-        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryExpTime =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1, 1);
-        spinnerExpTimeCount.setValueFactory(valueFactoryExpTime);
-
-        UnaryOperator<TextFormatter.Change> integerFilter = ch -> {
-            return ch.getControlNewText().matches("\\d*") ? ch : null;
-        };
-
-        TextFormatter<Integer> formatterExp = new TextFormatter<>(
-                new IntegerStringConverter(),
-                valueFactoryExpTime.getValue(),
-                integerFilter
-        );
-        spinnerExpTimeCount.getEditor().setTextFormatter(formatterExp);
-
-        spinnerExpTimeCount.focusedProperty().addListener((obs, ov, nv) -> {
-            if (!nv) spinnerExpTimeCount.increment(0);        // commit on focus lost
-        });
-        formatterExp.valueProperty().addListener((obs, ov, nv) -> {
-            if (nv == null) formatterExp.setValue(valueFactoryExpTime.getMin());
-        });
-
-        /* -------------- mark spinner (editable) -------------- */
-        Locale locale = Locale.getDefault();
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
-        char sep = symbols.getDecimalSeparator();
-
-        SpinnerValueFactory.DoubleSpinnerValueFactory valueFactory =
-                new SpinnerValueFactory.DoubleSpinnerValueFactory(-999, 999, 1.0, 0.5);
-        spinnerMark.setValueFactory(valueFactory);
-        spinnerMark.setEditable(true);
-
-        // фильтр ввода с учётом локали и допустимыми только 0 или 5 после запятой/точки
-        UnaryOperator<TextFormatter.Change> filter = change -> {
-            String t = change.getControlNewText();
-            String sepStr = Pattern.quote(String.valueOf(sep));
-            return t.matches("-?\\d{0,3}(" + sepStr + "[05]?)?") || t.isEmpty() ? change : null;
-        };
-
-        // Конвертер строки в Double и обратно, с учетом текущей локали
-        StringConverter<Double> converter = new StringConverter<>() {
-            @Override
-            public String toString(Double value) {
-                if (value == null) return "";
-                return String.format(locale, "%.1f", value);
-            }
-
-            @Override
-            public Double fromString(String s) {
-                if (s == null || s.isBlank() || "-".equals(s) || String.valueOf(sep).equals(s))
-                    return null;
-                try {
-                    return Double.parseDouble(s.replace(sep, '.')); // преобразуем в формат parseDouble
-                } catch (NumberFormatException e) {
-                    return null;
-                }
-            }
-        };
-
-        TextFormatter<Double> formatter = new TextFormatter<>(converter, valueFactory.getValue(), filter);
-        spinnerMark.getEditor().setTextFormatter(formatter);
-
-        // Синхронизация
-        formatter.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.equals(valueFactory.getValue())) {
-                valueFactory.setValue(newVal);
-            }
-        });
-
-        valueFactory.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.equals(formatter.getValue())) {
-                formatter.setValue(newVal);
-            }
-        });
-
-        // Если ушли с фокуса и значение пустое — ставим 1.0
-        spinnerMark.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) {
-                if (formatter.getValue() == null) formatter.setValue(1.0);
-                spinnerMark.increment(0);
-            }
-        });
-    }
 
     /* init table of events */
     private void initTable() {
@@ -723,7 +615,7 @@ public class Main_controller implements StageAttachable {
                 b.getStyleClass().add("edit-button");
                 b.setOnAction(e -> {
                     StudentEvent event = getTableRow().getItem();
-                    if (event == null || Actions.getInstance().formAnims().isAnimPlaysFlag()) return;
+                    if (event == null || Actions.getInstance().formAnims().isAnimationPlaying()) return;
 
                     if (Actions.getInstance().uiActions().getEditingEvent() == event)
                         Actions.getInstance().uiActions().stopEditing();
@@ -870,61 +762,6 @@ public class Main_controller implements StageAttachable {
             catch (NumberFormatException ignored) {}
         }
         return -1;
-    }
-
-    /* init autosave action */
-    private void initAutoSaveAction() {
-        if (ConfigManager.isAutoSaveEnabled()) {
-            int interval = ConfigManager.getAutoSaveSecInterval();
-
-            Timeline autoSaveTimeline = new Timeline(
-                    new KeyFrame(Duration.seconds(interval), event -> {
-                        Actions.getInstance().menuActions().saveAction();
-                    })
-            );
-            autoSaveTimeline.setCycleCount(Animation.INDEFINITE);
-            autoSaveTimeline.play();
-        }
-    }
-
-    /* init data picker custom style */
-    private Callback<DatePicker, DateCell> addDatePickerCSS() {
-        return picker -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate item, boolean empty) {
-                super.updateItem(item, empty);
-                getStyleClass().removeAll("odd-month", "even-month", "sunday", "today");
-                if (!empty && item != null) {
-                    if (item.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                        getStyleClass().add("sunday");
-                    }
-                    if (item.equals(LocalDate.now())) {
-                        getStyleClass().add("today");
-                    }
-                    if (item.getMonthValue() % 2 == 1)   getStyleClass().add("odd-month");
-                    else                                 getStyleClass().add("even-month");
-                }
-            }
-        };
-    }
-
-    /* init data picker custom format */
-    private void applyDateFormat(DatePicker datePicker, String format) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-
-        datePicker.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(LocalDate date) {
-                return (date != null) ? formatter.format(date) : "";
-            }
-
-            @Override
-            public LocalDate fromString(String string) {
-                return (string != null && !string.isEmpty())
-                        ? LocalDate.parse(string, formatter)
-                        : null;
-            }
-        });
     }
 
     private void toggleStyleAroundSelection(String marker) {

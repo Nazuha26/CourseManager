@@ -12,8 +12,12 @@ import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.basic.event.StudentEvent;
 import com.coursemanagerfx.logic.commands.Command;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AddEventCommand implements Command {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddEventCommand.class);
+
     private final Group group;
     private final Student student;
     private final StudentEvent event;
@@ -28,14 +32,14 @@ public class AddEventCommand implements Command {
     public void execute() {
         student.getEvents().add(event);
         Actions.getInstance().repaint().smartRefresh(group, student);
-        System.out.println("added event: { global ID: " + event.getID() + " }");
+        LOGGER.debug("Added event: globalId={}", event.getID());
     }
 
     @Override
     public void undo() {
         student.getEvents().remove(event);
         Actions.getInstance().repaint().smartRefresh(group, student);
-        System.out.println("undo adding event: { global ID: " + event.getID() + " }");
+        LOGGER.debug("Undid adding event: globalId={}", event.getID());
     }
 
     @Override

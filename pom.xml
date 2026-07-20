@@ -27,6 +27,8 @@
         <gson.version>2.10.1</gson.version>
         <poi.version>5.4.0</poi.version>
         <bouncycastle.version>1.85</bouncycastle.version>
+        <slf4j.version>2.0.18</slf4j.version>
+        <logback.version>1.5.37</logback.version>
         <junit.version>5.10.0</junit.version>
     </properties>
 
@@ -78,6 +80,16 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
             <version>${bouncycastle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
 
         <dependency>

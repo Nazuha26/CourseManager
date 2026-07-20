@@ -21,7 +21,7 @@ class AppConfigTest {
         assertFalse(json.contains("default_password"));
         assertEquals(15, config.category_names.size());
         assertEquals("Сесія", config.category_names.get("MOD_1"));
-        assertEquals("Віктор ФЕСЕНКО", config.excel_signature.name);
+        assertEquals("Ім'я ПРІЗВИЩЕ", config.excel_signature.name);
     }
 
     @Test

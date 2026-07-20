@@ -1,6 +1,8 @@
 package com.coursemanagerfx.logic.utilities.update;
 
 import com.coursemanagerfx.AppConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -17,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 final class UpdateInstaller {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateInstaller.class);
 
     static final String SUCCESS_ARGUMENT_PREFIX =
             "--coursemanagerfx-update-ready=";
@@ -107,8 +111,7 @@ final class UpdateInstaller {
                         StandardOpenOption.TRUNCATE_EXISTING,
                         StandardOpenOption.WRITE);
             } catch (IOException | RuntimeException exception) {
-                System.err.println("Could not confirm successful update start: "
-                        + exception.getMessage());
+                LOGGER.warn("Could not confirm successful update start", exception);
             }
             return;
         }

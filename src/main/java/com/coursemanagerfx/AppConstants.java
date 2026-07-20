@@ -16,13 +16,12 @@ public final class AppConstants {
     public static final String APP_VERSION = loadApplicationVersion();
     public static final String GITHUB_REPOSITORY = "Nazuha26/CourseManager";
 
-    public static final Path CONFIG_PATH = Paths.get(
+    public static final Path APP_DATA_PATH = Paths.get(
             System.getProperty("user.home"),
-            ".cmanfx/config",
-            "config.json");
-    public static final Path COURSES_PATH = Paths.get(
-            System.getProperty("user.home"),
-            ".cmanfx/courses");
+            ".cmanfx");
+    public static final Path CONFIG_PATH = APP_DATA_PATH.resolve("config/config.json");
+    public static final Path COURSES_PATH = APP_DATA_PATH.resolve("courses");
+    public static final Path INSTANCE_LOCK_PATH = APP_DATA_PATH.resolve("coursemanagerfx.lock");
 
     public static final Locale UA = Locale.of("uk", "UA");
     public static final Collator UA_COLLATOR;

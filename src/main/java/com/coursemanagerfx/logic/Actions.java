@@ -13,6 +13,7 @@ import com.coursemanagerfx.animations.WindowBlindsOutAnimation;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertFX;
 import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.controllers.dialogs.exceptions.SaveException;
+import com.coursemanagerfx.controllers.main.MainFormAnimations;
 import com.coursemanagerfx.controllers.main.Main_controller;
 import com.coursemanagerfx.controllers.main.StudentPanel_controller;
 import com.coursemanagerfx.custom_ui.ProgressSpinner;
@@ -27,6 +28,9 @@ import com.coursemanagerfx.logic.commands.Command;
 import com.coursemanagerfx.logic.commands.event_comms.AddEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.DeleteEventCommand;
 import com.coursemanagerfx.logic.commands.event_comms.EditEventCommand;
+import com.coursemanagerfx.logic.history.HistoryManager;
+import com.coursemanagerfx.logic.history.UndoRedoManager;
+import com.coursemanagerfx.logic.session.CourseIdGenerator;
 import com.coursemanagerfx.logic.utilities.security.CmanSecurityUtility;
 import com.coursemanagerfx.logic.utilities.ExcelExportUtility;
 import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
@@ -53,6 +57,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import org.fxmisc.richtext.InlineCssTextArea;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -60,11 +66,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public final class Actions {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Actions.class);
 
     /* ========================= SINGLETON ========================= */
     private static final Actions INSTANCE = new Actions();
@@ -76,25 +82,25 @@ public final class Actions {
     public void setController(Main_controller controller) { this.ctrl = controller; }
 
     /* ========================= SUB-ACTIONS ========================= */
-    private final Repaint        repaint        = new Repaint();
-    private final Select         select         = new Select();
-    private final UiActions      uiActions      = new UiActions();
-    private final MenuActions    menuActions    = new MenuActions();
-    private final IdGenerator    idGenerator    = new IdGenerator();
-    private final FormAnims      formAnims      = new FormAnims();
-    private final UndoRedo       undoRedo       = new UndoRedo();
-    private final HistoryActions historyActions = new HistoryActions();
-    private final UiFlowActions  uiFlowActions  = new UiFlowActions();
+    private final Repaint repaint = new Repaint();
+    private final Select select = new Select();
+    private final UiActions uiActions = new UiActions();
+    private final MenuActions menuActions = new MenuActions();
+    private final CourseIdGenerator idGenerator = new CourseIdGenerator();
+    private final MainFormAnimations formAnimations = new MainFormAnimations(() -> ctrl);
+    private final HistoryManager history = new HistoryManager(() -> ctrl);
+    private final UndoRedoManager undoRedo = new UndoRedoManager(() -> ctrl != null, history);
+    private final UiFlowActions uiFlowActions = new UiFlowActions();
 
-    public Repaint        repaint()         { return repaint; }
-    public Select         select()          { return select; }
-    public UiActions      uiActions()       { return uiActions; }
-    public MenuActions    menuActions()     { return menuActions; }
-    public IdGenerator    idGenerator()     { return idGenerator; }
-    public FormAnims      formAnims()       { return formAnims; }
-    public UndoRedo       undoRedo()        { return undoRedo; }
-    public HistoryActions historyActions()  { return historyActions; }
-    public UiFlowActions  uiFlowActions()   { return uiFlowActions; }
+    public Repaint repaint() { return repaint; }
+    public Select select() { return select; }
+    public UiActions uiActions() { return uiActions; }
+    public MenuActions menuActions() { return menuActions; }
+    public CourseIdGenerator idGenerator() { return idGenerator; }
+    public MainFormAnimations formAnims() { return formAnimations; }
+    public UndoRedoManager undoRedo() { return undoRedo; }
+    public HistoryManager historyActions() { return history; }
+    public UiFlowActions uiFlowActions() { return uiFlowActions; }
 
     /* ******************************************************************
      *                          CLASS  Repaint
@@ -374,8 +380,8 @@ public final class Actions {
             if (ctrl == null) return;
 
             if (!ctrl.getInfoTopPane().isVisible()) {
-                formAnims.loadEventInfoPane();
-                formAnims.mainTopPanelInOut(FormAnims.State.SHOW);
+                formAnimations.showEventInfo();
+                formAnimations.mainTopPanelInOut(MainFormAnimations.State.SHOW);
             }
 
             setEditingEvent(event);
@@ -384,7 +390,7 @@ public final class Actions {
             for (Node node : ctrl.getTabHBox().getChildren()) node.setDisable(true);      // disable group tab buttons
             for (Node node : ctrl.getStudentVBox().getChildren()) node.setDisable(true);  // disable student panels
 
-            undoRedo.setUndoRedoDisabled(true);       // block undo/redo actions
+            undoRedo.setDisabled(true);       // block undo/redo actions
             ctrl.getMenuFile().setDisable(true);    // block menu "File"
             ctrl.getBtnExport().setDisable(true);   // block button "Export"
 
@@ -433,7 +439,7 @@ public final class Actions {
         public void stopEditing() {
             if (ctrl == null) return;
 
-            formAnims.mainTopPanelInOut(FormAnims.State.HIDE);
+            formAnimations.mainTopPanelInOut(MainFormAnimations.State.HIDE);
 
             setEditingEvent(null);
             //editingEvent = null;
@@ -441,7 +447,7 @@ public final class Actions {
             for (Node node : ctrl.getTabHBox().getChildren()) node.setDisable(false);       // enable group tab buttons
             for (Node node : ctrl.getStudentVBox().getChildren()) node.setDisable(false);   // enable student panels
 
-            undoRedo.setUndoRedoDisabled(false);       // unblock undo/redo actions
+            undoRedo.setDisabled(false);       // unblock undo/redo actions
             ctrl.getMenuFile().setDisable(false);        // unblock menu "File"
             ctrl.getBtnExport().setDisable(false);       // unblock button "Export"
 
@@ -511,7 +517,7 @@ public final class Actions {
             );
             /* --------------- */
 
-            int eventID = idGenerator.genGlobalEventId();
+            int eventID = idGenerator.nextEventId();
             StudentEvent newEvent = new StudentEvent(
                     eventID,
                     creationDate,
@@ -523,10 +529,10 @@ public final class Actions {
 
             Command cmd = new AddEventCommand(select.getSelectedGroup(), select.getSelectedStudent(), newEvent);
             cmd.execute();
-            undoRedo.addCommandToStack(cmd);
+            undoRedo.add(cmd);
 
-            historyActions.setHistory(
-                    HistoryActions.HistoryType.SUCCESS,
+            history.add(
+                    HistoryManager.HistoryType.SUCCESS,
                     "Successfully created event with description: \"" + description + "\""
             );
             clearAllEventInfo();
@@ -544,7 +550,7 @@ public final class Actions {
             /* --------------- */
 
             LocalDate expirationDateRaw;
-            if (!formAnims.showingDatePicker) {
+            if (!formAnimations.isShowingDatePicker()) {
                 expirationDateRaw = calculateExpirationDate(creationDateRaw);
                 if (expirationDateRaw == null)
                     { show(owner, "Unexpected error", "An unknown error occurred with the expiration date while switching toggle, please try again."); return; }
@@ -561,8 +567,8 @@ public final class Actions {
                 ctrl.getComBoxExpTimeType().getSelectionModel().select(ExpDateStrings.DAYS);
                 ctrl.getDtpkExpirationDate().setValue(null);
             }
-            formAnims.expDateInOut();
-            isShowingDataPickerFlag = !formAnims.showingDatePicker;
+            formAnimations.expirationInputInOut();
+            isShowingDataPickerFlag = !formAnimations.isShowingDatePicker();
         }
 
         public void clearAllEventInfo() {
@@ -583,7 +589,7 @@ public final class Actions {
         public void mainExitAction() {
             if (ctrl == null) return;
 
-            if (undoRedo.undoStack.isEmpty()) {
+            if (!undoRedo.hasUnsavedChanges()) {
                 WindowBlindsOutAnimation.play(
                         ctrl,
                         ctrl.getStage().getWidth(),
@@ -701,10 +707,10 @@ public final class Actions {
 
             Command cmd = new AddEventCommand(select.getSelectedGroup(), targetStud, newEvent);
             cmd.execute();
-            undoRedo.addCommandToStack(cmd);
+            undoRedo.add(cmd);
 
-            historyActions.setHistory(
-                    HistoryActions.HistoryType.SUCCESS,
+            history.add(
+                    HistoryManager.HistoryType.SUCCESS,
                     "Copied event from \"" +
                             (studentFrom != null ? studentFrom.getName() : "Unknown") +
                             "\" to \"" +
@@ -774,7 +780,7 @@ public final class Actions {
 
             // === Check if anything has changed ===
             if (editedCopy.equals(getEditingEvent())) {
-                System.out.println("No changes detected - skipping save.");
+                LOGGER.debug("No event changes detected; skipping save");
                 stopEditing();
                 return;
             }
@@ -787,10 +793,10 @@ public final class Actions {
                     editedCopy
             );
             cmd.execute();
-            undoRedo.addCommandToStack(cmd);
+            undoRedo.add(cmd);
 
-            historyActions.setHistory(
-                    HistoryActions.HistoryType.INFO,
+            history.add(
+                    HistoryManager.HistoryType.INFO,
                     "Edited event with description: \"" + newDesc + "\""
             );
 
@@ -815,10 +821,10 @@ public final class Actions {
                         currentEvent
                 );
                 cmd.execute();
-                undoRedo.addCommandToStack(cmd);
+                undoRedo.add(cmd);
 
-                historyActions.setHistory(
-                        HistoryActions.HistoryType.INFO,
+                history.add(
+                        HistoryManager.HistoryType.INFO,
                         "Deleted event with description: \"" + currentEvent.getDescription() + "\""
                 );
 
@@ -840,7 +846,7 @@ public final class Actions {
         }
 
         private StudentEvent deepCopyEvent(StudentEvent original, boolean genId) {
-            int id = !genId ? original.getID() : idGenerator.genGlobalEventId();
+            int id = !genId ? original.getID() : idGenerator.nextEventId();
             return new StudentEvent(
                     id,
                     original.getCrtDate(),
@@ -950,9 +956,7 @@ public final class Actions {
                     if (seedPhrase != null) Arrays.fill(seedPhrase, '\0');
                 }
 
-                undoRedo.getUndoStack().clear();    // clear undo stack
-                undoRedo.getRedoStack().clear();    // clear redo stack
-                undoRedo.updateState();
+                undoRedo.markSaved();
 
                 /*AlertFX.showNotification(
                         owner,
@@ -961,8 +965,8 @@ public final class Actions {
                         "",
                         true);*/
 
-                historyActions.setHistory(
-                        HistoryActions.HistoryType.SUCCESS,
+                history.add(
+                        HistoryManager.HistoryType.SUCCESS,
                         "Saved successfully"
                 );
             } catch (Exception e) {
@@ -995,8 +999,8 @@ public final class Actions {
             Window owner = ctrl.getStage().getScene().getWindow();
 
             if (Launcher.getCourseInfo().isEmpty()) {
-                historyActions.setHistory(
-                        HistoryActions.HistoryType.WARNING,
+                history.add(
+                        HistoryManager.HistoryType.WARNING,
                         "There is nothing to export"
                 );
                 AlertFX.showNotification(
@@ -1014,8 +1018,8 @@ public final class Actions {
                         Launcher.getCourseInfo().getCourseName(),
                         exportedPath);
                 if (successExport) {
-                    historyActions.setHistory(
-                            HistoryActions.HistoryType.SUCCESS,
+                    history.add(
+                            HistoryManager.HistoryType.SUCCESS,
                             "Export completed successfully. The Excel file has been saved to: \"" + exportedPath + "\""
                     );
                     AlertFX.showNotification(
@@ -1062,403 +1066,9 @@ public final class Actions {
     }
 
     /* ******************************************************************
-     *                          CLASS  IdGenerator
-     * *****************************************************************/
-    public static class IdGenerator {
-        public int genGlobalStudentId() {
-            return Launcher.getCourseInfo().takeNextStudentId();
-        }
-        public int genGlobalEventId() {
-            return Launcher.getCourseInfo().takeNextEventId();
-        }
-    }
-
-    /* ******************************************************************
-     *                          CLASS  FormAnims
-     * *****************************************************************/
-    public class FormAnims {
-
-        public enum State { SHOW, HIDE }
-        private boolean isAnimPlaysFlag = false;
-        public boolean isAnimPlaysFlag() { return isAnimPlaysFlag; }
-
-        private boolean isToggleAnimPlaysFlag = false;
-        public boolean isToggleAnimPlaysFlag() {
-            return isToggleAnimPlaysFlag;
-        }
-        private boolean showingDatePicker = false;
-
-        /* ======  PUBLIC API  ====== */
-        public void mainTopPanelInOut(State state) { mainTopPanelInOut(state, 400); }
-        public void mainTopPanelInOut(State state, double ms) {
-            if (ctrl == null || isAnimPlaysFlag) return;
-            isAnimPlaysFlag = true;
-            if (state == State.SHOW)  playIn(ms);
-            else                      playOut(ms);
-        }
-
-        /* to expiration data picker /or/ to expiration hbox */
-        public void expDateInOut() { expDateInOut(300); }
-        public void expDateInOut(double ms) {
-            if (ctrl == null || isToggleAnimPlaysFlag) return;
-            isToggleAnimPlaysFlag = true;
-            if (!showingDatePicker) playExpIn(ms);
-            else                    playExpOut(ms);
-        }
-
-        /* load necessary view in main top panel */
-        public void loadEventInfoPane() {
-            if (ctrl == null) return;
-            ctrl.getHistoryInfoMaskPane().setManaged(false);
-            ctrl.getHistoryInfoMaskPane().setVisible(false);
-            ctrl.getEventInfoMaskPane().setManaged(true);
-            ctrl.getEventInfoMaskPane().setVisible(true);
-        }
-        public void loadHistoryPane() {
-            if (ctrl == null) return;
-            ctrl.getEventInfoMaskPane().setManaged(false);
-            ctrl.getEventInfoMaskPane().setVisible(false);
-            ctrl.getHistoryInfoMaskPane().setManaged(true);
-            ctrl.getHistoryInfoMaskPane().setVisible(true);
-        }
-        /* ========================== */
-
-        /* ======  CORE  ====== */
-
-        /** plays “bottom-out / top-in” sequence */
-        private void playIn(double ms) {
-            Duration half = Duration.millis(ms / 2);
-
-            /* --- hide bottom info panel --- */
-            ParallelTransition hideBottom = buildSlideFadeY(
-                    ctrl.getInfoBotPane(),
-                    0, 30,
-                    1, 0,
-                    half
-            );
-
-            /* --- view top info panel (starts after bottom hidden) --- */
-            ParallelTransition showTop = buildSlideFadeX(
-                    ctrl.getInfoTopPane(),
-                    50, 0,
-                    0, 1,
-                    half
-            );
-
-            hideBottom.setOnFinished(ev -> {
-                toggle(ctrl.getInfoBotPane(), false);
-                toggle(ctrl.getInfoTopPane(),        true);
-                showTop.play();
-            });
-
-            showTop.setOnFinished(ev -> isAnimPlaysFlag = false);
-
-            new ParallelTransition(hideBottom, blinkingAnim(ctrl.getTableStackPane(), ms)).play();
-        }
-
-        /** plays “top-out / bottom-in” sequence */
-        private void playOut(double ms) {
-            Duration half = Duration.millis(ms / 2);
-
-            /* --- hide top info panel --- */
-            ParallelTransition hideTop = buildSlideFadeX(
-                    ctrl.getInfoTopPane(),
-                    0,  50,
-                    1, 0,
-                    half
-            );
-
-            /* --- view bottom info panel (starts after top hidden) --- */
-            ParallelTransition showBottom = buildSlideFadeY(
-                    ctrl.getInfoBotPane(),
-                    30, 0,
-                    0, 1,
-                    half
-            );
-
-            hideTop.setOnFinished(ev -> {
-                toggle(ctrl.getInfoTopPane(),        false);
-                toggle(ctrl.getInfoBotPane(), true);
-                showBottom.play();
-            });
-
-            showBottom.setOnFinished(ev -> isAnimPlaysFlag = false);
-
-            new ParallelTransition(hideTop, blinkingAnim(ctrl.getTableStackPane(), ms)).play();
-        }
-
-        private void playExpIn(double ms) {
-            Duration half = Duration.millis(ms / 2);
-
-            /* ----- hide expiration hbox ----- */
-            ParallelTransition hideExpHBox = buildSlideFadeX(
-                    ctrl.getHboxExpiredTime(),
-                    0, -30,
-                    1, 0,
-                    half
-                    );
-
-            /* ----- view expiration data picker ----- */
-            ParallelTransition showExpDtpk = buildSlideFadeX(
-                    ctrl.getDtpkExpirationDate(),
-                    30, 0,
-                    0, 1,
-                    half
-            );
-
-            hideExpHBox.setOnFinished(e -> {
-                toggle(ctrl.getHboxExpiredTime(), false);
-                toggle(ctrl.getDtpkExpirationDate(), true);
-                showExpDtpk.play();
-            });
-
-            showExpDtpk.setOnFinished(e -> {
-                showingDatePicker = true;
-                isToggleAnimPlaysFlag = false;
-            });
-            hideExpHBox.play();
-        }
-
-        private void playExpOut(double ms) {
-            Duration half = Duration.millis(ms / 2);
-
-            /* ----- hide expiration data picker ----- */
-            ParallelTransition hideExpDtpk = buildSlideFadeX(
-                    ctrl.getDtpkExpirationDate(),
-                    0, 30,
-                    1, 0,
-                    half
-            );
-
-            /* ----- view expiration hbox ----- */
-            ParallelTransition showExpHBox = buildSlideFadeX(
-                    ctrl.getHboxExpiredTime(),
-                    -30, 0,
-                    0, 1,
-                    half
-            );
-
-            hideExpDtpk.setOnFinished(e -> {
-                toggle(ctrl.getDtpkExpirationDate(), false);
-                toggle(ctrl.getHboxExpiredTime(), true);
-                showExpHBox.play();
-            });
-
-            showExpHBox.setOnFinished(e -> {
-                showingDatePicker = false;
-                isToggleAnimPlaysFlag = false;
-            });
-            hideExpDtpk.play();
-        }
-
-        /* ======  HELPERS  ====== */
-
-        /** builder for parallel anim of Y transition and fade */
-        private ParallelTransition buildSlideFadeY(Node node,
-                                                   double fromY, double toY,
-                                                   double fromOp, double toOp,
-                                                   Duration d) {
-            TranslateTransition slide = new TranslateTransition(d, node);
-            slide.setFromY(fromY);
-            slide.setToY(toY);
-            slide.setInterpolator(Interpolator.EASE_IN);
-
-            FadeTransition fade   = buildFade(node, fromOp, toOp, d);
-            return new ParallelTransition(slide, fade);
-        }
-
-        /** builder for parallel anim of X transition and fade */
-        private ParallelTransition buildSlideFadeX(Node node,
-                                                   double fromX, double toX,
-                                                   double fromOp, double toOp,
-                                                   Duration d) {
-            TranslateTransition slide = new TranslateTransition(d, node);
-            slide.setFromX(fromX);
-            slide.setToX(toX);
-            slide.setInterpolator(Interpolator.EASE_IN);
-
-            FadeTransition fade   = buildFade(node, fromOp, toOp, d);
-            return new ParallelTransition(slide, fade);
-        }
-
-        /** fade builder */
-        private FadeTransition buildFade(Node node, double from, double to, Duration d) {
-            FadeTransition ft = new FadeTransition(d, node);
-            ft.setFromValue(from);
-            ft.setToValue(to);
-            ft.setInterpolator(Interpolator.EASE_IN);
-            return ft;
-        }
-
-        private static void toggle(Node n, boolean visible) {
-            n.setVisible(visible);
-            n.setManaged(visible);
-        }
-
-        /** blink effect on any node (opacity 1 → 0 → 1 over full duration) */
-        private Timeline blinkingAnim(Node n, double msTotal) {
-            return new Timeline(
-                    new KeyFrame(Duration.ZERO,
-                            new KeyValue(n.opacityProperty(), 1, Interpolator.EASE_BOTH)),
-                    new KeyFrame(Duration.millis(msTotal / 2),
-                            new KeyValue(n.opacityProperty(), 0, Interpolator.EASE_BOTH)),
-                    new KeyFrame(Duration.millis(msTotal),
-                            new KeyValue(n.opacityProperty(), 1, Interpolator.EASE_BOTH))
-            );
-        }
-    }
-
-    /* ******************************************************************
-     *                          CLASS  UndoRedo
-     * *****************************************************************/
-    public class UndoRedo {
-
-        /* ===== PUBLIC API ===== */
-
-        public Deque<Command> getUndoStack() {
-            return undoStack;
-        }
-        public Deque<Command> getRedoStack() {
-            return redoStack;
-        }
-
-        public BooleanProperty canUndoProperty() { return canUndo; }
-        public BooleanProperty canRedoProperty() { return canRedo; }
-
-        public boolean hasUnsavedChanges() { return !undoStack.isEmpty(); }
-
-        public UndoRedo()
-            { updateState(); }
-
-        public void setUndoRedoDisabled(boolean value) {
-            this.undoredoDisabled = value;
-            updateState();
-        }
-
-        public void addCommandToStack(Command cmd) {
-            if (ctrl == null || cmd == null) return;
-            undoStack.addLast(cmd);
-            redoStack.clear();
-            updateState();
-        }
-
-        public void undo() {
-            if (ctrl == null || undoStack.isEmpty() || undoredoDisabled) return;
-
-            Command cmd = undoStack.removeLast();
-            cmd.undo();
-            historyActions.setHistory(
-                    HistoryActions.HistoryType.INFO,
-                    "Undo: " + cmd.getHistoryDescription()
-            );
-            redoStack.addLast(cmd);
-            updateState();
-        }
-
-        public void redo() {
-            if (ctrl == null || redoStack.isEmpty() || undoredoDisabled) return;
-
-            Command cmd = redoStack.removeLast();
-            cmd.execute();
-            historyActions.setHistory(
-                    HistoryActions.HistoryType.INFO,
-                    "Redo: " + cmd.getHistoryDescription()
-            );
-            undoStack.addLast(cmd);
-            updateState();
-        }
-
-
-
-        /* ===== CORE ===== */
-
-        private boolean undoredoDisabled = false;     // flag
-
-        private final Deque<Command> undoStack = new ArrayDeque<>();
-        private final Deque<Command> redoStack = new ArrayDeque<>();
-
-        private final BooleanProperty canUndo = new SimpleBooleanProperty(false);
-        private final BooleanProperty canRedo = new SimpleBooleanProperty(false);
-
-        private void updateState() {
-            canUndo.set(!undoredoDisabled && !undoStack.isEmpty());
-            canRedo.set(!undoredoDisabled && !redoStack.isEmpty());
-        }
-    }
-
-    /* ******************************************************************
-     *                          CLASS  HistoryActions
-     * *****************************************************************/
-    public class HistoryActions {
-
-        /* ======  PUBLIC API  ====== */
-
-        public enum HistoryType { SUCCESS, WARNING, ERROR, INFO }
-
-        public void setHistory(HistoryType type, String historyText) {
-            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));      // get cur time
-
-            InlineCssTextArea area = ctrl.getHistoryTxtArea();
-            Label curHistoryLbl = ctrl.getLblCurHistory();
-
-            /*  create string like: [TYPE] message [HH:mm:ss]\n  */
-            String prefix = "[" + type.name() + "] ";
-            String suffix = " [" + time + "]\n";
-            String fullMessage = prefix + historyText + suffix;
-
-            /* position */
-            int start = area.getLength();
-            area.appendText(fullMessage);
-            int end = area.getLength();
-
-            /* set color */
-            Color color = switch (type) {
-                case SUCCESS -> Color.rgb(7, 213, 0);
-                case WARNING -> Color.rgb(213, 202, 0);
-                case ERROR   -> Color.rgb(213, 0, 0);
-                case INFO    -> Color.rgb(0, 149, 213);
-            };
-
-            /* css style for each segment */
-            String prefixStyle = String.format("-fx-fill: %s; -fx-font-weight: bold;", toWebColor(color));
-            String mainStyle = "-fx-fill: #dddddd;";
-            String suffixStyle = "-fx-fill: gray;";
-
-            area.setStyle(start, start + prefix.length(), prefixStyle);
-            area.setStyle(start + prefix.length(), start + prefix.length() + historyText.length(), mainStyle);
-            area.setStyle(start + prefix.length() + historyText.length(), end, suffixStyle);
-
-            /*  in Label print only: [TYPE] short history text  */
-            byte mnocihl = 40;     // max_number_of_chars_in_history_label
-            String shortHistoryText = historyText.length() > mnocihl
-                    ? historyText.substring(0, mnocihl) + "..."
-                    : historyText;
-
-            curHistoryLbl.setText("[" + type.name() + "] " + shortHistoryText);
-
-            curHistoryLbl.setTextFill(color);
-        }
-        /* ========================== */
-
-
-
-        /* ======  CORE  ====== */
-
-        // convert Color to string like: "#RRGGBB"
-        private static String toWebColor(Color color) {
-            return String.format("#%02X%02X%02X",
-                    (int) (color.getRed() * 255),
-                    (int) (color.getGreen() * 255),
-                    (int) (color.getBlue() * 255));
-        }
-    }
-
-    /* ******************************************************************
      *                          CLASS  UiFlowActions
      * *****************************************************************/
     public class UiFlowActions {
-        public static final Logger LOGGER = Logger.getLogger(UiFlowActions.class.getName());
-
         public void runUpdateFlow(boolean showNotAvailableUpdatesNotify) {
             if (!showNotAvailableUpdatesNotify && !UpdateUtility.beginAutomaticCheck()) return;
 
@@ -1534,8 +1144,9 @@ public final class Actions {
                                                             AlertMessageType.ERROR,
                                                             "Installation failed",
                                                             "Message: " + installTask.getException().getMessage());
-                                                    UiFlowActions.LOGGER.log(
-                                                            Level.SEVERE, "=== ERROR DURING INSTALLING UPDATE ===", installTask.getException());
+                                                    LOGGER.error(
+                                                            "Error while installing update",
+                                                            installTask.getException());
                                                 });
                                             },
                                             "update-install-thread",
@@ -1575,8 +1186,7 @@ public final class Actions {
                                 "Update check failed",
                                 "Message: " + ex.getMessage()
                         );
-                        UiFlowActions.LOGGER.log(
-                                Level.SEVERE, "=== UPDATE CHECK FAILED ===", ex);
+                        LOGGER.error("Update check failed", ex);
                     },
                     "update-check-thread",
                     0.0,
@@ -1617,7 +1227,7 @@ public final class Actions {
                                 "Data loading failed",
                                 "Something went wrong during data loading"
                         );
-                        LOGGER.log(Level.SEVERE, "=== DATA LOADING FAILED ===", ex);
+                        LOGGER.error("Course data loading failed", ex);
                     },
                     "course-data-loading-thread");
         }

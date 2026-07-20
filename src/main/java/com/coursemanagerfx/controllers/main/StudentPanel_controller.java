@@ -96,7 +96,7 @@ public class StudentPanel_controller {
                     newName
             );
             cmd.execute();
-            Actions.getInstance().undoRedo().addCommandToStack(cmd);
+            Actions.getInstance().undoRedo().add(cmd);
         }
     }
 
@@ -114,7 +114,7 @@ public class StudentPanel_controller {
                 student
         );
         cmd.execute();
-        Actions.getInstance().undoRedo().addCommandToStack(cmd);
+        Actions.getInstance().undoRedo().add(cmd);
     }
 
     /* for delete key */

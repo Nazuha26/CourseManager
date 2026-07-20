@@ -22,6 +22,7 @@ release-private-key.pk8
 *.log
 Thumbs.db
 .DS_Store
+*.patch
 
 # Local helper files
 /collector.py

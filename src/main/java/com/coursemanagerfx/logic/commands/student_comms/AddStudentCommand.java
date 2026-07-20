@@ -11,8 +11,12 @@ import com.coursemanagerfx.logic.Actions;
 import com.coursemanagerfx.logic.basic.Group;
 import com.coursemanagerfx.logic.basic.Student;
 import com.coursemanagerfx.logic.commands.Command;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AddStudentCommand implements Command {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddStudentCommand.class);
+
     private final Group group;
     private final Student student;
 
@@ -25,14 +29,16 @@ public class AddStudentCommand implements Command {
     public void execute() {
         group.getStudents().add(student);
         Actions.getInstance().repaint().refreshStudentView(group, student);
-        System.out.println("added student: { name: \"" + student.getName() + "\"; global ID: " + student.getStudentID() + " }");
+        LOGGER.debug("Added student: name='{}', globalId={}",
+                student.getName(), student.getStudentID());
     }
 
     @Override
     public void undo() {
         group.getStudents().remove(student);
         Actions.getInstance().select().selectFirstOrClear(group);
-        System.out.println("undo adding student: { name: \"" + student.getName() + "\"; global ID: " + student.getStudentID() + " }");
+        LOGGER.debug("Undid adding student: name='{}', globalId={}",
+                student.getName(), student.getStudentID());
     }
 
     @Override
