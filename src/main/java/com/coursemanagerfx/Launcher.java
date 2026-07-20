@@ -12,6 +12,7 @@ import com.coursemanagerfx.controllers.dialogs.alert.AlertMessageType;
 import com.coursemanagerfx.logic.CourseInfo;
 import com.coursemanagerfx.logic.config_api.AppConfig;
 import com.coursemanagerfx.logic.config_api.ConfigManager;
+import com.coursemanagerfx.logic.utilities.update.UpdateUtility;
 import com.coursemanagerfx.logic.utilities.view.ShowWindowUtility;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -101,6 +102,8 @@ public class Launcher extends Application {
             if (expectedFile.exists()) ShowWindowUtility.showMainWindow(expectedFile);
             else ShowWindowUtility.showStartWindow();
         }
+
+        UpdateUtility.signalSuccessfulStart(getParameters().getRaw());
     }
 
     private static boolean printMouseOnP = false;

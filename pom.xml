@@ -7,7 +7,7 @@
 
     <groupId>com.coursemanagerfx</groupId>
     <artifactId>CourseManagerFX</artifactId>
-    <version>1.0.0</version>
+    <version>1.2.4</version>
     <packaging>jar</packaging>
 
     <name>CourseManagerFX</name>
@@ -15,10 +15,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <!-- JDK 21 is the compile and runtime baseline -->
         <maven.compiler.release>21</maven.compiler.release>
-
         <main.class>com.coursemanagerfx.Bootstrap</main.class>
 
         <!-- JavaFX 23 is the newest JavaFX line compatible with JDK 21 -->
@@ -28,7 +25,6 @@
         <richtextfx.version>0.11.5</richtextfx.version>
 
         <gson.version>2.10.1</gson.version>
-        <json.version>20231013</json.version>
         <poi.version>5.4.0</poi.version>
         <bouncycastle.version>1.85</bouncycastle.version>
         <junit.version>5.10.0</junit.version>
@@ -55,7 +51,6 @@
             <groupId>com.dlsc.formsfx</groupId>
             <artifactId>formsfx-core</artifactId>
             <version>${formsfx.version}</version>
-            <!-- Prevent FormsFX from selecting its older JavaFX version -->
             <exclusions>
                 <exclusion>
                     <groupId>org.openjfx</groupId>
@@ -75,17 +70,10 @@
             <version>${gson.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>${json.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>${poi.version}</version>
         </dependency>
-
-        <!-- Used by the new .cman format for Argon2id key derivation -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
@@ -102,6 +90,23 @@
 
     <build>
         <finalName>CourseManagerFX</finalName>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>com/coursemanagerfx/build.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>com/coursemanagerfx/build.properties</include>
+                </includes>
+            </resource>
+        </resources>
 
         <plugins>
             <plugin>
@@ -144,10 +149,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <!-- Do not generate dependency-reduced-pom.xml. -->
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-
-                            <!-- Signed dependency metadata is invalid after creating a fat JAR -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -158,13 +160,15 @@
                                     </excludes>
                                 </filter>
                             </filters>
-
                             <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer implementation=
+                                        "org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation=
+                                        "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${main.class}</mainClass>
+                                    <manifestEntries>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                         </configuration>

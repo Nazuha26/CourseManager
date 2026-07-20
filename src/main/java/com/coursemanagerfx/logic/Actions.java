@@ -217,8 +217,8 @@ public final class Actions {
 
         /* only for AddEventCommand & DeleteEventCommand & EditEventCommand */
         public void smartRefresh(Group group, Student student) {
-            Actions.Select select = Actions.getInstance().select();
-            Actions.Repaint repaint = Actions.getInstance().repaint();
+            Select select = Actions.getInstance().select();
+            Repaint repaint = Actions.getInstance().repaint();
 
             if (group == select.getSelectedGroup() && student == select.getSelectedStudent()) {
                 repaint.repaintEventTable(student, group);
@@ -526,7 +526,7 @@ public final class Actions {
             undoRedo.addCommandToStack(cmd);
 
             historyActions.setHistory(
-                    Actions.HistoryActions.HistoryType.SUCCESS,
+                    HistoryActions.HistoryType.SUCCESS,
                     "Successfully created event with description: \"" + description + "\""
             );
             clearAllEventInfo();
@@ -704,7 +704,7 @@ public final class Actions {
             undoRedo.addCommandToStack(cmd);
 
             historyActions.setHistory(
-                    Actions.HistoryActions.HistoryType.SUCCESS,
+                    HistoryActions.HistoryType.SUCCESS,
                     "Copied event from \"" +
                             (studentFrom != null ? studentFrom.getName() : "Unknown") +
                             "\" to \"" +
@@ -1012,7 +1012,7 @@ public final class Actions {
                         exportedPath);
                 if (successExport) {
                     historyActions.setHistory(
-                            Actions.HistoryActions.HistoryType.SUCCESS,
+                            HistoryActions.HistoryType.SUCCESS,
                             "Export completed successfully. The Excel file has been saved to: \"" + exportedPath + "\""
                     );
                     AlertFX.showNotification(
@@ -1472,6 +1472,8 @@ public final class Actions {
         public static final Logger LOGGER = Logger.getLogger(UiFlowActions.class.getName());
 
         public void runUpdateFlow(boolean showNotAvailableUpdatesNotify) {
+            if (!showNotAvailableUpdatesNotify && !UpdateUtility.beginAutomaticCheck()) return;
+
             final Task<String> checkTask = new Task<>() {
                 @Override protected String call() throws Exception {
                     updateProgress(0.15, 1); Thread.sleep(400);
@@ -1528,7 +1530,6 @@ public final class Actions {
                                             true,
                                             installTask,
                                             e -> {
-                                                ConfigManager.setOpenCourse("none");     // reset currently opened course
                                                 Platform.runLater(() -> System.exit(0));
                                             },
                                             e -> {
@@ -1564,6 +1565,15 @@ public final class Actions {
                         }
                     },
                     ex -> {
+                        if (ex instanceof NoInternetConnection) {
+                            AlertFX.showNotification(
+                                    AlertMessageType.ERROR,
+                                    "No internet connection",
+                                    "Could not check for updates. Please connect to the Internet "
+                                            + "and try again."
+                            );
+                            return;
+                        }
                         AlertFX.showNotification(
                                 AlertMessageType.ERROR,
                                 "Update check failed",

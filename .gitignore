@@ -1,39 +1,28 @@
+# Maven and IDE output
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### IntelliJ IDEA ###
-.idea/
-*.iws
+out/
 *.iml
-*.ipr
+.idea/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+libs/
+runtime/
+*VERSIONS/
+dependency-reduced-pom.xml
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+build-output/
+release-output/
+misc/
+CourseManagerFX_v*.zip
+CourseManagerFX_v*.zip.sig
 
-### VS Code ###
-.vscode/
+PrivateKeys/
+*release-private-key*.pk8
+release-private-key.pk8
 
-### Mac OS ###
+*.log
+Thumbs.db
 .DS_Store
 
-collector.py
-coursemanagerfx.txt
-VERSIONS/
+# Local helper files
+/collector.py
+/coursemanagerfx.txt

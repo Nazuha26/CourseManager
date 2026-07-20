@@ -78,7 +78,7 @@ public class ShowWindowUtility {
             );
 
             /* === CHECK FOR UPDATES === */
-            Actions.getInstance().uiFlowActions().runUpdateFlow(true);
+            Actions.getInstance().uiFlowActions().runUpdateFlow(false);
             /* ---===================--- */
 
         } catch (IOException ex) {
