@@ -84,7 +84,7 @@ public class InputPass_controller implements StageAttachable {
         passField.clear();
         char[] normalized = SeedPhraseGenerator.normalize(rawCharacters);
         Arrays.fill(rawCharacters, '\0');
-        if (!SeedPhraseGenerator.isValid(normalized)) {
+        if (!SeedPhraseGenerator.hasValidStructure(normalized)) {
             Arrays.fill(normalized, '\0');
             errorLabel.setText("Enter the five words generated for this course.");
             errorLabel.setStyle("-fx-text-fill: " + AppConstants.ColorConstants.toCssRGB(AppConstants.ColorConstants.ERROR_COLOUR) + ";");

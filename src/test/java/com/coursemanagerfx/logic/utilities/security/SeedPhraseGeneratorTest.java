@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SeedPhraseGeneratorTest {
 
     @Test
-    void loadsCompleteEffDictionaryAndGeneratesFiveWords() {
-        assertEquals(7_776, SeedPhraseGenerator.dictionarySize());
+    void loadsBasicEnglishDictionaryAndGeneratesFiveWords() {
+        assertEquals(3_000, SeedPhraseGenerator.dictionarySize());
 
         char[] phrase = SeedPhraseGenerator.generate();
         try {
@@ -26,16 +26,26 @@ class SeedPhraseGeneratorTest {
 
     @Test
     void normalizesCaseAndWhitespace() {
-        char[] raw = "  ABACUS\tAbdomen  abdominal\nABIDE abiding  ".toCharArray();
+        char[] raw = "  APPLE\tBeach  chair\nDANCE earth  ".toCharArray();
         char[] normalized = SeedPhraseGenerator.normalize(raw);
         try {
             assertTrue(SeedPhraseGenerator.isValid(normalized));
             assertEquals(
-                    "abacus abdomen abdominal abide abiding",
+                    "apple beach chair dance earth",
                     new String(normalized));
         } finally {
             Arrays.fill(raw, '\0');
             Arrays.fill(normalized, '\0');
+        }
+    }
+
+    @Test
+    void acceptsTheStructureOfPhrasesGeneratedByAnOlderDictionary() {
+        char[] oldPhrase = "abacus abdomen abdominal abide abiding".toCharArray();
+        try {
+            assertTrue(SeedPhraseGenerator.hasValidStructure(oldPhrase));
+        } finally {
+            Arrays.fill(oldPhrase, '\0');
         }
     }
 }
